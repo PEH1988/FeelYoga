@@ -1,0 +1,49 @@
+/* Main */
+main {
+	padding-top: 150px;
+	margin: auto;
+}
+#contacto {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+section {
+	#mas-contacto {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+	}
+}
+/* Table */
+#table {
+	margin-top: 100px;
+	margin-left: 100px;
+	margin-right: 100px;
+	margin-bottom: 120px;
+	border-collapse: collapse;
+}
+th {
+	background-color: #76D7C4;
+	border: 2px solid black;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+td {
+	border: 2px solid black;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+/* Form */
+form {
+    padding: 40px;
+}
+#formulario {
+    padding-top: 50px;
+}

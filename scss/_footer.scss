@@ -1,0 +1,29 @@
+/* Footer */
+footer {
+	background: linear-gradient(-45deg, #23A6D5, #23D5AB);
+	section {
+		display: flex;
+		justify-content: left;
+		flex-direction: column;
+	}
+}
+.redes-sociales {
+	ul {
+		li {
+			a {
+				display: inline-flex;
+				height: 40px;
+				width: 40px;
+				color: #76D7C4;
+				background-color: #ffff;
+				justify-content: center;
+				align-items: center;
+				text-decoration: none;
+				border-radius: 50%;
+				margin: 0 6px;
+				transition: .5s;
+				box-shadow: 0 5px 4px rgba(0,0,0,.5);
+			}
+		}
+	}
+}

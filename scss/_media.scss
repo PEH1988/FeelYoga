@@ -1,0 +1,68 @@
+/* Images */
+#imagenes {
+	width: 50%;
+	height: 50%;
+}
+#imagen-left {
+	div {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+	}
+}
+#imagen-right {
+	div {
+		display: flex;
+		flex-direction: row-reverse;
+		align-items: center;
+	}
+}
+.foto-perfil {
+	width: 15%;
+	height: 15%;
+}
+.logo-whatsapp {
+	width: 60px;
+	height: 60px;
+}
+.whatsapp {
+	position: fixed;
+	bottom: 10px;
+	left: 50px;
+}
+.gallery-item {
+	max-width: 80%;
+}
+.gallery {
+	img {
+		cursor: pointer;
+		filter: grayscale(1) brightness(0.5);
+		border-radius: 5px;
+		transition: 0.3s linear;
+		&:hover {
+			filter: grayscale(0) brightness(1);
+		}
+	}
+}
+/* Videos */
+#videos {
+	width: 600px;
+	height: 400px;
+	padding: 20px;
+}
+#video-section {
+	padding: 30px;
+	div {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+	}
+}
+/* Google Maps */
+#ubicacion {
+    width: 200px;
+    height: 200px;
+    border-bottom: 1px solid #ffff;
+    margin-bottom: 70px;
+}

@@ -1,0 +1,238 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  outline: 0;
+  box-sizing: border-box; }
+
+ul {
+  list-style: none; }
+
+/* Footer */
+footer {
+  background: linear-gradient(-45deg, #23A6D5, #23D5AB); }
+  footer section {
+    display: flex;
+    justify-content: left;
+    flex-direction: column; }
+
+.redes-sociales ul li a {
+  display: inline-flex;
+  height: 40px;
+  width: 40px;
+  color: #76D7C4;
+  background-color: #ffff;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  border-radius: 50%;
+  margin: 0 6px;
+  transition: .5s;
+  box-shadow: 0 5px 4px rgba(0, 0, 0, 0.5); }
+
+/* Textos */
+p {
+  margin-bottom: 1.6em; }
+
+#textos {
+  width: 85%;
+  max-width: 850px;
+  margin: 0 auto;
+  margin-top: 30px;
+  margin-bottom: 50px; }
+
+.font-style-a {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0; }
+
+.tittle-main {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 100px;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 20px; }
+
+.second-tittle {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 60px;
+  font-weight: 600;
+  text-align: center; }
+
+.subtittle {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 40px;
+  font-weight: 400;
+  margin-top: 30px;
+  margin-bottom: 50px; }
+
+.paragraph-main {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  margin-top: 30px;
+  margin-bottom: 50px; }
+
+.text-images {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 20px;
+  font-weight: 300;
+  font-style: oblique;
+  text-align: center;
+  margin-top: 30px;
+  margin-bottom: 100px; }
+
+.text-detail {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 20px;
+  font-weight: bolder;
+  text-align: center; }
+
+.text-box {
+  display: inline;
+  width: 550px;
+  font-size: 20px;
+  margin-left: auto;
+  margin-right: auto; }
+
+.justify {
+  text-align: justify; }
+
+.center {
+  text-align: center; }
+
+/* Colours */
+.color-primary {
+  color: #F5B041; }
+
+.color-secondary {
+  color: #148F77; }
+
+.color-tertiary {
+  color: #1ABC9C; }
+
+.color-neutro {
+  color: black; }
+
+.color-white {
+  color: white; }
+
+/* Backgrounds */
+.background-color {
+  background-color: #E5E7E9;
+  height: 10vh;
+  margin: 0; }
+
+.background-color-2 {
+  background-color: #EAFAF1; }
+
+.background-text {
+  background-color: #76D7C4; }
+
+/* Images */
+#imagenes {
+  width: 50%;
+  height: 50%; }
+
+#imagen-left div {
+  display: flex;
+  flex-direction: row;
+  align-items: center; }
+
+#imagen-right div {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center; }
+
+.foto-perfil {
+  width: 15%;
+  height: 15%; }
+
+.logo-whatsapp {
+  width: 60px;
+  height: 60px; }
+
+.whatsapp {
+  position: fixed;
+  bottom: 10px;
+  left: 50px; }
+
+.gallery-item {
+  max-width: 80%; }
+
+.gallery img {
+  cursor: pointer;
+  filter: grayscale(1) brightness(0.5);
+  border-radius: 5px;
+  transition: 0.3s linear; }
+  .gallery img:hover {
+    filter: grayscale(0) brightness(1); }
+
+/* Videos */
+#videos {
+  width: 600px;
+  height: 400px;
+  padding: 20px; }
+
+#video-section {
+  padding: 30px; }
+  #video-section div {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center; }
+
+/* Google Maps */
+#ubicacion {
+  width: 200px;
+  height: 200px;
+  border-bottom: 1px solid #ffff;
+  margin-bottom: 70px; }
+
+/* Main */
+main {
+  padding-top: 150px;
+  margin: auto; }
+
+#contacto {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; }
+
+section #mas-contacto {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; }
+
+/* Table */
+#table {
+  margin-top: 100px;
+  margin-left: 100px;
+  margin-right: 100px;
+  margin-bottom: 120px;
+  border-collapse: collapse; }
+
+th {
+  background-color: #76D7C4;
+  border: 2px solid black;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px; }
+
+td {
+  border: 2px solid black;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px; }
+
+/* Form */
+form {
+  padding: 40px; }
+
+#formulario {
+  padding-top: 50px; }
