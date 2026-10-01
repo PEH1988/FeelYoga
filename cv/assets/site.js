@@ -2,7 +2,7 @@
  * Pablo Hidalgo — CV · shared behaviour for every page
  *  - builds nav, mobile menu and footer
  *  - ES/EN switch (Spanish lives in the HTML, English below)
- *  - accordions, reveal-on-scroll, liquid WebGL background
+ *  - accordions, reveal-on-scroll, scroll-scrubbed video background
  *  - home only: name cut out of the veil while scrolling
  * ------------------------------------------------------------------ */
 (function () {
@@ -194,6 +194,10 @@
 
   apply();
 
+  /* nav background once scrolled */
+  function navState() { var n = document.getElementById('nav'); if (n) n.classList.toggle('solid', scrollY > 40); }
+  addEventListener('scroll', navState, { passive: true }); navState();
+
   /* ---- reveal on scroll ---- */
   var els = [].slice.call(document.querySelectorAll('.r'));
   if ('IntersectionObserver' in window) {
@@ -203,76 +207,75 @@
     els.forEach(function (e) { io.observe(e); });
   } else els.forEach(function (e) { e.classList.add('in'); });
 
-  /* ---- liquid background (WebGL) ---- */
-  var TONES = {
-    cream: [[.60, .58, .53], [.79, .77, .72], [.97, .96, .93]],
-    dark: [[.02, .02, .03], [.07, .07, .09], [.27, .27, .31]]
-  };
-  var liquid = (function () {
-    var cv = document.getElementById('liq');
-    if (!cv) return null;
+  /* ---- scroll-driven video background ----
+   * The clip lives as a WebP frame sequence (assets/frames/f001…f120).
+   * Scroll position across the whole page picks the frame; frames load
+   * coarse-to-fine so something sensible is always on screen. */
+  (function () {
+    var cv = document.getElementById('scrub');
+    if (!cv) return;
+    var ctx = cv.getContext('2d');
+    var N = 120, frames = new Array(N), shown = -1, target = 0, cur = 0;
     var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var gl = cv.getContext('webgl', { antialias: false, depth: false, stencil: false, powerPreference: 'low-power', preserveDrawingBuffer: reduce });
-    if (!gl) { cv.remove(); return null; }
+    function src(i) { return 'assets/frames/f' + ('00' + (i + 1)).slice(-3) + '.webp'; }
 
-    var vs = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
-    var fs = [
-      'precision mediump float;',
-      'uniform vec2 R;uniform float T;uniform vec2 M;uniform vec3 A,B,C;',
-      'float h(vec3 p){p=fract(p*.3183099+.1);p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}',
-      'float n(vec3 x){vec3 i=floor(x),f=fract(x);f=f*f*(3.-2.*f);',
-      ' return mix(mix(mix(h(i),h(i+vec3(1,0,0)),f.x),mix(h(i+vec3(0,1,0)),h(i+vec3(1,1,0)),f.x),f.y),',
-      '            mix(mix(h(i+vec3(0,0,1)),h(i+vec3(1,0,1)),f.x),mix(h(i+vec3(0,1,1)),h(i+1.),f.x),f.y),f.z);}',
-      'float fbm(vec3 p){float s=0.,a=.5;for(int i=0;i<4;i++){s+=a*n(p);p=p*2.02+vec3(3.1,1.7,4.3);a*=.5;}return s;}',
-      'float F(vec2 p,float t){vec2 w=vec2(fbm(vec3(p,t*.12)),fbm(vec3(p+4.7,t*.1)));',
-      ' float v=fbm(vec3(p*1.3+w*1.2,t*.08));vec2 d=p-M;return v+.12*exp(-dot(d,d)*5.);}',
-      'void main(){vec2 uv=(gl_FragCoord.xy-.5*R)/R.y*1.4;float e=.004;',
-      ' float f=F(uv,T);float dx=F(uv+vec2(e,0.),T)-f;float dy=F(uv+vec2(0.,e),T)-f;',
-      ' vec3 N=normalize(vec3(-dx*22.,-dy*22.,1.));vec3 L=normalize(vec3(-.4,.7,.6));',
-      ' float dif=max(dot(N,L),0.);float sp=pow(max(dot(reflect(-L,N),vec3(0,0,1)),0.),48.);',
-      ' vec3 rr=reflect(vec3(0,0,-1),N);float env=smoothstep(-.5,.9,rr.y);',
-      ' float band=smoothstep(.4,.6,fract(rr.x*1.4+rr.y*.7+T*.02));',
-      ' vec3 col=mix(A,B,env);col=mix(col,C,band*env*.55);col+=dif*.05+sp*.8;',
-      ' col*=mix(.7,1.,smoothstep(1.5,.3,length(uv*vec2(.6,1.))));',
-      ' gl_FragColor=vec4(col,1.);}'
-    ].join('\n');
+    // load order: first frame, then every 16th, 8th, 4th, 2nd, then the rest
+    var order = [0], seen = { 0: 1 };
+    [16, 8, 4, 2, 1].forEach(function (step) {
+      for (var i = 0; i < N; i += step) if (!seen[i]) { seen[i] = 1; order.push(i); }
+    });
+    var next = 0, busy = 0;
+    function pump() {
+      while (busy < 6 && next < order.length) {
+        (function (i) {
+          var im = new Image(); busy++;
+          im.onload = function () { frames[i] = im; busy--; if (i === 0 || Math.abs(i - cur) < 3) shown = -1; pump(); };
+          im.onerror = function () { busy--; pump(); };
+          im.src = src(i);
+        })(order[next++]);
+      }
+    }
+    pump();
 
-    function sh(t, s) { var o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); return gl.getShaderParameter(o, gl.COMPILE_STATUS) ? o : null; }
-    var a = sh(gl.VERTEX_SHADER, vs), b = sh(gl.FRAGMENT_SHADER, fs);
-    if (!a || !b) { cv.remove(); return null; }
-    var pr = gl.createProgram(); gl.attachShader(pr, a); gl.attachShader(pr, b); gl.linkProgram(pr); gl.useProgram(pr);
-    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-    var lp = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(lp); gl.vertexAttribPointer(lp, 2, gl.FLOAT, false, 0, 0);
-    var U = {}; ['R', 'T', 'M', 'A', 'B', 'C'].forEach(function (k) { U[k] = gl.getUniformLocation(pr, k); });
-
-    var t = 3.7, mx = 0, my = 0, tx = 0, ty = 0;
-    function draw() { gl.uniform2f(U.R, cv.width, cv.height); gl.uniform1f(U.T, t); gl.uniform2f(U.M, mx, my); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); }
-    function mix(k) {
-      var x = TONES.cream, y = TONES.dark;
-      ['A', 'B', 'C'].forEach(function (u, i) {
-        gl.uniform3f(U[u], x[i][0] + (y[i][0] - x[i][0]) * k, x[i][1] + (y[i][1] - x[i][1]) * k, x[i][2] + (y[i][2] - x[i][2]) * k);
-      });
-      if (reduce) draw();
+    function nearest(i) {
+      for (var d = 0; d < N; d++) {
+        if (frames[i - d]) return i - d;
+        if (frames[i + d]) return i + d;
+      }
+      return -1;
     }
     function size() {
-      var s = innerWidth < 700 ? .4 : .55;
-      cv.width = Math.max(2, Math.floor(cv.clientWidth * s)); cv.height = Math.max(2, Math.floor(cv.clientHeight * s));
-      gl.viewport(0, 0, cv.width, cv.height); draw();
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      cv.width = Math.round(cv.clientWidth * dpr); cv.height = Math.round(cv.clientHeight * dpr);
+      shown = -1;
     }
-    mix(0); size(); addEventListener('resize', size);
-    if (!reduce) {
-      addEventListener('pointermove', function (ev) { tx = (ev.clientX / innerWidth - .5) * 1.4; ty = (.5 - ev.clientY / innerHeight) * 1.4; }, { passive: true });
-      var t0 = performance.now(), last = 0;
-      (function loop(now) {
-        requestAnimationFrame(loop);
-        if (document.hidden || now - last < 33) return; // ~30fps is plenty
-        last = now; t = 3.7 + (now - t0) / 1000;
-        mx += (tx - mx) * .04; my += (ty - my) * .04;
-        draw();
-      })(t0);
+    function draw(i) {
+      var k = nearest(i);
+      if (k < 0 || k === shown) return;
+      var im = frames[k], W = cv.width, H = cv.height;
+      var sc = Math.max(W / im.naturalWidth, H / im.naturalHeight); // cover
+      var w = im.naturalWidth * sc, h = im.naturalHeight * sc;
+      ctx.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
+      shown = k;
     }
-    return { mix: mix };
+    function progress() {
+      var max = document.documentElement.scrollHeight - innerHeight;
+      return max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
+    }
+    size(); addEventListener('resize', size);
+    if (reduce) {
+      // one still frame, no scrubbing
+      var still = Math.round(N * .35);
+      (function wait() { frames[still] ? draw(still) : setTimeout(wait, 120); })();
+      return;
+    }
+    (function loop() {
+      target = progress() * (N - 1);
+      cur += (target - cur) * .18;            // ease toward the scroll position
+      if (Math.abs(target - cur) < .01) cur = target;
+      draw(Math.round(cur));
+      requestAnimationFrame(loop);
+    })();
   })();
 
   /* ---- home: name cut out of the cream veil ---- */
@@ -307,7 +310,6 @@
       var r = stage.getBoundingClientRect(), total = stage.offsetHeight - H;
       var p = Math.min(1, Math.max(0, -r.top / total));
       veil.style.opacity = Math.min(1, p * 2.2);
-      if (liquid) liquid.mix(Math.min(1, Math.max(0, (p - .05) / .5)));
       var sc = 1 + 7 * Math.pow(1 - Math.min(1, p * 1.25), 2.2);
       mg.setAttribute('transform', 'translate(' + W / 2 + ' ' + H / 2 + ') scale(' + sc + ') translate(' + (-W / 2) + ' ' + (-H / 2) + ')');
       sub.classList.toggle('on', p > .72);

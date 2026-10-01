@@ -3,13 +3,16 @@
  * Cream "material" palette, display type in Audiowide, body in Inter.
  * ------------------------------------------------------------------ */
 :root {
-  --paper: #EDEAE3;
-  --paper-2: #E3E0D8;
-  --ink: #0A0A0C;
-  --text: #2A2A2E;
-  --mute: #1A1A1E;
-  --line: rgba(0, 0, 0, .18);
-  --accent: #E4002B;
+  /* palette taken from the background clip: chalk paper → slate grey → ink */
+  --paper: #E2DFD8;
+  --paper-rgb: 226, 223, 216;
+  --paper-2: #D3D2CB;
+  --ink: #0C0C0E;
+  --text: #2B2E30;
+  --mute: #3F4648;
+  --slate: #8E9A9B;
+  --line: rgba(12, 12, 14, .2);
+  --accent: #C8102E;
   --f-display: "Audiowide", system-ui, sans-serif;
   --f-body: "Inter", -apple-system, system-ui, sans-serif;
   --ease: cubic-bezier(.16, 1, .3, 1);
@@ -91,12 +94,10 @@ body.on-dark .nav { color: #fff; }
 /* ---------------- liquid background ---------------- */
 .bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 .bg canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.bg .fallback {
+.bg .fallback { position: absolute; inset: 0; background: var(--paper); }
+.bg .shade {
   position: absolute; inset: 0;
-  background:
-    radial-gradient(60% 50% at 20% 30%, rgba(255, 255, 255, .35), transparent 60%),
-    radial-gradient(50% 60% at 80% 70%, rgba(255, 255, 255, .25), transparent 60%),
-    linear-gradient(180deg, #CFCBC2, #B9B5AC);
+  background: linear-gradient(180deg, rgba(var(--paper-rgb), .6) 0, rgba(var(--paper-rgb), 0) 16%, rgba(var(--paper-rgb), 0) 78%, rgba(var(--paper-rgb), .45) 100%);
 }
 
 /* scroll cue: label + animated line */
@@ -148,11 +149,11 @@ body.on-dark .nav { color: #fff; }
 .h2 {
   position: relative; z-index: 1; min-height: 100svh;
   display: flex; flex-direction: column; justify-content: center;
-  padding: 0 var(--pad); background: var(--paper);
+  padding: 0 var(--pad); background: rgba(var(--paper-rgb), .86);
 }
-.menu2 { display: flex; flex-direction: column; border-top: 1px solid rgba(0, 0, 0, .25); }
+.menu2 { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
 .menu2 a {
-  display: block; padding: clamp(16px, 2.6vw, 30px) 0; border-bottom: 1px solid rgba(0, 0, 0, .25);
+  display: block; padding: clamp(16px, 2.6vw, 30px) 0; border-bottom: 1px solid var(--line);
   font-size: calc(clamp(26px, 5.4vw, 76px) * .9);
   transition: padding-left .5s var(--ease), opacity .9s var(--ease), transform .9s var(--ease);
 }
@@ -179,7 +180,7 @@ body.on-dark .nav { color: #fff; }
 }
 .page {
   position: relative; z-index: 1; padding: 160px var(--pad) clamp(80px, 11vw, 168px);
-  background: linear-gradient(180deg, rgba(237, 234, 227, 0) 0, rgba(237, 234, 227, .9) 140px, var(--paper) 360px);
+  background: linear-gradient(180deg, rgba(var(--paper-rgb), 0) 0, rgba(var(--paper-rgb), .84) 180px);
 }
 .block + .block { margin-top: clamp(64px, 9vw, 128px); }
 .block > .k { margin-bottom: clamp(20px, 3vw, 32px); }
@@ -218,7 +219,7 @@ body.on-dark .nav { color: #fff; }
 .step { border-bottom: 1px solid var(--line); padding: clamp(24px, 3vw, 40px) 0; }
 .step i {
   display: block; font-style: normal; font-size: calc(clamp(48px, 7vw, 100px) * .9);
-  color: transparent; -webkit-text-stroke: 1px rgba(0, 0, 0, .4); margin-bottom: 18px;
+  color: transparent; -webkit-text-stroke: 1px var(--slate); margin-bottom: 18px;
 }
 .step b { display: block; font-size: calc(clamp(18px, 2.2vw, 30px) * .9); margin-bottom: 16px; }
 .step ul { list-style: none; margin: 0; padding: 0; }
@@ -273,7 +274,7 @@ body.on-dark .nav { color: #fff; }
 .contact-lines a span { text-align: right; overflow-wrap: anywhere; }
 
 /* next page + footer */
-.next, footer { position: relative; z-index: 1; background: var(--paper); }
+.next, footer { position: relative; z-index: 1; background: rgba(var(--paper-rgb), .9); }
 .next { border-top: 1px solid var(--line); padding: clamp(40px, 6vw, 88px) var(--pad); }
 .next .label { display: block; margin-bottom: 16px; }
 .next a { font-size: calc(clamp(28px, 5.4vw, 80px) * .9); display: inline-block; transition: transform .6s var(--ease), color .3s; }
@@ -344,3 +345,16 @@ footer {
 }
 .case > .role { margin-bottom: 18px; }
 .work-body .tool { color: var(--mute); }
+
+/* keep hero copy readable over the clip: chalk wash on the text side */
+.open::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(90deg, rgba(var(--paper-rgb), .9) 0, rgba(var(--paper-rgb), .78) 42%, rgba(var(--paper-rgb), 0) 78%);
+}
+@media (max-width: 860px) {
+  .open::before { background: rgba(var(--paper-rgb), .8); }
+}
+
+/* nav gets a frosted chalk bar once the page scrolls */
+.nav { transition: background .4s var(--ease), backdrop-filter .4s var(--ease); }
+.nav.solid { background: rgba(var(--paper-rgb), .82); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
