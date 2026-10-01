@@ -302,3 +302,36 @@ footer {
 .row .hd .label .org { color: var(--accent); }
 .row .inner > :first-child { margin-top: 18px; }
 .row.flat { cursor: default; }
+
+/* featured project: screenshot + story */
+.work {
+  display: grid; grid-template-columns: 1fr; gap: clamp(20px, 3vw, 40px);
+  padding: clamp(28px, 4vw, 56px) 0; border-top: 1px solid var(--line);
+}
+.work:last-of-type { border-bottom: 1px solid var(--line); }
+.work .shot {
+  display: block; align-self: start; overflow: hidden; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--paper-2);
+}
+.work .shot img {
+  display: block; width: 100%; height: auto; max-width: 100%;
+  filter: grayscale(1) contrast(1.05); transform: scale(1.001);
+  transition: filter .6s var(--ease), transform .9s var(--ease);
+}
+.work .shot:hover img, .work .shot:focus-visible img { filter: none; transform: scale(1.03); }
+.work-body { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.work-body .tool { color: var(--accent); }
+.work-body h2 { font-size: calc(clamp(28px, 4.4vw, 64px) * .9); }
+.work-body .stat { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 6px 0 4px; }
+.work-body .stat .n { font-size: calc(clamp(36px, 5vw, 76px) * .9); font-variant-numeric: tabular-nums; }
+.work-body .stat .w { font: 600 11px/1.5 var(--f-body); letter-spacing: .2em; text-transform: uppercase; max-width: 26ch; }
+.work-body p { font: 400 clamp(15px, 1.4vw, 17px)/1.6 var(--f-body); color: var(--text); max-width: 52ch; }
+.work-body .links { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 6px; }
+.work-body .links a { border-bottom: 1px solid currentColor; padding-bottom: 4px; transition: color .3s; }
+.work-body .links a:hover { color: var(--accent); }
+@media (min-width: 860px) {
+  .work { grid-template-columns: 1.15fr 1fr; align-items: center; }
+  .work:nth-of-type(even) .shot { order: 2; }
+}
+@media (prefers-reduced-motion: reduce) { .work .shot img { transition: none; } }
+.work + .block { margin-top: clamp(56px, 8vw, 112px); }

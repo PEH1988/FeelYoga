@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Portfolio — Pablo Hidalgo</title>
-<meta name="description" content="Portfolio de trabajos de Pablo Hidalgo: dashboards, análisis de datos y estrategia comercial.">
+<meta name="description" content="Proyectos de análisis de datos de Pablo Hidalgo en Power BI y Qlik Sense.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Audiowide&family=Inter:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/style.css?v=20261001">
+<link rel="stylesheet" href="assets/style.css?v=20261001b">
 </head>
 <body>
 <div class="grain" aria-hidden="true"></div>
@@ -18,96 +18,49 @@
 
 <section class="open">
   <div class="k" data-i18n="pf.k">Portfolio</div>
-  <h1 class="h disp" data-i18n="pf.h">Algunos <em>trabajos.</em></h1>
-  <p class="lead" data-i18n="pf.lead">Una selección de proyectos que combinan estrategia comercial y análisis de datos.</p>
+  <h1 class="h disp" data-i18n="pf.h">Datos que se convierten en <em>decisiones.</em></h1>
+  <p class="lead" data-i18n="pf.lead">Después de 8 años en ventas descubrí mi pasión por los datos. Hoy junto las dos cosas: entiendo el negocio y sé qué preguntarle a los números.</p>
   <a class="cue center" href="#mas"><span data-ui="scroll">Scroll</span><i></i></a>
 </section>
 
 <main class="page" id="mas">
-  <div class="block">
-    <div class="cases">
-      <div class="case r">
-        <div class="n disp">8+</div>
-        <div class="w" data-i18n="pf.n1">años en ventas B2B</div>
-        <p class="t" data-i18n="pf.t1">Desarrollo de negocios, prospección y gestión de cuentas corporativas en seguros, salud y tecnología.</p>
-      </div>
-      <div class="case r">
-        <div class="n disp">7</div>
-        <div class="w" data-i18n="pf.n2">años liderando grandes cuentas</div>
-        <p class="t" data-i18n="pf.t2">Clientes corporativos, PAS y brokers en Federación Patronal, al frente de un equipo comercial regional.</p>
+  <!-- Proyecto 1 -->
+  <article class="work r">
+    <a class="shot" href="https://app.powerbi.com/view?r=eyJrIjoiMmVhZWE0NjUtNGFlNS00MTNhLTlmNzQtMjMzMjRjMWFmN2U3IiwidCI6Ijc0MjAzMmE3LTU2NjAtNDE5Yy04Yzk5LWVkZDJjMTU2NzJlMiIsImMiOjR9" target="_blank" rel="noopener">
+      <img src="assets/img/tractchun.webp" width="800" height="239" alt="Dashboard de Tractchun en Power BI: total de tickets, satisfacción y días abiertos">
+    </a>
+    <div class="work-body">
+      <span class="label tool">Power BI · Power Query · DAX</span>
+      <h2 class="disp">Tractchun</h2>
+      <div class="stat"><span class="n disp">97.948</span><span class="w" data-i18n="pf.p1.w">tickets de soporte TI analizados</span></div>
+      <p data-i18n="pf.p1.1">El equipo de TI quería saber dónde mejorar su servicio. Armé un reporte interactivo con modelo estrella, KPIs en DAX (satisfacción, días abiertos, tickets por agente) y filtros por año, mes y agente.</p>
+      <div class="links">
+        <a class="label" href="https://app.powerbi.com/view?r=eyJrIjoiMmVhZWE0NjUtNGFlNS00MTNhLTlmNzQtMjMzMjRjMWFmN2U3IiwidCI6Ijc0MjAzMmE3LTU2NjAtNDE5Yy04Yzk5LWVkZDJjMTU2NzJlMiIsImMiOjR9" target="_blank" rel="noopener" data-i18n="pf.live">Ver dashboard en vivo →</a>
+        <a class="label" href="https://github.com/Pygove/Proyecto_Tractchun" target="_blank" rel="noopener">GitHub →</a>
       </div>
     </div>
-  </div>
+  </article>
 
-  <!--
-    PROYECTOS
-    Cada proyecto es un bloque <div class="row r">…</div>.
-    Los marcados con "pf.example" son EJEMPLOS: reemplazalos por trabajos reales
-    (título, descripción, herramientas y, si querés, un enlace) y borrá la línea del ejemplo.
-  -->
+  <!-- Proyecto 2 -->
+  <article class="work r">
+    <a class="shot" href="https://www.datascienceportfol.io/hidalgopablo/projects/1" target="_blank" rel="noopener">
+      <img src="assets/img/higiene-sueno.webp" width="800" height="239" alt="Dashboard de Higiene del sueño en Qlik Sense: 374 personas, 155 con trastorno de sueño">
+    </a>
+    <div class="work-body">
+      <span class="label tool">Qlik Sense · Excel</span>
+      <h2 class="disp" data-i18n="pf.p2.t">Higiene del sueño</h2>
+      <div class="stat"><span class="n disp">41,6%</span><span class="w" data-i18n="pf.p2.w">de 374 personas tiene trastornos del sueño</span></div>
+      <p data-i18n="pf.p2.1">¿Más kilos, menos sueño? Crucé peso, estrés y trabajo para entender qué nos quita el descanso. Spoiler: las mujeres sufren el doble de trastornos (55,7% contra 27,5%) y el estrés es el gran enemigo.</p>
+      <div class="links">
+        <a class="label" href="https://www.datascienceportfol.io/hidalgopablo/projects/1" target="_blank" rel="noopener" data-i18n="pf.case">Ver el análisis →</a>
+        <a class="label" href="https://www.linkedin.com/feed/update/urn:li:activity:7297294722916581376/" target="_blank" rel="noopener">LinkedIn →</a>
+      </div>
+    </div>
+  </article>
+
   <div class="block">
-    <div class="k r" data-i18n="pf.list">Proyectos</div>
+    <div class="k r" data-i18n="pf.more">Más proyectos</div>
     <div class="list">
-      <div class="row r">
-        <div class="hd">
-          <b class="disp" data-i18n="pf.p1.t">Dashboard de KPIs comerciales</b>
-          <span class="label"><span class="org">Power BI</span> · <span data-i18n="pf.example">Ejemplo — reemplazar por proyecto real</span></span>
-        </div>
-        <span class="more label">Ver más</span>
-        <div class="body"><div class="inner">
-          <p data-i18n="pf.p1.1">Tablero en Power BI para seguir pipeline, conversión por etapa y cumplimiento de objetivos por ejecutivo.</p>
-          <div class="chips"><span>Power BI</span><span>DAX</span><span>KPIs</span></div>
-        </div></div>
-      </div>
-
-      <div class="row r">
-        <div class="hd">
-          <b class="disp" data-i18n="pf.p2.t">Análisis de retención de cartera</b>
-          <span class="label"><span class="org">SQL</span> · <span data-i18n="pf.example">Ejemplo — reemplazar por proyecto real</span></span>
-        </div>
-        <span class="more label">Ver más</span>
-        <div class="body"><div class="inner">
-          <p data-i18n="pf.p2.1">Consultas SQL y análisis de cohortes para detectar riesgo de baja en cuentas corporativas.</p>
-          <div class="chips"><span>SQL</span><span>Excel</span></div>
-        </div></div>
-      </div>
-
-      <div class="row r">
-        <div class="hd">
-          <b class="disp" data-i18n="pf.p3.t">Reporting de cartera en Qlik Sense</b>
-          <span class="label"><span class="org">Qlik Sense</span> · <span data-i18n="pf.example">Ejemplo — reemplazar por proyecto real</span></span>
-        </div>
-        <span class="more label">Ver más</span>
-        <div class="body"><div class="inner">
-          <p data-i18n="pf.p3.1">Reportes de performance comercial por región, producto y canal (PAS y brokers).</p>
-          <div class="chips"><span>Qlik Sense</span><span>Reporting</span></div>
-        </div></div>
-      </div>
-
-      <div class="row r">
-        <div class="hd">
-          <b class="disp" data-i18n="pf.p4.t">Plan de prospección B2B PyME</b>
-          <span class="label"><span class="org">Estrategia comercial</span> · <span data-i18n="pf.example">Ejemplo — reemplazar por proyecto real</span></span>
-        </div>
-        <span class="more label">Ver más</span>
-        <div class="body"><div class="inner">
-          <p data-i18n="pf.p4.1">Segmentación de mercado, cadencias de contacto y propuesta de valor para captar nuevas cuentas.</p>
-          <div class="chips"><span>Hunter</span><span>CRM</span><span>Pipeline</span></div>
-        </div></div>
-      </div>
-
-      <div class="row r">
-        <div class="hd">
-          <b class="disp" data-i18n="pf.p5.t">Proyecto final — Analista de Datos</b>
-          <span class="label"><span class="org">Jupi Digital</span> · <span data-i18n="pf.example">Ejemplo — reemplazar por proyecto real</span></span>
-        </div>
-        <span class="more label">Ver más</span>
-        <div class="body"><div class="inner">
-          <p data-i18n="pf.p5.1">Proyecto integrador de Jupi Digital: limpieza, modelado y visualización de un dataset real.</p>
-          <div class="chips"><span>SQL</span><span>Power BI</span></div>
-        </div></div>
-      </div>
-
       <div class="row r">
         <div class="hd">
           <b class="disp" data-i18n="pf.p6.t">FeelYoga — sitio web</b>
@@ -117,15 +70,17 @@
         <div class="body"><div class="inner">
           <p data-i18n="pf.p6.1">Sitio responsive para un estudio de yoga con HTML5, SCSS y Bootstrap 5.</p>
           <div class="chips"><span>HTML5</span><span>SCSS</span><span>Bootstrap 5</span></div>
-          <p><a class="label tagline" href="../index.html" data-i18n="pf.p6.link">Ver sitio →</a></p>
         </div></div>
       </div>
+    </div>
+    <div class="cta r" style="margin-top: clamp(28px, 4vw, 48px)">
+      <a class="p" href="https://www.datascienceportfol.io/hidalgopablo" target="_blank" rel="noopener" data-i18n="pf.all">Ver portfolio completo →</a>
     </div>
   </div>
 </main>
 
 <section class="next r" id="next"></section>
 <footer id="footer"></footer>
-<script src="assets/site.js?v=20261001"></script>
+<script src="assets/site.js?v=20261001b"></script>
 </body>
 </html>
