@@ -1,0 +1,23 @@
+# Pablo Hidalgo — CV
+DirectoryIndex index.html
+Options -Indexes
+
+# HTML always fresh; CSS/JS/images cached (bump ?v= in the HTML on each publish)
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(css|js|woff2|webp|png|jpg|svg)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+  <FilesMatch "\.pdf$">
+    Header set Content-Disposition "attachment"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript image/svg+xml
+</IfModule>
+
+AddDefaultCharset UTF-8
+ErrorDocument 404 /index.html
