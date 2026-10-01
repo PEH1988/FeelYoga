@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pablo Hidalgo — CV</title>
+  <meta name="description" content="Pablo Hidalgo — Ejecutivo Comercial B2B · Grandes Cuentas. CV extendido y portfolio.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // Apply the saved theme before paint to avoid a flash.
+    try { var t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <a href="#top" class="brand">PH</a>
+    <nav class="nav">
+      <a href="#about" data-i18n="nav.about">Perfil</a>
+      <a href="#experience" data-i18n="nav.experience">Experiencia</a>
+      <a href="#skills" data-i18n="nav.skills">Habilidades</a>
+      <a href="#portfolio" data-i18n="nav.portfolio">Portfolio</a>
+      <a href="#education" data-i18n="nav.education">Formación</a>
+      <a href="#contact" data-i18n="nav.contact">Contacto</a>
+    </nav>
+    <div class="controls">
+      <button id="lang-toggle" class="chip" aria-label="Cambiar idioma">EN</button>
+      <button id="theme-toggle" class="chip" aria-label="Cambiar tema">◐</button>
+    </div>
+  </header>
+
+  <main id="top" class="container">
+    <!-- Hero -->
+    <section class="hero">
+      <p class="mono muted" data-i18n="hero.hello">Hola, soy</p>
+      <h1>Pablo Hidalgo</h1>
+      <h2 class="role" data-i18n="hero.role">Ejecutivo Comercial B2B — Grandes Cuentas</h2>
+      <p class="lead" data-i18n="hero.lead">Más de 8 años desarrollando negocios, abriendo mercado y haciendo crecer cuentas corporativas, con una mirada analítica basada en datos.</p>
+      <ul class="meta mono">
+        <li>📍 Mendoza, Argentina</li>
+        <li><a href="mailto:pablohidalgo1188@gmail.com">pablohidalgo1188@gmail.com</a></li>
+        <li><a href="tel:+542615102207">+54 261 510 2207</a></li>
+        <li><a href="https://linkedin.com/in/pabloehidalgo" target="_blank" rel="noopener">linkedin.com/in/pabloehidalgo</a></li>
+      </ul>
+      <div class="actions">
+        <a class="btn primary" href="Pablo-Hidalgo-CV.pdf" download data-i18n="hero.download">Descargar CV (PDF)</a>
+        <a class="btn" href="#contact" data-i18n="hero.contact">Contactar</a>
+      </div>
+
+      <div class="stats">
+        <div><strong>8+</strong><span data-i18n="stats.years">años en ventas B2B</span></div>
+        <div><strong>7</strong><span data-i18n="stats.lead">años liderando grandes cuentas</span></div>
+        <div><strong>B2</strong><span data-i18n="stats.english">nivel de inglés</span></div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="section">
+      <h3 class="section-title"><span class="mono">01</span> <span data-i18n="nav.about">Perfil</span></h3>
+      <p data-i18n="about.p1">Ejecutivo Comercial B2B con más de 8 años de experiencia en desarrollo de negocios, prospección comercial (hunter) y gestión de cuentas corporativas y grandes cuentas.</p>
+      <p data-i18n="about.p2">Experiencia en negociación, elaboración de propuestas comerciales, gestión de pipeline y análisis de KPIs para la toma de decisiones. Orientado a resultados, con capacidad analítica (Excel avanzado, Power BI, SQL) y foco en la satisfacción del cliente.</p>
+    </section>
+
+    <!-- Experience -->
+    <section id="experience" class="section">
+      <h3 class="section-title"><span class="mono">02</span> <span data-i18n="nav.experience">Experiencia</span></h3>
+      <ol class="timeline">
+        <li>
+          <div class="when mono" data-i18n="exp.omint.date">Jun 2026 — Actualidad</div>
+          <div class="what">
+            <h4><span data-i18n="exp.omint.role">Ejecutivo Comercial B2B PyME</span> · <span class="org">Grupo Omint</span></h4>
+            <ul>
+              <li data-i18n="exp.omint.1">Prospección y desarrollo de negocios B2B, gestión de pipeline comercial de clientes corporativos PyME.</li>
+              <li data-i18n="exp.omint.2">Elaboración de propuestas comerciales y negociación con clientes corporativos.</li>
+            </ul>
+            <div class="tags"><span>Hunter</span><span>Pipeline</span><span data-i18n="tag.negotiation">Negociación</span></div>
+          </div>
+        </li>
+        <li>
+          <div class="when mono" data-i18n="exp.america.date">May 2025 — Jun 2026</div>
+          <div class="what">
+            <h4>Account Manager · <span class="org">Grupo América</span></h4>
+            <ul>
+              <li data-i18n="exp.america.1">Gestión de cuentas y atención directa a clientes corporativos.</li>
+              <li data-i18n="exp.america.2">Análisis de resultados y seguimiento de KPIs comerciales.</li>
+            </ul>
+            <div class="tags"><span>Account Management</span><span>KPIs</span></div>
+          </div>
+        </li>
+        <li>
+          <div class="when mono" data-i18n="exp.outlier.date">Jul 2024 — Abr 2025</div>
+          <div class="what">
+            <h4><span data-i18n="exp.outlier.role">Analista de Datos / IA Trainer</span> · <span class="org">Outlier</span></h4>
+            <ul>
+              <li data-i18n="exp.outlier.1">Análisis y validación de datos e interacciones, con foco en calidad y métricas de desempeño.</li>
+            </ul>
+            <div class="tags"><span>Data QA</span><span>AI</span><span data-i18n="tag.metrics">Métricas</span></div>
+          </div>
+        </li>
+        <li>
+          <div class="when mono" data-i18n="exp.fp.date">Abr 2016 — Ene 2023</div>
+          <div class="what">
+            <h4><span data-i18n="exp.fp.role">Jefe de ART</span> · <span class="org">Federación Patronal Seguros</span></h4>
+            <ul>
+              <li data-i18n="exp.fp.1">Gestión y desarrollo de grandes cuentas corporativas, PAS y brokers; liderazgo de equipo comercial regional.</li>
+              <li data-i18n="exp.fp.2">Análisis de KPIs de cartera y performance comercial; mejora de la retención de clientes.</li>
+            </ul>
+            <div class="tags"><span data-i18n="tag.keyaccounts">Grandes cuentas</span><span data-i18n="tag.leadership">Liderazgo</span><span data-i18n="tag.retention">Retención</span></div>
+          </div>
+        </li>
+        <li>
+          <div class="when mono" data-i18n="exp.fp2.date">Nov 2015 — Abr 2016</div>
+          <div class="what">
+            <h4><span data-i18n="exp.fp2.role">Analista Comercial</span> · <span class="org">Federación Patronal Seguros</span></h4>
+            <ul>
+              <li data-i18n="exp.fp2.1">Análisis técnico-comercial de clientes para evaluación de riesgos y reporting de indicadores clave.</li>
+            </ul>
+            <div class="tags"><span data-i18n="tag.risk">Evaluación de riesgos</span><span>Reporting</span></div>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- Skills -->
+    <section id="skills" class="section">
+      <h3 class="section-title"><span class="mono">03</span> <span data-i18n="nav.skills">Habilidades</span></h3>
+      <div class="skills-grid">
+        <div class="card">
+          <h4 data-i18n="skills.commercial">Comerciales</h4>
+          <div class="tags">
+            <span data-i18n="skills.c1">Gestión de grandes cuentas</span>
+            <span data-i18n="skills.c2">Prospección B2B (hunter)</span>
+            <span data-i18n="tag.negotiation">Negociación</span>
+            <span data-i18n="skills.c4">Cierre de ventas</span>
+            <span data-i18n="skills.c5">Gestión de pipeline y CRM</span>
+            <span data-i18n="skills.c6">Propuestas comerciales</span>
+          </div>
+        </div>
+        <div class="card">
+          <h4 data-i18n="skills.technical">Técnicas</h4>
+          <div class="tags">
+            <span>Power BI</span><span>Qlik Sense</span><span>SQL</span>
+            <span data-i18n="skills.t4">Excel avanzado</span>
+            <span data-i18n="skills.t5">Análisis de KPIs</span>
+            <span data-i18n="skills.t6">Dashboards y reporting</span>
+          </div>
+        </div>
+        <div class="card">
+          <h4 data-i18n="skills.languages">Idiomas</h4>
+          <ul class="langs">
+            <li><span data-i18n="skills.es">Español</span><span class="bar"><i style="width:100%"></i></span><span class="mono muted" data-i18n="skills.native">Nativo</span></li>
+            <li><span data-i18n="skills.en">Inglés</span><span class="bar"><i style="width:70%"></i></span><span class="mono muted">B2</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Portfolio: edit the entries in script.js (PORTFOLIO) to add or change projects -->
+    <section id="portfolio" class="section">
+      <h3 class="section-title"><span class="mono">04</span> <span data-i18n="nav.portfolio">Portfolio</span></h3>
+      <p class="muted" data-i18n="portfolio.intro">Una selección de trabajos y proyectos que combinan estrategia comercial y análisis de datos.</p>
+      <div class="filters" id="portfolio-filters"></div>
+      <div class="portfolio-grid" id="portfolio-grid"></div>
+    </section>
+
+    <!-- Education -->
+    <section id="education" class="section">
+      <h3 class="section-title"><span class="mono">05</span> <span data-i18n="nav.education">Formación</span></h3>
+      <ol class="timeline">
+        <li>
+          <div class="when mono">2024 — 2025</div>
+          <div class="what"><h4><span data-i18n="edu.data">Analista de Datos</span> · <span class="org">Jupi Digital</span></h4></div>
+        </li>
+        <li>
+          <div class="when mono">2016 — 2020</div>
+          <div class="what"><h4><span data-i18n="edu.marketing">Tecnicatura en Comercialización</span> · <span class="org">Universidad Siglo 21</span></h4></div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="section contact">
+      <h3 class="section-title"><span class="mono">06</span> <span data-i18n="nav.contact">Contacto</span></h3>
+      <p class="big" data-i18n="contact.text">¿Hablamos de cómo hacer crecer tu cartera de clientes?</p>
+      <div class="actions">
+        <a class="btn primary" href="mailto:pablohidalgo1188@gmail.com">pablohidalgo1188@gmail.com</a>
+        <a class="btn" href="https://linkedin.com/in/pabloehidalgo" target="_blank" rel="noopener">LinkedIn</a>
+        <a class="btn" href="https://wa.me/542615102207" target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer container mono muted">
+    © <span id="year"></span> Pablo Hidalgo · Mendoza, Argentina
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
