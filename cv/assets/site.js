@@ -182,6 +182,8 @@
       if (v != null) el.innerHTML = v;
     });
     build();
+    // CV download follows the page language
+    document.querySelectorAll('[data-cv]').forEach(function (a) { a.href = 'Pablo-Hidalgo-CV-' + (lang === 'en' ? 'EN' : 'ES') + '.pdf'; });
   }
 
   document.addEventListener('click', function (e) {
