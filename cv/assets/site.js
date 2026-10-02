@@ -243,38 +243,35 @@
     var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     function src(i) { return 'assets/frames/f' + ('00' + (i + 1)).slice(-3) + '.webp'; }
 
-    // load order: first frame, then every 16th, 8th, 4th, 2nd, then the rest
-    var order = [0], seen = { 0: 1 };
-    [16, 8, 4, 2, 1].forEach(function (step) {
-      for (var i = 0; i < N; i += step) if (!seen[i]) { seen[i] = 1; order.push(i); }
-    });
+    // load frames in playback order (several at a time), so the frames just
+    // ahead of the scroll position are always the next ones to arrive
     var next = 0, busy = 0;
     function pump() {
-      while (busy < 6 && next < order.length) {
+      while (busy < 8 && next < N) {
         (function (i) {
           var im = new Image(); busy++;
-          im.onload = function () { frames[i] = im; busy--; if (i === 0 || Math.abs(i - cur) < 3) shown = -1; pump(); };
+          im.onload = function () { frames[i] = im; busy--; if (shown < 0) draw(Math.round(cur)); pump(); };
           im.onerror = function () { busy--; pump(); };
           im.src = src(i);
-        })(order[next++]);
+        })(next++);
       }
     }
     pump();
 
+    // nearest frame already loaded at or below i (never jump ahead)
     function nearest(i) {
-      for (var d = 0; d < N; d++) {
-        if (frames[i - d]) return i - d;
-        if (frames[i + d]) return i + d;
-      }
+      for (var k = i; k >= 0; k--) if (frames[k]) return k;
       return -1;
     }
     function size() {
       var dpr = Math.min(window.devicePixelRatio || 1, 2);
-      cv.width = Math.round(cv.clientWidth * dpr); cv.height = Math.round(cv.clientHeight * dpr);
-      shown = -1;
+      var w = Math.round(cv.clientWidth * dpr), h = Math.round(cv.clientHeight * dpr);
+      if (w === cv.width && h === cv.height) return;   // mobile URL bar show/hide: nothing to do
+      cv.width = w; cv.height = h;                     // (this clears the canvas…)
+      shown = -1; draw(Math.round(cur));               // …so repaint right away
     }
     function draw(i) {
-      var k = nearest(i);
+      var k = frames[i] ? i : (shown < 0 ? nearest(i) : shown);
       if (k < 0 || k === shown) return;
       var im = frames[k], W = cv.width, H = cv.height;
       var sc = Math.max(W / im.naturalWidth, H / im.naturalHeight); // cover
