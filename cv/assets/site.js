@@ -116,10 +116,11 @@
 
     /* shared */
     'more': 'Read more', 'less': 'Read less',
-    'next': 'Next', 'menu': 'Menu', 'close': 'Close', 'scroll': 'Scroll'
+    'next': 'Next', 'menu': 'Menu', 'close': 'Close', 'scroll': 'Scroll', 'invert': 'Invert colors', 'normal': 'Original colors'
   };
 
-  var ES_UI = { more: 'Ver más', less: 'Ver menos', next: 'Siguiente', menu: 'Menú', close: 'Cerrar', scroll: 'Scroll' };
+  var ES_UI = { more: 'Ver más', less: 'Ver menos', next: 'Siguiente', menu: 'Menú', close: 'Cerrar', scroll: 'Scroll', invert: 'Invertir colores', normal: 'Colores originales' };
+  var MODE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 2.5a9.5 9.5 0 0 1 0 19z" fill="currentColor"/></svg>';
   var GLOBE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c3 3.2 3 15.8 0 19M12 2.5c-3 3.2-3 15.8 0 19"/></svg>';
 
   var lang = 'es';
@@ -128,6 +129,11 @@
   var here = location.pathname.split('/').pop() || 'index.html';
   var idx = Math.max(0, PAGES.findIndex(function (p) { return p.href === here; }));
 
+  function isDark() { return document.documentElement.dataset.mode === 'dark'; }
+  function modeAttrs() {
+    var label = ui(isDark() ? 'normal' : 'invert');
+    return 'type="button" aria-pressed="' + isDark() + '" aria-label="' + label + '" title="' + label + '"';
+  }
   function ui(key) { return lang === 'en' ? EN[key] : ES_UI[key]; }
   function cur(p) { return p.href === PAGES[idx].href ? ' aria-current="page"' : ''; }
 
@@ -138,14 +144,16 @@
     nav.innerHTML =
       '<a class="wm" href="index.html">Pablo Hidalgo</a><ul>' +
       PAGES.map(function (p) { return '<li><a href="' + p.href + '"' + cur(p) + '>' + p[lang] + '</a></li>'; }).join('') +
-      '<li class="li-lang"><button class="lang" data-lang-toggle>' + GLOBE + other + '</button></li></ul>' +
+      '<li class="li-lang"><button class="mode" data-mode-toggle ' + modeAttrs() + '>' + MODE_ICON + '</button><button class="lang" data-lang-toggle>' + GLOBE + other + '</button></li></ul>' +
+      '<button class="mode m-only" data-mode-toggle ' + modeAttrs() + '>' + MODE_ICON + '</button>' +
       '<button class="menu" data-open>' + ui('menu') + '</button>';
 
     var ov = document.getElementById('ov');
     ov.innerHTML =
       '<button class="x label" data-close>' + ui('close') + '</button>' +
       PAGES.map(function (p) { return '<a class="disp" href="' + p.href + '"' + cur(p) + '>' + p[lang] + '</a>'; }).join('') +
-      '<button class="lang" data-lang-toggle>' + GLOBE + (lang === 'es' ? 'English' : 'Español') + '</button>';
+      '<button class="lang" data-lang-toggle>' + GLOBE + (lang === 'es' ? 'English' : 'Español') + '</button>' +
+      '<button class="mode" data-mode-toggle ' + modeAttrs() + '>' + MODE_ICON + '<span>' + ui(isDark() ? 'normal' : 'invert') + '</span></button>';
 
     var next = document.getElementById('next');
     if (next) {
@@ -181,6 +189,13 @@
       lang = lang === 'es' ? 'en' : 'es';
       try { localStorage.setItem('lang', lang); } catch (err) {}
       apply();
+      return;
+    }
+    if (e.target.closest('[data-mode-toggle]')) {
+      var dark = !isDark();
+      if (dark) document.documentElement.dataset.mode = 'dark'; else delete document.documentElement.dataset.mode;
+      try { localStorage.setItem('mode', dark ? 'dark' : 'light'); } catch (err) {}
+      build();
       return;
     }
     if (e.target.closest('[data-open]')) document.getElementById('ov').classList.add('on');
