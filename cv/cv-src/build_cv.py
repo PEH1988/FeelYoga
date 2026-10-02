@@ -143,11 +143,11 @@ CV = {
 }
 
 CSS = """
-@page { size: A4; margin: 14mm 15mm 14mm; }
+@page { size: A4; margin: 11mm 14mm 10mm; }
 * { box-sizing: border-box; }
-body { margin: 0; font: 9.6pt/1.45 "Inter", Arial, sans-serif; color: #2B2E30; }
+body { margin: 0; font: 9.3pt/1.4 "Inter", Arial, sans-serif; color: #2B2E30; }
 a { color: inherit; text-decoration: none; }
-header { border-bottom: 2px solid #0C0C0E; padding-bottom: 9px; margin-bottom: 10px; }
+header { border-bottom: 2px solid #0C0C0E; padding-bottom: 8px; margin-bottom: 6px; }
 h1 { font: 700 22pt/1.05 "Inter", Arial, sans-serif; letter-spacing: -.01em; color: #0C0C0E; margin: 0; }
 .role { font-weight: 600; font-size: 11pt; color: #C8102E; margin-top: 3px; }
 .contact { margin-top: 6px; font-size: 8.8pt; color: #3F4648; display: flex; flex-wrap: wrap; gap: 2px 14px; }
@@ -155,9 +155,9 @@ h1 { font: 700 22pt/1.05 "Inter", Arial, sans-serif; letter-spacing: -.01em; col
 .web b { color: #0C0C0E; }
 .web .ph { color: #C8102E; border-bottom: 1px dashed #C8102E; }
 h2 { font: 700 9pt/1 "Inter", Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #0C0C0E;
-     margin: 12px 0 6px; padding-bottom: 4px; border-bottom: 1px solid #D3D2CB; }
+     margin: 9px 0 5px; padding-bottom: 3px; border-bottom: 1px solid #D3D2CB; }
 p { margin: 0; }
-.job { margin-bottom: 8px; break-inside: avoid; }
+.job { margin-bottom: 6px; break-inside: avoid; }
 .jh { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 .jh b { font-size: 10.2pt; color: #0C0C0E; }
 .jh span { font-size: 8.6pt; color: #3F4648; white-space: nowrap; }
@@ -185,8 +185,7 @@ def render(d):
         org = e(j["org"]) + (f' <i>· {e(j["ind"])}</i>' if j["ind"] else "")
         note = f'<p class="note">{e(j["note"])}</p>' if j.get("note") else ""
         jobs += f'''<div class="job"><div class="jh"><b>{e(j["t"])}</b><span>{e(j["d"])}</span></div>
-<div class="org">{org}</div>{note}<ul>{"".join(f"<li>{e(x)}</li>" for x in j["b"])}</ul>
-<p class="kv"><b>{e(d["soft"])}:</b> {e(" · ".join(j["s"]))} &nbsp;|&nbsp; <b>{e(d["tools"])}:</b> {e(" · ".join(j["tl"]))}</p></div>'''
+<div class="org">{org}</div>{note}<ul>{"".join(f"<li>{e(x)}</li>" for x in j["b"])}</ul></div>'''
     projects = "".join(f'<p class="proj"><b>{e(t)}</b> — {e(x)}</p>' for t, x in d["projects"])
     skills = "".join(f"<b>{e(k)}</b><span>{e(v)}</span>" for k, v in d["skills"])
     edu = "".join(f'<div class="edu"><p><b>{e(t)}</b> · {e(o)}</p><span>{e(y)}</span></div>' for t, o, y in d["edu"])
@@ -197,7 +196,6 @@ def render(d):
 <div class="web"><b>{e(d["web_label"])}:</b> {web}</div></header>
 <h2>{e(d["h_profile"])}</h2><p>{e(d["profile"])}</p>
 <h2>{e(d["h_exp"])}</h2>{jobs}
-<h2>{e(d["h_projects"])}</h2>{projects}
 <h2>{e(d["h_skills"])}</h2><div class="grid">{skills}</div>
 <h2>{e(d["h_edu"])}</h2>{edu}
 <h2>{e(d["h_lang"])}</h2><p>{e(d["langs"])}</p>
