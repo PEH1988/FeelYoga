@@ -358,3 +358,14 @@ footer {
 /* nav gets a frosted chalk bar once the page scrolls */
 .nav { transition: background .4s var(--ease), backdrop-filter .4s var(--ease); }
 .nav.solid { background: rgba(var(--paper-rgb), .82); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+
+/* tools used in a role / project: solid ink chips after a small label */
+.chips.tools { align-items: center; margin-top: 10px; }
+.chips.tools .tl { border: 0; padding: 0 4px 0 0; color: var(--mute); }
+.chips.tools span:not(.tl) { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+
+/* result placeholders the owner still has to fill in */
+mark.ph {
+  background: rgba(200, 16, 46, .08); color: var(--accent);
+  border: 1px dashed currentColor; border-radius: 4px; padding: 0 6px; font-weight: 500;
+}
