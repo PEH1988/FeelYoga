@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cotizador de Planes · Demo — Pablo Hidalgo</title>
+<meta name="description" content="Demo del cotizador de planes de salud corporativos de Pablo Hidalgo. Planes, precios y empresa son ficticios.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  /* same palette as the Pipeline CRM demo */
+  :root {
+    --navy: #16243D; --navy-2: #26385A; --teal: #1F6F6B; --teal-l: #E4EFEE;
+    --sand: #F6F3EC; --sand-d: #E7E1D3; --slate: #5B6678; --coral: #C2513F; --coral-l: #F8E6E2;
+    --white: #fff; --radius: 14px;
+    --f-display: "Space Grotesk", system-ui, sans-serif; --f-body: "Inter", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--sand); color: var(--navy); font: 400 14px/1.5 var(--f-body); }
+  h1, h2, h3 { font-family: var(--f-display); margin: 0; letter-spacing: -.01em; }
+  button, input, select { font: inherit; color: inherit; }
+
+  header { background: var(--navy); color: #fff; padding: 16px 24px; }
+  .hd { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+  .logo { width: 36px; height: 36px; border-radius: 10px; background: var(--teal); display: grid; place-items: center; font: 700 15px var(--f-display); }
+  .hd small { display: block; color: #9FB0C9; font-size: 12px; }
+
+  main { max-width: 1200px; margin: 0 auto; padding: 28px 24px 80px; display: grid; gap: 20px; grid-template-columns: 380px 1fr; align-items: start; }
+  @media (max-width: 920px) { main { grid-template-columns: minmax(0, 1fr); padding: 20px 16px 80px; } }
+  .card { background: var(--white); border: 1px solid var(--sand-d); border-radius: var(--radius); padding: 20px; box-shadow: 0 1px 2px rgba(22,36,61,.04); min-width: 0; }
+  .card h2 { font-size: 17px; margin-bottom: 4px; }
+  .sub { color: var(--slate); font-size: 13px; margin: 0 0 16px; }
+
+  label { display: block; font-size: 12px; font-weight: 500; color: var(--slate); margin: 12px 0 6px; }
+  input[type=text], input[type=number], select {
+    width: 100%; border: 1px solid var(--sand-d); border-radius: 10px; padding: 9px 11px; background: #fff;
+  }
+  input:focus, select:focus, button:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .bands { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+  .bands label { margin-top: 10px; }
+  .row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+  .check { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 13px; color: var(--navy); font-weight: 500; }
+  .check input { width: 16px; height: 16px; accent-color: var(--teal); }
+
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .kpi { background: var(--white); border: 1px solid var(--sand-d); border-radius: var(--radius); padding: 16px; }
+  .kpi span { font-size: 12px; color: var(--slate); }
+  .kpi b { display: block; font: 700 26px/1.2 var(--f-display); margin-top: 4px; font-variant-numeric: tabular-nums; }
+  @media (max-width: 560px) { .kpis { grid-template-columns: 1fr; } }
+
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 760px) { .plans { grid-template-columns: 1fr; } }
+  .plan { position: relative; border: 1px solid var(--sand-d); border-radius: var(--radius); padding: 16px; background: #fff; cursor: pointer; transition: border-color .2s, box-shadow .2s; text-align: left; width: 100%; }
+  .plan:hover { border-color: var(--teal); }
+  .plan.sel { border-color: var(--teal); box-shadow: 0 0 0 2px var(--teal) inset; }
+  .plan h3 { font-size: 16px; }
+  .plan .meta { font-size: 12px; color: var(--slate); margin: 2px 0 12px; }
+  .plan .total { font: 700 24px/1.1 var(--f-display); font-variant-numeric: tabular-nums; }
+  .plan .per { font-size: 12px; color: var(--slate); margin-top: 4px; }
+  .plan ul { list-style: none; padding: 0; margin: 12px 0 0; font-size: 12.5px; color: var(--slate); display: grid; gap: 4px; }
+  .badge { position: absolute; top: 12px; right: 12px; font: 600 10px/1 var(--f-body); letter-spacing: .06em; text-transform: uppercase; background: var(--teal-l); color: var(--teal); padding: 5px 8px; border-radius: 99px; }
+
+  .tablewrap { overflow-x: auto; margin-top: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th { text-align: left; font-weight: 500; color: var(--slate); background: var(--sand); padding: 9px 12px; white-space: nowrap; }
+  td { padding: 9px 12px; border-top: 1px solid var(--sand-d); white-space: nowrap; }
+  td.num, th.num { text-align: right; }
+  tfoot td { font-weight: 700; }
+
+  .summary { margin-top: 20px; }
+  .summary pre { white-space: pre-wrap; background: var(--sand); border: 1px solid var(--sand-d); border-radius: 10px; padding: 14px; font: 13px/1.55 var(--f-body); margin: 10px 0 12px; }
+  .btn { border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 600; cursor: pointer; background: var(--teal); color: #fff; }
+  .btn.ghost { background: var(--sand); color: var(--navy); border: 1px solid var(--sand-d); }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .note { font-size: 12px; color: var(--slate); }
+  .empty { padding: 28px; text-align: center; color: var(--slate); background: var(--white); border: 1px dashed var(--sand-d); border-radius: var(--radius); }
+  .ribbon { position: fixed; right: 12px; bottom: 12px; z-index: 10; background: var(--navy); color: #fff; font: 600 11px/1 var(--f-body); letter-spacing: .08em; text-transform: uppercase; padding: 9px 12px; border-radius: 99px; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+  .ribbon button { margin-left: 10px; color: #9FB0C9; background: none; border: 0; cursor: pointer; font: inherit; }
+</style>
+</head>
+<body>
+<header>
+  <div class="hd">
+    <div class="logo" aria-hidden="true">NS</div>
+    <div><strong>Cotizador de Planes · Demo</strong><small>Planes corporativos · Nova Salud</small></div>
+  </div>
+</header>
+
+<main>
+  <!-- inputs -->
+  <section class="card" aria-labelledby="t-datos">
+    <h2 id="t-datos">Datos de la empresa</h2>
+    <p class="sub">Cargá la nómina por franja de edad y el cotizador compara los planes al instante.</p>
+
+    <label for="empresa">Empresa</label>
+    <input id="empresa" type="text" value="Andina Logística SRL" autocomplete="off">
+
+    <div class="bands" id="bands"></div>
+
+    <div class="row2">
+      <div>
+        <label for="hijos">Hijos a cargo</label>
+        <input id="hijos" type="number" min="0" value="6" inputmode="numeric">
+      </div>
+      <div>
+        <label for="desc">Bonificación</label>
+        <select id="desc">
+          <option value="0">Sin bonificación</option>
+          <option value="10">10%</option>
+          <option value="20" selected>20%</option>
+          <option value="30">30%</option>
+        </select>
+      </div>
+    </div>
+
+    <label class="check"><input id="iva" type="checkbox"> Mostrar con IVA (21%)</label>
+  </section>
+
+  <!-- results -->
+  <section aria-labelledby="t-res">
+    <div class="kpis">
+      <div class="kpi"><span>Cápitas</span><b id="k-cap">0</b></div>
+      <div class="kpi"><span>Plan recomendado</span><b id="k-plan">—</b></div>
+      <div class="kpi"><span>Total mensual</span><b id="k-total">—</b></div>
+    </div>
+
+    <div class="card">
+      <h2 id="t-res">Comparación de planes</h2>
+      <p class="sub">Elegí un plan para ver el detalle por franja y el resumen para enviar.</p>
+      <div class="plans" id="plans"></div>
+      <div class="tablewrap" id="detail"></div>
+
+      <div class="summary">
+        <h2 style="font-size:15px">Resumen para el cliente</h2>
+        <pre id="resumen"></pre>
+        <div class="actions">
+          <button class="btn" id="copy" type="button">Copiar resumen</button>
+          <span class="note" id="copied" aria-live="polite"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="ribbon">Demo · datos ficticios <button type="button" id="reset">Reiniciar</button></div>
+
+<script>
+(function () {
+  // Fictitious plans and prices (same as the Pipeline CRM demo).
+  var PLANES = [
+    { key: 'BASE', nombre: 'Base', cartilla: 'Cartilla regional', farmacia: '40%', asistencia: 'Nacional',
+      precios: { '00-25': 100000, '26-35': 130000, '36-54': 160000, '55-59': 250000, '60+': 380000, hijo: 85000 } },
+    { key: 'PLUS', nombre: 'Plus', cartilla: 'Cartilla nacional', farmacia: '50%', asistencia: 'Regional',
+      precios: { '00-25': 120000, '26-35': 155000, '36-54': 190000, '55-59': 300000, '60+': 450000, hijo: 100000 } },
+    { key: 'PREMIUM', nombre: 'Premium', cartilla: 'Nacional + exterior', farmacia: '50%', asistencia: 'Global',
+      precios: { '00-25': 180000, '26-35': 230000, '36-54': 290000, '55-59': 420000, '60+': 600000, hijo: 150000 } }
+  ];
+  var BANDAS = ['00-25', '26-35', '36-54', '55-59', '60+'];
+  var DEFAULTS = { '00-25': 4, '26-35': 7, '36-54': 6, '55-59': 2, '60+': 1 };
+  var selected = 'PLUS';
+
+  var bandsBox = document.getElementById('bands');
+  BANDAS.forEach(function (b) {
+    var id = 'b' + b.replace(/\W/g, '');
+    bandsBox.insertAdjacentHTML('beforeend',
+      '<div><label for="' + id + '">Titulares ' + b + (b === '60+' ? '' : ' años') + '</label>' +
+      '<input id="' + id + '" data-band="' + b + '" type="number" min="0" value="' + DEFAULTS[b] + '" inputmode="numeric"></div>');
+  });
+
+  var $ = function (id) { return document.getElementById(id); };
+  var fmt = function (n) { return '$' + Math.round(n).toLocaleString('es-AR'); };
+  var num = function (el) { var v = parseInt(el.value, 10); return isFinite(v) && v > 0 ? v : 0; };
+
+  function read() {
+    var counts = {};
+    document.querySelectorAll('[data-band]').forEach(function (el) { counts[el.dataset.band] = num(el); });
+    return { empresa: $('empresa').value.trim() || 'la empresa', counts: counts, hijos: num($('hijos')),
+      desc: parseInt($('desc').value, 10) / 100, iva: $('iva').checked };
+  }
+
+  function quote(plan, d) {
+    var lines = BANDAS.map(function (b) { return { label: 'Titulares ' + b, cant: d.counts[b], unit: plan.precios[b] }; });
+    lines.push({ label: 'Hijos', cant: d.hijos, unit: plan.precios.hijo });
+    var bruto = lines.reduce(function (s, l) { return s + l.cant * l.unit; }, 0);
+    var neto = bruto * (1 - d.desc);
+    var total = d.iva ? neto * 1.21 : neto;
+    var capitas = lines.reduce(function (s, l) { return s + l.cant; }, 0);
+    return { lines: lines, bruto: bruto, total: total, capitas: capitas, porCapita: capitas ? total / capitas : 0 };
+  }
+
+  function recommend(d) {
+    // older groups or many dependants benefit from wider coverage
+    var tit = BANDAS.reduce(function (s, b) { return s + d.counts[b]; }, 0);
+    if (!tit) return null;
+    var senior = (d.counts['55-59'] + d.counts['60+']) / tit;
+    if (senior >= .3) return 'PREMIUM';
+    if (tit >= 15 || d.hijos >= tit * .5) return 'PLUS';
+    return 'BASE';
+  }
+
+  function render() {
+    var d = read();
+    var rec = recommend(d);
+    var quotes = PLANES.map(function (p) { return { plan: p, q: quote(p, d) }; });
+    var cap = quotes[0].q.capitas;
+    $('k-cap').textContent = cap;
+    var plansBox = $('plans');
+    if (!cap) {
+      plansBox.innerHTML = '<div class="empty" style="grid-column:1/-1">Cargá al menos una persona para cotizar.</div>';
+      $('detail').innerHTML = ''; $('resumen').textContent = ''; $('k-plan').textContent = '—'; $('k-total').textContent = '—';
+      return;
+    }
+    plansBox.innerHTML = quotes.map(function (x) {
+      var p = x.plan, q = x.q;
+      return '<button type="button" class="plan' + (p.key === selected ? ' sel' : '') + '" data-plan="' + p.key + '" aria-pressed="' + (p.key === selected) + '">' +
+        (p.key === rec ? '<span class="badge">Recomendado</span>' : '') +
+        '<h3>' + p.nombre + '</h3><div class="meta">' + p.cartilla + '</div>' +
+        '<div class="total">' + fmt(q.total) + '</div><div class="per">por mes · ' + fmt(q.porCapita) + ' por cápita</div>' +
+        '<ul><li>Farmacia ' + p.farmacia + '</li><li>Asistencia al viajero ' + p.asistencia + '</li></ul></button>';
+    }).join('');
+
+    var cur = quotes.filter(function (x) { return x.plan.key === selected; })[0];
+    var rows = cur.q.lines.filter(function (l) { return l.cant; }).map(function (l) {
+      return '<tr><td>' + l.label + '</td><td class="num">' + l.cant + '</td><td class="num">' + fmt(l.unit) + '</td><td class="num">' + fmt(l.cant * l.unit) + '</td></tr>';
+    }).join('');
+    var descRow = d.desc ? '<tr><td>Bonificación ' + Math.round(d.desc * 100) + '%</td><td></td><td></td><td class="num">−' + fmt(cur.q.bruto * d.desc) + '</td></tr>' : '';
+    var ivaRow = d.iva ? '<tr><td>IVA 21%</td><td></td><td></td><td class="num">' + fmt(cur.q.bruto * (1 - d.desc) * .21) + '</td></tr>' : '';
+    $('detail').innerHTML = '<table><thead><tr><th>Plan ' + cur.plan.nombre + '</th><th class="num">Cant.</th><th class="num">Precio unit.</th><th class="num">Subtotal</th></tr></thead><tbody>' +
+      rows + descRow + ivaRow + '</tbody><tfoot><tr><td>Total mensual</td><td class="num">' + cur.q.capitas + '</td><td></td><td class="num">' + fmt(cur.q.total) + '</td></tr></tfoot></table>';
+
+    $('k-plan').textContent = rec ? PLANES.filter(function (p) { return p.key === rec; })[0].nombre : '—';
+    $('k-total').textContent = fmt(cur.q.total);
+
+    $('resumen').textContent =
+      'Hola! Te comparto la cotización para ' + d.empresa + ':\n\n' +
+      '• Plan ' + cur.plan.nombre + ' (' + cur.plan.cartilla + ')\n' +
+      '• ' + cur.q.capitas + ' cápitas\n' +
+      (d.desc ? '• Bonificación aplicada: ' + Math.round(d.desc * 100) + '%\n' : '') +
+      '• Total mensual: ' + fmt(cur.q.total) + (d.iva ? ' (IVA incluido)' : ' + IVA') + '\n' +
+      '• Promedio por cápita: ' + fmt(cur.q.porCapita) + '\n\n' +
+      'Si querés, comparamos con los otros planes en una llamada de 15 minutos.';
+  }
+
+  document.addEventListener('input', function (e) { if (e.target.closest('main')) render(); });
+  document.addEventListener('change', function (e) { if (e.target.closest('main')) render(); });
+  $('plans').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-plan]'); if (!b) return;
+    selected = b.dataset.plan; render();
+  });
+  $('copy').addEventListener('click', function () {
+    var text = $('resumen').textContent;
+    var done = function () { $('copied').textContent = 'Resumen copiado.'; setTimeout(function () { $('copied').textContent = ''; }, 2500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { selectText(); });
+    } else selectText();
+    function selectText() {
+      var r = document.createRange(); r.selectNodeContents($('resumen'));
+      var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      $('copied').textContent = 'Texto seleccionado: copialo con Ctrl+C.';
+    }
+  });
+  $('reset').addEventListener('click', function () {
+    $('empresa').value = 'Andina Logística SRL'; $('hijos').value = 6; $('desc').value = '20'; $('iva').checked = false;
+    document.querySelectorAll('[data-band]').forEach(function (el) { el.value = DEFAULTS[el.dataset.band]; });
+    selected = 'PLUS'; render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
