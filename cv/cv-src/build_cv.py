@@ -7,7 +7,7 @@ Set WEB_URL once the site has its own domain (e.g. "pablohidalgo.com").
 """
 import html, pathlib
 
-WEB_URL = ""  # e.g. "pablohidalgo.com" — empty shows a placeholder to fill in
+WEB_URL = "pablohidalgo.site"
 
 HERE = pathlib.Path(__file__).parent
 

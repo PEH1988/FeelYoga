@@ -93,7 +93,6 @@
     'pf.p2.w': 'of 374 people have a sleep disorder',
     'pf.p2.1': 'More weight, less sleep? I cleaned and modelled the data and crossed weight, stress and work to find what keeps us awake. Spoiler: women suffer twice as many disorders (55.7% vs 27.5%) and stress is the main enemy.',
     'pf.case': 'Read the analysis →',
-    'pf.more': 'More projects',
     'pf.crm.1': 'React/JSX CRM to manage the B2B pipeline: logging, segmentation and follow-up of accounts and opportunities.',
     'pf.crm.link': 'View live demo →',
     'pf.quote.t': 'Pricing &amp; Quoting Tool – Individuals &amp; Companies',
@@ -102,8 +101,6 @@
     'pf.land.t': 'Landing Page &amp; Lead Generation',
     'pf.land.1': 'Lead-capture landing page for health insurance: customer profiles, quote form, plan comparison and FAQ, with enquiries routed to WhatsApp and email.',
     'pf.quote.tool': 'Web landing page',
-    'pf.p6.t': 'FeelYoga — website',
-    'pf.p6.1': 'Responsive website for a yoga studio built with HTML5, SCSS and Bootstrap 5.',
     'pf.all': 'See full data portfolio →',
 
     /* contact */
