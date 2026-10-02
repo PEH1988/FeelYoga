@@ -92,7 +92,7 @@
     'pf.more': 'More projects',
     'pf.crm.1': 'React/JSX CRM to manage the B2B pipeline: logging, segmentation and follow-up of accounts and opportunities.',
     'pf.crm.link': 'View live demo →',
-    'pf.quote.t': 'Pricing &amp; Quoting Tool',
+    'pf.quote.t': 'Pricing &amp; Quoting Tool – Individuals &amp; Companies',
     'pf.quote.1': 'Web quoting tool for individuals and companies: based on employment status or headcount, it compares several plans and generates a personalized PDF for the client. It flags plans that don’t apply for the headcount. Time per quote: 1 to 2 minutes.',
     'pf.quote.link': 'Try the demo with mock data →',
     'pf.land.t': 'Landing Page &amp; Lead Generation',
