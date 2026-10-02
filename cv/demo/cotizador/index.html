@@ -93,8 +93,8 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="brand">Nova<b>Salud</b></div>
-  <h1>Cotizador Nova Salud</h1>
+  <div class="brand">PH<b>Salud</b></div>
+  <h1>Cotizador PH Salud</h1>
 
   <div class="tabs" role="tablist" aria-label="Tipo de cotización">
     <button role="tab" id="tab-ind" aria-selected="true">Individuos</button>
@@ -332,7 +332,7 @@
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-print-ind]'); if (!b) return;
     var p = PLANS.filter(function (x) { return x.id === b.dataset.printInd; })[0], q = indQuote(p);
-    printSheet('<div class="brand">Nova<b>Salud</b></div><h1>Cotización · ' + p.name + '</h1>' +
+    printSheet('<div class="brand">PH<b>Salud</b></div><h1>Cotización · ' + p.name + '</h1>' +
       '<div>' + ($('i-nombre').value || 'Cliente') + ' · ' + ($('i-lugar').value || 'Mendoza, Argentina') + ' · ' + $('i-fecha').value + '</div>' +
       '<div>Situación: ' + q.sit.label + '</div>' +
       '<table><thead><tr><th>Integrante</th><th class="n">Valor de lista</th></tr></thead><tbody>' +
@@ -343,7 +343,7 @@
   $('e-pdf').onclick = function () {
     var c = empCounts();
     var valid = PLANS.filter(function (p) { return state.eSel.indexOf(p.id) > -1 && !(p.maxCap && c.cap > p.maxCap); });
-    printSheet('<div class="brand">Nova<b>Salud</b></div><h1>Cotización corporativa</h1>' +
+    printSheet('<div class="brand">PH<b>Salud</b></div><h1>Cotización corporativa</h1>' +
       '<div>' + ($('e-nombre').value || 'Empresa') + ' · ' + ($('e-lugar').value || 'Mendoza, Argentina') + ' · ' + $('e-fecha').value + ' · ' + c.cap + ' cápitas</div>' +
       '<table><thead><tr><th>Plan</th><th class="n">Por cápita</th><th class="n">Total mensual</th></tr></thead><tbody>' +
       valid.map(function (p) { var q = empQuote(p, c); return '<tr><td>' + p.name + '</td><td class="n">' + fmt(q.per) + '</td><td class="n">' + fmt(q.total) + '</td></tr>'; }).join('') +
