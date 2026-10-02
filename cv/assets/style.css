@@ -376,3 +376,5 @@ mark.ph {
   border-style: dashed; text-align: center; font: 600 11px/1.5 var(--f-body); letter-spacing: .12em; text-transform: uppercase;
 }
 .chips.tools span.pend { background: none; border: 0; padding: 0; }
+.chips.soft { align-items: center; margin-top: 14px; }
+.chips.soft .tl { border: 0; padding: 0 4px 0 0; color: var(--mute); }

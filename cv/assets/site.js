@@ -17,7 +17,7 @@
   /* English copy. Keys match data-i18n attributes in the pages. */
   var EN = {
     /* home */
-    'home.sub': 'Business &amp; Data Analyst | Account Management | Insurance &amp; Health Benefits',
+    'home.sub': 'Business &amp; Data Analyst | Account Management',
     'home.tag': 'Remote · Argentina · <em>GMT-3</em>',
     'home.cue': 'Scroll down, or tap Menu to get to know me',
 
@@ -40,7 +40,7 @@
     'exp.america.4': 'Prospected new accounts through social media and cold outreach, and grew existing ones through upselling and cross-selling.',
     'chip.social': 'Social media prospecting', 'chip.cold': 'Cold outreach',
     'chip.aitrain': 'AI Training', 'chip.llmeval': 'LLM Evaluation', 'chip.genai': 'Generative AI',
-    'chip.annot': 'Data Annotation', 'chip.analysis': 'Data Analysis', 'chip.qa': 'Quality Assurance',
+    'chip.analysis': 'Data Analysis', 'chip.qa': 'Quality Assurance',
     'exp.outlier.t': 'Data Analyst – AI Training &amp; Evaluation',
     'exp.outlier.d': 'Jul 2024 — Apr 2025',
     'exp.outlier.1': 'Evaluated and rated LLM outputs for accuracy, coherence and language quality.',
@@ -53,7 +53,11 @@
     'exp.fp.1': 'Analyzed claims and portfolio data in Oracle BI (by region, product and risk) to set commercial and underwriting policies.',
     'exp.fp.2': 'Built management reports on portfolio, retention and collections KPIs, with account tracking in Microsoft Dynamics 365 CRM.',
     'exp.fp.3': 'Led the regional ART unit, coordinating Collections, Claims and Prevention to retain the portfolio, recover receivables and set up payment plans.',
-    'tools': 'Tools', 'tool.excel': 'Advanced Excel',
+    'tools': 'Tools', 'softs': 'Soft skills',
+    'ss.nego': 'Negotiation', 'ss.rel': 'Relationship Building', 'ss.prob': 'Problem Solving',
+    'ss.comm': 'Communication', 'ss.cust': 'Customer Focus', 'ss.adapt': 'Adaptability',
+    'ss.crit': 'Critical Thinking', 'ss.detail': 'Attention to Detail', 'ss.time': 'Time Management',
+    'ss.lead': 'Leadership', 'ss.anal': 'Analytical Thinking', 'ss.stake': 'Stakeholder Management', 'tool.excel': 'Advanced Excel',
 
     /* skills */
     'sk.k': 'Skills',
