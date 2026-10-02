@@ -11,6 +11,7 @@ Options -Indexes
     Header set Cache-Control "public, max-age=2592000"
   </FilesMatch>
   <FilesMatch "\.pdf$">
+    Header set Cache-Control "no-cache, must-revalidate"
     Header set Content-Disposition "attachment"
   </FilesMatch>
 </IfModule>
