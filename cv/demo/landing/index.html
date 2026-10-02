@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Landing de Captación · Demo — Pablo Hidalgo</title>
+<meta name="description" content="Demo de la landing page de captación de leads de Pablo Hidalgo. Marca, planes y datos ficticios.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --navy: #0B2236; --navy-2: #12304A; --green: #1F9D63; --green-d: #167A4C; --mint: #E6F4EC;
+    --bg: #F4F7F6; --card: #FFFFFF; --ink: #12263A; --mute: #5E6B76; --line: #E2E8E5; --field: #F2F5F4;
+    --f-head: "Fraunces", Georgia, serif; --f-body: "Inter", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--f-body); }
+  h1, h2, h3 { font-family: var(--f-head); color: var(--ink); margin: 0; letter-spacing: -.01em; line-height: 1.15; }
+  a { color: inherit; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+  @media (max-width: 640px) { .wrap { padding: 0 16px; } }
+  .kicker { font: 600 12px/1 var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
+  .lead { color: var(--mute); max-width: 60ch; }
+  section { padding: 88px 0; }
+  @media (max-width: 640px) { section { padding: 64px 0; } }
+
+  /* nav */
+  header { position: sticky; top: 0; z-index: 20; background: rgba(244,247,246,.9); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  .nav { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+  .logo { font: 700 22px var(--f-head); color: var(--navy); text-decoration: none; }
+  .logo span { color: var(--green); }
+  .nav ul { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; font-size: 15px; }
+  .nav ul a { text-decoration: none; color: var(--mute); }
+  .nav ul a:hover { color: var(--ink); }
+  @media (max-width: 760px) { .nav ul { display: none; } }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; padding: 14px 26px; font-weight: 600; text-decoration: none; cursor: pointer; }
+  .btn.p { background: var(--green); color: #fff; box-shadow: 0 8px 20px rgba(31,157,99,.25); }
+  .btn.p:hover { background: var(--green-d); }
+  .btn.g { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+  .btn:focus-visible, input:focus, select:focus, textarea:focus, summary:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+  /* illustrated panels in place of photos */
+  .art { position: relative; overflow: hidden; border-radius: 22px; display: grid; place-items: center; }
+  .art svg { width: 38%; max-width: 150px; height: auto; color: #fff; opacity: .95; position: relative; z-index: 1; }
+  .art::before, .art::after { content: ""; position: absolute; border-radius: 50%; filter: blur(2px); opacity: .5; }
+  .art::before { width: 60%; aspect-ratio: 1; background: rgba(255,255,255,.25); left: -12%; top: -18%; }
+  .art::after { width: 45%; aspect-ratio: 1; background: rgba(255,255,255,.18); right: -10%; bottom: -16%; }
+  .a1 { background: linear-gradient(135deg, #1F9D63, #0F6E7A); }
+  .a2 { background: linear-gradient(135deg, #2E6FA8, #0B2236); }
+  .a3 { background: linear-gradient(135deg, #E59A4C, #C4573A); }
+  .a4 { background: linear-gradient(135deg, #6E5AB8, #2E6FA8); }
+  .a5 { background: linear-gradient(135deg, #1F9D63, #2E6FA8); }
+
+  /* hero */
+  .hero { padding-top: 48px; padding-bottom: 72px; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; }
+  @media (max-width: 900px) { .hero-grid { grid-template-columns: minmax(0, 1fr); } }
+  .hero h1 { font-size: clamp(34px, 5vw, 58px); margin-bottom: 18px; }
+  .hero h1 em { font-style: normal; color: var(--green); }
+  .hero .cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 28px 0 22px; }
+  .bullets { display: flex; flex-wrap: wrap; gap: 8px 20px; list-style: none; padding: 0; margin: 0; font-size: 14px; color: var(--ink); }
+  .bullets li::before { content: "•"; color: var(--green); margin-right: 8px; font-weight: 700; }
+  .hero .art { aspect-ratio: 4 / 3.4; }
+
+  /* audiences */
+  .cards4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 36px; }
+  @media (max-width: 960px) { .cards4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 520px) { .cards4 { grid-template-columns: minmax(0, 1fr); } }
+  .aud { background: var(--card); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+  .aud .art { border-radius: 0; aspect-ratio: 16 / 10; }
+  .aud .art svg { width: 26%; }
+  .aud div.txt { padding: 18px 20px 22px; }
+  .aud h3 { font-size: 19px; margin-bottom: 6px; }
+  .aud p { margin: 0; color: var(--mute); font-size: 14.5px; }
+
+  /* form band */
+  .band { background: radial-gradient(120% 140% at 80% 0%, #1A5A4A 0%, var(--navy) 55%); padding: 80px 0 0; color: #fff; text-align: center; }
+  .band h2 { color: #fff; font-size: clamp(28px, 4vw, 40px); }
+  .band p { color: #C9D6DE; margin: 10px auto 0; max-width: 56ch; }
+  .formcard { background: var(--card); color: var(--ink); text-align: left; border-radius: 24px; padding: 36px; margin: 36px auto -120px; max-width: 860px; box-shadow: 0 24px 60px rgba(11,34,54,.18); position: relative; }
+  @media (max-width: 640px) { .formcard { padding: 24px 18px; } }
+  .formcard h3 { font-size: 26px; margin-bottom: 6px; }
+  .fgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 18px; margin-top: 22px; }
+  .fgrid .full { grid-column: 1 / -1; }
+  @media (max-width: 560px) { .fgrid { grid-template-columns: minmax(0, 1fr); } }
+  label { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
+  input, select, textarea { width: 100%; background: var(--field); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  textarea { min-height: 96px; resize: vertical; }
+  .checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  @media (max-width: 560px) { .checks { grid-template-columns: minmax(0, 1fr); } }
+  .checks label { display: flex; align-items: center; gap: 10px; font-weight: 500; background: var(--field); border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin: 0; cursor: pointer; }
+  .checks input { width: 16px; height: 16px; accent-color: var(--green); }
+  .fnote { font-size: 13px; color: var(--mute); margin: 12px 0 0; }
+  .ok { display: none; background: var(--mint); color: var(--green-d); border-radius: 14px; padding: 16px 18px; margin-top: 16px; font-weight: 500; }
+  .ok.on { display: block; }
+  .after-band { padding-top: 180px; }
+
+  /* plans */
+  .plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 36px; }
+  @media (max-width: 1000px) { .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .plans { grid-template-columns: minmax(0, 1fr); } }
+  .plan { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 26px 22px; display: flex; flex-direction: column; position: relative; }
+  .plan.hl { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .plan.hl h3 { color: #fff; }
+  .plan .pill { position: absolute; top: -12px; left: 22px; background: var(--green); color: #fff; font: 600 11px/1 var(--f-body); letter-spacing: .08em; text-transform: uppercase; padding: 7px 10px; border-radius: 999px; }
+  .plan h3 { font-size: 24px; margin-bottom: 8px; }
+  .plan p { color: var(--mute); font-size: 14.5px; margin: 0 0 14px; }
+  .plan.hl p { color: #BFCCD6; }
+  .plan ul { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 9px; font-size: 14.5px; }
+  .plan li { display: flex; gap: 10px; }
+  .plan li::before { content: "✓"; color: var(--green); font-weight: 700; }
+  .plan .btn { margin-top: auto; justify-content: center; }
+  .plan:not(.hl) .btn { background: var(--field); color: var(--ink); border: 1px solid var(--line); }
+
+  /* improve + benefits + advisor */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+  @media (max-width: 900px) { .split { grid-template-columns: minmax(0, 1fr); } }
+  .split .art { aspect-ratio: 4 / 3; }
+  .split h2, .sec-h { font-size: clamp(28px, 3.6vw, 40px); margin-bottom: 14px; }
+  .ticks { list-style: none; padding: 0; margin: 20px 0 26px; display: grid; gap: 10px; }
+  .ticks li { display: flex; gap: 10px; align-items: center; font-weight: 500; }
+  .ticks li::before { content: ""; width: 18px; height: 18px; border-radius: 5px; background: var(--mint); border: 1.5px solid var(--green); flex: none; }
+  .bens { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 36px; }
+  @media (max-width: 900px) { .bens { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 520px) { .bens { grid-template-columns: minmax(0, 1fr); } }
+  .ben { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
+  .ben i { width: 40px; height: 40px; border-radius: 12px; background: var(--mint); color: var(--green); display: grid; place-items: center; margin-bottom: 14px; }
+  .ben i svg { width: 20px; height: 20px; }
+  .ben h3 { font: 600 16px var(--f-body); margin-bottom: 4px; }
+  .ben p { margin: 0; color: var(--mute); font-size: 14.5px; }
+  .advisor dl { margin: 22px 0 0; display: grid; gap: 16px; }
+  .advisor dt { font-weight: 600; }
+  .advisor dd { margin: 2px 0 0; color: var(--mute); }
+
+  .strip { background: linear-gradient(90deg, var(--navy) 0%, #3D5568 45%, #D9E1E5 100%); padding: 56px 0; }
+  .strip p { color: #fff; font: 600 clamp(20px, 2.6vw, 28px)/1.35 var(--f-head); max-width: 24ch; margin: 0; }
+
+  /* faq */
+  .faq { display: grid; gap: 12px; margin-top: 28px; max-width: 860px; }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 22px; }
+  summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--green); font-size: 20px; line-height: 1; }
+  details[open] summary::after { content: "−"; }
+  details p { color: var(--mute); margin: 12px 0 0; }
+
+  footer { background: var(--navy); color: #C9D6DE; padding: 56px 0 28px; }
+  .fcols { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 32px; }
+  @media (max-width: 760px) { .fcols { grid-template-columns: minmax(0, 1fr); } }
+  footer .logo { color: #fff; }
+  footer h4 { color: #fff; font: 600 13px var(--f-body); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 12px; }
+  footer ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; font-size: 14.5px; }
+  footer a { text-decoration: none; }
+  .legal { border-top: 1px solid rgba(255,255,255,.12); margin-top: 36px; padding-top: 18px; font-size: 13px; }
+
+  .ribbon { position: fixed; right: 12px; bottom: 12px; z-index: 30; background: var(--navy); color: #fff; font: 600 11px/1 var(--f-body); letter-spacing: .08em; text-transform: uppercase; padding: 9px 12px; border-radius: 99px; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-family" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="22" cy="18" r="7"/><circle cx="42" cy="18" r="7"/><circle cx="32" cy="36" r="5"/><path d="M8 54c0-9 6-16 14-16s14 7 14 16M28 54c0-9 6-16 14-16s14 7 14 16"/></symbol>
+    <symbol id="i-office" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="20" width="44" height="32" rx="4"/><path d="M24 20v-6a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v6M10 34h44M30 34v4h4v-4"/></symbol>
+    <symbol id="i-user" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="20" r="9"/><path d="M14 54c0-10 8-18 18-18s18 8 18 18"/><path d="M44 12l8-6M48 20h8"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h20l10 10v38H18z"/><path d="M38 8v10h10M25 32h16M25 40h16M25 48h10"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M32 54S8 40 8 24a12 12 0 0 1 24-4 12 12 0 0 1 24 4c0 16-24 30-24 30z"/><path d="M20 30h8l4-6 4 12 4-6h4"/></symbol>
+    <symbol id="i-plane" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13l20-8-8 20-2-8z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8c-2-4-6-4-6-1s6 1 6 1zm0 0c2-4 6-4 6-1s-6 1-6 1z"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-video" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></symbol>
+    <symbol id="i-pill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M9 9l6 6"/></symbol>
+  </defs>
+</svg>
+
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="#top">Nova<span>Salud</span></a>
+    <ul>
+      <li><a href="#perfiles">Para quién</a></li>
+      <li><a href="#cotizar">Cotizar</a></li>
+      <li><a href="#planes">Planes</a></li>
+      <li><a href="#faq">Preguntas</a></li>
+    </ul>
+    <a class="btn p" href="#cotizar" style="padding:10px 18px">Cotizar</a>
+  </div>
+</header>
+
+<main id="top">
+  <!-- hero -->
+  <div class="wrap hero">
+    <div class="hero-grid">
+      <div>
+        <h1>Cobertura médica premium, <em>sin pagar de más.</em></h1>
+        <p class="lead">Asesoramos a personas, grupos familiares, monotributistas y empresas para que elijan el plan que realmente necesitan. Te armamos una propuesta a medida y la comparamos con tu cobertura actual.</p>
+        <div class="cta">
+          <a class="btn p" href="#cotizar">Cotizar mi plan ↓</a>
+          <a class="btn g" href="#planes">Ver planes</a>
+        </div>
+        <ul class="bullets"><li>Asesoramiento gratuito</li><li>Cobertura nacional e internacional</li><li>Respuesta en 24 h</li></ul>
+      </div>
+      <div class="art a1" role="img" aria-label="Ilustración de un grupo familiar"><svg><use href="#i-family"/></svg></div>
+    </div>
+  </div>
+
+  <!-- audiences -->
+  <section id="perfiles" style="padding-top:24px">
+    <div class="wrap">
+      <div class="kicker">Para quién</div>
+      <h2 class="sec-h">Una cobertura pensada<br>para cada realidad</h2>
+      <p class="lead">No existe un plan único que le sirva a todos. Por eso partimos de tu situación para recomendarte la cobertura correcta.</p>
+      <div class="cards4">
+        <article class="aud"><div class="art a2"><svg><use href="#i-office"/></svg></div><div class="txt"><h3>Empresas PyME</h3><p>Planes corporativos para equipos, con condiciones especiales según la cantidad de personas.</p></div></article>
+        <article class="aud"><div class="art a1"><svg><use href="#i-family"/></svg></div><div class="txt"><h3>Grupos familiares</h3><p>Una sola cobertura para toda la familia, con beneficios para chicos y adultos.</p></div></article>
+        <article class="aud"><div class="art a3"><svg><use href="#i-user"/></svg></div><div class="txt"><h3>Monotributistas</h3><p>Aprovechá tus aportes y accedé a un plan superior pagando una diferencia menor.</p></div></article>
+        <article class="aud"><div class="art a4"><svg><use href="#i-doc"/></svg></div><div class="txt"><h3>Responsables inscriptos</h3><p>Planes con factura para que el costo de tu cobertura sume a tu actividad.</p></div></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- form band -->
+  <div class="band" id="cotizar">
+    <div class="wrap">
+      <h2>¿Empezamos con tu cotización?</h2>
+      <p>Completá el formulario y te escribimos por correo o WhatsApp, sin costo ni compromiso.</p>
+      <form class="formcard" id="lead" novalidate>
+        <div class="kicker">Paso a paso</div>
+        <h3>Contanos tu situación</h3>
+        <p class="lead" style="margin:0">Con estos datos te armamos una comparación de planes según tu edad, zona y grupo familiar.</p>
+        <div class="fgrid">
+          <div><label for="f-nombre">Nombre</label><input id="f-nombre" required autocomplete="given-name"></div>
+          <div><label for="f-apellido">Apellido</label><input id="f-apellido" autocomplete="family-name"></div>
+          <div><label for="f-tel">Teléfono / WhatsApp</label><input id="f-tel" type="tel" inputmode="tel" placeholder="261 555 0000"></div>
+          <div><label for="f-edad">Edad</label><input id="f-edad" type="number" min="18" max="99" inputmode="numeric"></div>
+          <div class="full"><label for="f-mail">Email</label><input id="f-mail" type="email" required autocomplete="email" placeholder="nombre@ejemplo.com"></div>
+          <div><label for="f-sit">Tipo de actividad</label>
+            <select id="f-sit"><option>Elegí una opción</option><option>Relación de dependencia</option><option>Monotributista</option><option>Responsable inscripto</option><option>Particular</option><option>Empresa</option></select></div>
+          <div><label for="f-zona">Zona</label>
+            <select id="f-zona"><option>Elegí tu zona</option><option>Gran Mendoza</option><option>Valle de Uco</option><option>Zona Este</option><option>Zona Sur</option></select></div>
+          <div><label for="f-cony">¿Suma cónyuge?</label><select id="f-cony"><option>No</option><option>Sí</option></select></div>
+          <div><label for="f-hijos">Hijos a cargo</label><select id="f-hijos"><option>0</option><option>1</option><option>2</option><option>3</option><option>4 o más</option></select></div>
+          <div class="full"><label>¿Qué servicios te interesan?</label>
+            <div class="checks">
+              <label><input type="checkbox"> Cirugías</label><label><input type="checkbox"> Odontología</label>
+              <label><input type="checkbox"> Internación</label><label><input type="checkbox"> Salud mental</label>
+              <label><input type="checkbox"> Maternidad</label><label><input type="checkbox"> Medicamentos</label>
+            </div></div>
+          <div class="full"><label for="f-com">Comentarios (opcional)</label><textarea id="f-com"></textarea></div>
+        </div>
+        <div style="margin-top:20px"><button class="btn p" type="submit">Enviar →</button></div>
+        <p class="fnote">Demo: el formulario no envía datos. En el sitio real, la consulta llega por formulario y se responde por WhatsApp o email.</p>
+        <div class="ok" id="ok" role="status">¡Gracias! En el sitio real te escribiríamos en menos de 24 horas con tu comparación de planes.</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- plans -->
+  <section class="after-band" id="planes">
+    <div class="wrap">
+      <div class="kicker">Nuestros planes</div>
+      <h2 class="sec-h">Cuatro niveles de<br>cobertura</h2>
+      <p class="lead">Cada plan incluye todo lo del nivel anterior y suma cartilla, reintegros y beneficios. Elegí hasta dónde querés llegar.</p>
+      <div class="plans">
+        <article class="plan"><h3>Esencial</h3><p>La puerta de entrada: cobertura completa en una cartilla regional.</p><ul><li>Consultas y estudios en cartilla</li><li>Internación clínica y quirúrgica</li><li>Farmacia 40%</li><li>Urgencias 24 h</li></ul><a class="btn" href="#cotizar">Cotizar Esencial</a></article>
+        <article class="plan hl"><span class="pill">Más elegido</span><h3>Clásica</h3><p>Todo lo de Esencial con cartilla nacional y mejores reintegros.</p><ul><li>Cartilla nacional ampliada</li><li>Odontología y ortodoncia</li><li>Farmacia 50%</li><li>Asistencia al viajero regional</li></ul><a class="btn p" href="#cotizar">Cotizar Clásica</a></article>
+        <article class="plan"><h3>Superior</h3><p>Más prestadores de primer nivel y habitación individual.</p><ul><li>Sanatorios de alta complejidad</li><li>Habitación individual</li><li>Reintegros ampliados</li><li>Óptica incluida</li></ul><a class="btn" href="#cotizar">Cotizar Superior</a></article>
+        <article class="plan"><h3>Premium</h3><p>La cobertura más completa, en el país y en el exterior.</p><ul><li>Libre elección de prestadores</li><li>Cobertura internacional</li><li>Medicina preventiva anual</li><li>Asistencia al viajero global</li></ul><a class="btn" href="#cotizar">Cotizar Premium</a></article>
+      </div>
+      <p class="fnote" style="text-align:center;margin-top:20px">Planes y beneficios ficticios, a modo de ejemplo.</p>
+    </div>
+  </section>
+
+  <!-- improve -->
+  <section style="background:#fff">
+    <div class="wrap split">
+      <div class="art a5" role="img" aria-label="Ilustración de salud"><svg><use href="#i-heart"/></svg></div>
+      <div>
+        <div class="kicker">¿Ya tenés cobertura?</div>
+        <h2>Mejorala sin pagar de más</h2>
+        <p class="lead">Muchas veces se paga por coberturas que ya no encajan con tu momento. Revisamos tu plan actual, lo comparamos con las alternativas y te mostramos si podés acceder a uno mejor por un costo similar.</p>
+        <ul class="ticks"><li>Revisión gratuita de tu plan actual</li><li>Comparación clara de cartilla, reintegros y precio</li><li>Acompañamiento en todo el cambio de plan</li></ul>
+        <a class="btn p" href="#cotizar">Quiero revisar mi cobertura</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- benefits -->
+  <section>
+    <div class="wrap">
+      <div class="kicker">Beneficios de toda la línea</div>
+      <h2 class="sec-h">Más allá de la consulta<br>médica</h2>
+      <div class="bens">
+        <div class="ben"><i><svg><use href="#i-plane"/></svg></i><h3>Asistencia al viajero</h3><p>Cobertura en viajes por el país y el exterior, según el plan.</p></div>
+        <div class="ben"><i><svg><use href="#i-shield"/></svg></i><h3>Prevención sin cargo</h3><p>Chequeos y controles anuales incluidos.</p></div>
+        <div class="ben"><i><svg><use href="#i-gift"/></svg></i><h3>Club de beneficios</h3><p>Descuentos en comercios, gimnasios y bienestar.</p></div>
+        <div class="ben"><i><svg><use href="#i-home"/></svg></i><h3>Continuidad familiar</h3><p>Tu grupo familiar mantiene la cobertura ante imprevistos.</p></div>
+        <div class="ben"><i><svg><use href="#i-video"/></svg></i><h3>Telemedicina 24/7</h3><p>Consultas por videollamada desde cualquier lugar.</p></div>
+        <div class="ben"><i><svg><use href="#i-pill"/></svg></i><h3>Medicamentos con descuento</h3><p>Descuentos en farmacias adheridas y tratamientos crónicos.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- advisor -->
+  <section style="background:#fff">
+    <div class="wrap split advisor">
+      <div>
+        <div class="kicker">Quién soy</div>
+        <h2>Asesoramiento claro, sin presión</h2>
+        <p class="lead">Un asesor te acompaña desde la primera consulta hasta el alta del plan, con información clara y sin letra chica.</p>
+        <dl>
+          <div><dt>Comparación honesta</dt><dd>Te mostramos las diferencias reales entre planes, no solo el más caro.</dd></div>
+          <div><dt>Sin costo para vos</dt><dd>El asesoramiento y la cotización no tienen ningún cargo.</dd></div>
+          <div><dt>Acompañamiento de principio a fin</dt><dd>Desde la cotización hasta que empezás a usar tu cobertura.</dd></div>
+        </dl>
+      </div>
+      <div class="art a2" role="img" aria-label="Ilustración de asesoramiento"><svg><use href="#i-user"/></svg></div>
+    </div>
+  </section>
+
+  <div class="strip"><div class="wrap"><p>Cobertura pediátrica, salud mental, odontología y mucho más, según el plan que elijas.</p></div></div>
+
+  <!-- faq -->
+  <section id="faq">
+    <div class="wrap">
+      <div class="kicker">Preguntas frecuentes</div>
+      <h2 class="sec-h">Lo que más nos<br>preguntan</h2>
+      <div class="faq">
+        <details><summary>¿La cotización tiene algún costo?</summary><p>No. La cotización y el asesoramiento son gratuitos y sin compromiso.</p></details>
+        <details><summary>Ya tengo otra prepaga, ¿puedo cambiarme?</summary><p>Sí. Te ayudamos a comparar y gestionamos el cambio para que no quedes sin cobertura.</p></details>
+        <details><summary>¿Los planes sirven a monotributistas?</summary><p>Sí. Tus aportes se pueden usar a cuenta del plan, así pagás una diferencia menor.</p></details>
+        <details><summary>¿Puedo sumar a toda mi familia?</summary><p>Sí. Podés incluir a tu cónyuge e hijos en el mismo plan.</p></details>
+        <details><summary>¿Cómo sigue el proceso después de cotizar?</summary><p>Te enviamos la comparación, resolvemos dudas y, si decidís avanzar, te acompañamos con el alta.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fcols">
+      <div><a class="logo" href="#top">Nova<span style="color:#4FD39A">Salud</span></a><p style="margin:12px 0 0;max-width:36ch">Asesoramiento en medicina prepaga para personas, familias y empresas. Marca ficticia de demostración.</p></div>
+      <div><h4>Navegación</h4><ul><li><a href="#top">Inicio</a></li><li><a href="#cotizar">Cotizar</a></li><li><a href="#planes">Planes</a></li><li><a href="#faq">Preguntas frecuentes</a></li></ul></div>
+      <div><h4>Contacto</h4><ul><li>WhatsApp: 261 555 0000</li><li>Lunes a viernes de 9 a 18 h</li><li>hola@novasalud.example</li></ul></div>
+    </div>
+    <div class="legal">Demo de portfolio con marca, planes y datos de contacto ficticios.</div>
+  </div>
+</footer>
+
+<div class="ribbon">Demo · datos ficticios</div>
+
+<script>
+  document.getElementById('lead').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var ok = document.getElementById('ok');
+    ok.classList.add('on');
+    ok.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  });
+</script>
+</body>
+</html>
