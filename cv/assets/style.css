@@ -422,3 +422,7 @@ html, body, .nav.solid, .page, .h2, .next, footer { transition: background-color
   .work { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
   .work:nth-of-type(even) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); }
 }
+
+/* scroll cue in the accent red (same as nav hover), both modes */
+.cue, .cap .cue { color: var(--accent); }
+.cue:hover { color: var(--ink); }
