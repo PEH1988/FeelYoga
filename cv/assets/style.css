@@ -369,3 +369,10 @@ mark.ph {
   background: rgba(200, 16, 46, .08); color: var(--accent);
   border: 1px dashed currentColor; border-radius: 4px; padding: 0 6px; font-weight: 500;
 }
+
+/* empty screenshot slot until the real capture is added */
+.work .shot-ph {
+  aspect-ratio: 16 / 9; max-width: 100%; display: grid; place-items: center; padding: 16px;
+  border-style: dashed; text-align: center; font: 600 11px/1.5 var(--f-body); letter-spacing: .12em; text-transform: uppercase;
+}
+.chips.tools span.pend { background: none; border: 0; padding: 0; }
