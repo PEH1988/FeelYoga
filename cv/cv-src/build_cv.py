@@ -114,9 +114,9 @@ CV = {
 CSS = """
 @page { size: A4; margin: 11mm 14mm 10mm; }
 * { box-sizing: border-box; }
-body { margin: 0; font: 9pt/1.36 "Inter", Arial, sans-serif; color: #3C3F42; }
+body { margin: 0; font: 9.6pt/1.45 "Inter", Arial, sans-serif; color: #3C3F42; }
 a { color: inherit; text-decoration: none; }
-header { border-bottom: 2px solid #111111; padding-bottom: 8px; margin-bottom: 6px; }
+header { border-bottom: 2px solid #111111; padding-bottom: 10px; margin-bottom: calc(var(--s, 8px) * .5); }
 h1 { font: 700 22pt/1.05 "Inter", Arial, sans-serif; letter-spacing: -.01em; color: #111111; margin: 0; }
 .role { font-weight: 600; font-size: 11pt; color: #3C3F42; margin-top: 3px; }
 .contact { margin-top: 6px; font-size: 8.8pt; color: #7D8185; display: flex; flex-wrap: wrap; gap: 2px 14px; }
@@ -124,9 +124,9 @@ h1 { font: 700 22pt/1.05 "Inter", Arial, sans-serif; letter-spacing: -.01em; col
 .web b { color: #111111; }
 .web .ph { color: #7D8185; border-bottom: 1px dashed #7D8185; }
 h2 { font: 700 9pt/1 "Inter", Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #111111;
-     margin: 8px 0 4px; padding-bottom: 3px; border-bottom: 1px solid #D4D6D8; }
+     margin: var(--s, 8px) 0 calc(var(--s, 8px) * .45); padding-bottom: 4px; border-bottom: 1px solid #D4D6D8; }
 p { margin: 0; }
-.job { margin-bottom: 4px; break-inside: avoid; }
+.job { margin-bottom: calc(var(--s, 8px) * .5); break-inside: avoid; }
 .jh { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 .jh b { font-size: 10.2pt; color: #111111; }
 .jh span { font-size: 8.6pt; color: #7D8185; white-space: nowrap; }
@@ -137,7 +137,7 @@ ul { margin: 2px 0 2px; padding-left: 14px; }
 li { margin: 0; }
 .kv { font-size: 8.6pt; color: #7D8185; }
 .kv b { color: #111111; font-weight: 600; }
-.proj { margin-bottom: 4px; break-inside: avoid; }
+.proj { margin-bottom: calc(var(--s, 8px) * .3); break-inside: avoid; }
 .proj b { color: #111111; }
 .grid { display: grid; grid-template-columns: 128px 1fr; gap: 3px 10px; }
 .grid b { color: #111111; }

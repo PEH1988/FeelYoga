@@ -14,6 +14,18 @@ const { execFileSync } = require('child_process');
     });
     await p.goto('file://' + path.join(__dirname, `cv-${code}.html`), { waitUntil: 'networkidle' });
     await p.evaluate(() => document.fonts.ready);
+    // spread the content over the whole A4 page: grow the spacing unit --s until the
+    // content fills the printable area (210x297mm minus @page margins 14/14 x 11/10mm)
+    await p.emulateMedia({ media: 'print' });
+    await p.setViewportSize({ width: Math.round(182 * 96 / 25.4), height: 1000 });
+    const s = await p.evaluate(() => {
+      const target = 276 * 96 / 25.4 - 6;
+      const fit = v => { document.documentElement.style.setProperty('--s', v + 'px'); return document.body.scrollHeight <= target; };
+      let lo = 4, hi = 40;
+      for (let i = 0; i < 20; i++) { const m = (lo + hi) / 2; fit(m) ? lo = m : hi = m; }
+      fit(lo); return lo;
+    });
+    console.log(code, 'spacing', s.toFixed(1) + 'px');
     await p.pdf({ path: path.join(__dirname, '..', out), format: 'A4', printBackground: true, preferCSSPageSize: true });
     console.log('wrote', out);
   }
