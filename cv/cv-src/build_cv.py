@@ -11,6 +11,7 @@ WEB_URL = "pablohidalgo.site"
 
 HERE = pathlib.Path(__file__).parent
 
+JUPI_URL = "https://www.jupidigital.com/pablo-hidalgo-certificado-bootcamp-analisis-de-datos"
 HUBSPOT_URL = "https://app.hubspot.com/academy/achievements/zlnygxxg/es/1/pablo-hidalgo/certificacion-del-software-de-ventas-de-hubspot"
 
 # Content follows Pablo's CV (Oct 2026). Competencies are (label, text) pairs.
@@ -57,7 +58,7 @@ CV = {
     ],
     "edu": [("Certificación del software de Ventas de HubSpot", "HubSpot Academy", "2026", HUBSPOT_URL),
             ("Certificado de Project Management de Google", "Coursera", "En curso", ""),
-            ("Analista de Datos", "Jupi Digital", "2024 – 2025", ""),
+            ("Analista de Datos", "Jupi Digital", "2024 – 2025", JUPI_URL),
             ("Tecnicatura en Comercialización", "Universidad Siglo 21", "2016 – 2020", "")],
     "tools": "CRM, HubSpot Sales, Salesforce (fundamentos, en estudio), Power BI, Qlik Sense, SQL, Excel avanzado, Google Workspace",
     "langs": "Español (nativo) · Inglés (intermedio avanzado, B2)",
@@ -103,7 +104,7 @@ CV = {
     ],
     "edu": [("HubSpot Sales Software Certification", "HubSpot Academy", "2026", HUBSPOT_URL),
             ("Google Project Management Certificate", "Coursera", "In progress", ""),
-            ("Data Analyst", "Jupi Digital", "2024 – 2025", ""),
+            ("Data Analyst", "Jupi Digital", "2024 – 2025", JUPI_URL),
             ("Associate Degree in Marketing & Sales", "Universidad Siglo 21", "2016 – 2020", "")],
     "tools": "CRM, HubSpot Sales, Salesforce (fundamentals, learning), Power BI, Qlik Sense, SQL, advanced Excel, Google Workspace",
     "langs": "Spanish (native) · English (upper-intermediate, B2)",
