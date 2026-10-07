@@ -114,37 +114,37 @@ CV = {
 CSS = """
 @page { size: A4; margin: 11mm 14mm 10mm; }
 * { box-sizing: border-box; }
-body { margin: 0; font: 9pt/1.36 "Inter", Arial, sans-serif; color: #2B2E30; }
+body { margin: 0; font: 9pt/1.36 "Inter", Arial, sans-serif; color: #3C3F42; }
 a { color: inherit; text-decoration: none; }
-header { border-bottom: 2px solid #0C0C0E; padding-bottom: 8px; margin-bottom: 6px; }
-h1 { font: 700 22pt/1.05 "Inter", Arial, sans-serif; letter-spacing: -.01em; color: #0C0C0E; margin: 0; }
-.role { font-weight: 600; font-size: 11pt; color: #6B7072; margin-top: 3px; }
-.contact { margin-top: 6px; font-size: 8.8pt; color: #3F4648; display: flex; flex-wrap: wrap; gap: 2px 14px; }
+header { border-bottom: 2px solid #111111; padding-bottom: 8px; margin-bottom: 6px; }
+h1 { font: 700 22pt/1.05 "Inter", Arial, sans-serif; letter-spacing: -.01em; color: #111111; margin: 0; }
+.role { font-weight: 600; font-size: 11pt; color: #3C3F42; margin-top: 3px; }
+.contact { margin-top: 6px; font-size: 8.8pt; color: #7D8185; display: flex; flex-wrap: wrap; gap: 2px 14px; }
 .web { margin-top: 5px; font-size: 9pt; }
-.web b { color: #0C0C0E; }
-.web .ph { color: #6B7072; border-bottom: 1px dashed #6B7072; }
-h2 { font: 700 9pt/1 "Inter", Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #0C0C0E;
-     margin: 8px 0 4px; padding-bottom: 3px; border-bottom: 1px solid #D3D2CB; }
+.web b { color: #111111; }
+.web .ph { color: #7D8185; border-bottom: 1px dashed #7D8185; }
+h2 { font: 700 9pt/1 "Inter", Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #111111;
+     margin: 8px 0 4px; padding-bottom: 3px; border-bottom: 1px solid #D4D6D8; }
 p { margin: 0; }
 .job { margin-bottom: 4px; break-inside: avoid; }
 .jh { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
-.jh b { font-size: 10.2pt; color: #0C0C0E; }
-.jh span { font-size: 8.6pt; color: #3F4648; white-space: nowrap; }
-.org { font-size: 9pt; color: #6B7072; font-weight: 600; }
-.org i { font-style: normal; color: #3F4648; font-weight: 400; }
-.note { font-size: 8.4pt; color: #3F4648; font-style: italic; margin-top: 1px; }
+.jh b { font-size: 10.2pt; color: #111111; }
+.jh span { font-size: 8.6pt; color: #7D8185; white-space: nowrap; }
+.org { font-size: 9pt; color: #3C3F42; font-weight: 600; }
+.org i { font-style: normal; color: #7D8185; font-weight: 400; }
+.note { font-size: 8.4pt; color: #7D8185; font-style: italic; margin-top: 1px; }
 ul { margin: 2px 0 2px; padding-left: 14px; }
 li { margin: 0; }
-.kv { font-size: 8.6pt; color: #3F4648; }
-.kv b { color: #0C0C0E; font-weight: 600; }
+.kv { font-size: 8.6pt; color: #7D8185; }
+.kv b { color: #111111; font-weight: 600; }
 .proj { margin-bottom: 4px; break-inside: avoid; }
-.proj b { color: #0C0C0E; }
+.proj b { color: #111111; }
 .grid { display: grid; grid-template-columns: 128px 1fr; gap: 3px 10px; }
-.grid b { color: #0C0C0E; }
+.grid b { color: #111111; }
 .edu { display: flex; justify-content: space-between; gap: 10px; }
-.edu span { color: #3F4648; white-space: nowrap; }
-.comp li b { color: #0C0C0E; }
-a.cert { border-bottom: 1px solid #6B7072; }
+.edu span { color: #7D8185; white-space: nowrap; }
+.comp li b { color: #111111; }
+a.cert { border-bottom: 1px solid #7D8185; }
 """
 
 def e(s): return html.escape(s)
@@ -167,7 +167,7 @@ def render(d):
 <header><h1>Pablo Hidalgo</h1><div class="role">{e(d["title"])}</div>
 <div class="contact"><span>{e(d["loc"])}</span><span>+54 261 510 2207</span><a href="mailto:pablohidalgo1188@gmail.com">pablohidalgo1188@gmail.com</a><a href="https://linkedin.com/in/pabloehidalgo">linkedin.com/in/pabloehidalgo</a></div>
 <div class="web"><b>{e(d["web_label"])}:</b> {web}</div></header>
-<h2>{e(d["h_profile"])}</h2><p>{e(d["profile"])}</p>
+
 <h2>{e(d["h_comp"])}</h2><ul class="comp">{comp}</ul>
 <h2>{e(d["h_exp"])}</h2>{jobs}
 <h2>{e(d["h_projects"])}</h2><ul class="comp">{projects}</ul>
