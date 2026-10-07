@@ -18,7 +18,7 @@ HUBSPOT_URL = "https://app.hubspot.com/academy/achievements/zlnygxxg/es/1/pablo-
 CV = {
   "es": {
     "lang": "es",
-    "title": "Senior Account Manager | Sector Financiero y Seguros | Cuentas Enterprise",
+    "title": "Senior Account Manager | Sector Financiero y Seguros",
     "loc": "Mendoza, Argentina",
     "web_label": "Web / Portfolio", "web_ph": "[agregar link de la web]",
     "h_profile": "Perfil profesional", "h_comp": "Competencias clave", "h_exp": "Experiencia laboral",
@@ -31,7 +31,7 @@ CV = {
                "modelos de IA y desarrollo propio de un CRM para gestionar el pipeline. Acostumbrado a interactuar con niveles "
                "gerenciales y a traducir necesidades de negocio en soluciones concretas.",
     "comp": [
-      ("Gestión de cuentas enterprise", "retención de cartera y prevención de bajas, relaciones de largo plazo, upsell y cross-sell, negociación con niveles gerenciales."),
+      ("Gestión de grandes cuentas", "retención de cartera y prevención de bajas, relaciones de largo plazo, upsell y cross-sell, negociación con niveles gerenciales."),
       ("Industria", "seguros (ART y salud corporativa), gestión de brokers, PAS y canales."),
       ("Tecnología e IA", "ecosistemas CRM (HubSpot, Salesforce fundamentos, CRM propio), inteligencia artificial conversacional (IA Trainer), uso de IA aplicada a procesos comerciales."),
       ("Datos y resultados", "KPIs de cartera y retención, análisis de performance, dashboards, SQL, Power BI, Qlik Sense."),
@@ -56,8 +56,8 @@ CV = {
       ("CRM propio de gestión de pipeline B2B", "diseño y desarrollo de una herramienta para registrar, segmentar y dar seguimiento a cuentas y oportunidades comerciales PyME."),
       ("Cotizador comercial en Excel", "modelo para armar cotizaciones y propuestas comerciales."),
     ],
-    "edu": [("Certificación del software de Ventas de HubSpot", "HubSpot Academy", "2026", HUBSPOT_URL),
-            ("Certificado de Project Management de Google", "Coursera", "En curso", ""),
+    "edu": [("Certificado de Project Management de Google", "Coursera", "En curso", ""),
+            ("Certificación del software de Ventas de HubSpot", "HubSpot Academy", "2026", HUBSPOT_URL),
             ("Analista de Datos", "Jupi Digital", "2024 – 2025", JUPI_URL),
             ("Tecnicatura en Comercialización", "Universidad Siglo 21", "2016 – 2020", "")],
     "tools": "CRM, HubSpot Sales, Salesforce (fundamentos, en estudio), Power BI, Qlik Sense, SQL, Excel avanzado, Google Workspace",
@@ -65,7 +65,7 @@ CV = {
   },
   "en": {
     "lang": "en",
-    "title": "Senior Account Manager | Financial Services & Insurance | Enterprise Accounts",
+    "title": "Senior Account Manager | Financial Services & Insurance",
     "loc": "Mendoza, Argentina",
     "web_label": "Website / Portfolio", "web_ph": "[add website link]",
     "h_profile": "Professional summary", "h_comp": "Core competencies", "h_exp": "Work experience",
@@ -77,7 +77,7 @@ CV = {
                "Data Analyst (SQL, Power BI, advanced Excel), experience as an AI model trainer, and built my own CRM to manage "
                "the pipeline. Comfortable working with senior management and turning business needs into concrete solutions.",
     "comp": [
-      ("Enterprise account management", "portfolio retention and churn prevention, long-term relationships, upsell and cross-sell, negotiation with senior management."),
+      ("Key account management", "portfolio retention and churn prevention, long-term relationships, upsell and cross-sell, negotiation with senior management."),
       ("Industry", "insurance (workers' compensation and corporate health), broker, agent and channel management."),
       ("Technology & AI", "CRM ecosystems (HubSpot, Salesforce fundamentals, custom CRM), conversational AI (AI Trainer), AI applied to sales processes."),
       ("Data & results", "portfolio and retention KPIs, performance analysis, dashboards, SQL, Power BI, Qlik Sense."),
@@ -102,8 +102,8 @@ CV = {
       ("Custom B2B pipeline CRM", "designed and built a tool to log, segment and follow up SMB accounts and sales opportunities."),
       ("Excel sales quoting tool", "model for building quotes and commercial proposals."),
     ],
-    "edu": [("HubSpot Sales Software Certification", "HubSpot Academy", "2026", HUBSPOT_URL),
-            ("Google Project Management Certificate", "Coursera", "In progress", ""),
+    "edu": [("Google Project Management Certificate", "Coursera", "In progress", ""),
+            ("HubSpot Sales Software Certification", "HubSpot Academy", "2026", HUBSPOT_URL),
             ("Data Analyst", "Jupi Digital", "2024 – 2025", JUPI_URL),
             ("Associate Degree in Marketing & Sales", "Universidad Siglo 21", "2016 – 2020", "")],
     "tools": "CRM, HubSpot Sales, Salesforce (fundamentals, learning), Power BI, Qlik Sense, SQL, advanced Excel, Google Workspace",
@@ -118,11 +118,11 @@ body { margin: 0; font: 9pt/1.36 "Inter", Arial, sans-serif; color: #2B2E30; }
 a { color: inherit; text-decoration: none; }
 header { border-bottom: 2px solid #0C0C0E; padding-bottom: 8px; margin-bottom: 6px; }
 h1 { font: 700 22pt/1.05 "Inter", Arial, sans-serif; letter-spacing: -.01em; color: #0C0C0E; margin: 0; }
-.role { font-weight: 600; font-size: 11pt; color: #C8102E; margin-top: 3px; }
+.role { font-weight: 600; font-size: 11pt; color: #6B7072; margin-top: 3px; }
 .contact { margin-top: 6px; font-size: 8.8pt; color: #3F4648; display: flex; flex-wrap: wrap; gap: 2px 14px; }
 .web { margin-top: 5px; font-size: 9pt; }
 .web b { color: #0C0C0E; }
-.web .ph { color: #C8102E; border-bottom: 1px dashed #C8102E; }
+.web .ph { color: #6B7072; border-bottom: 1px dashed #6B7072; }
 h2 { font: 700 9pt/1 "Inter", Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #0C0C0E;
      margin: 8px 0 4px; padding-bottom: 3px; border-bottom: 1px solid #D3D2CB; }
 p { margin: 0; }
@@ -130,7 +130,7 @@ p { margin: 0; }
 .jh { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 .jh b { font-size: 10.2pt; color: #0C0C0E; }
 .jh span { font-size: 8.6pt; color: #3F4648; white-space: nowrap; }
-.org { font-size: 9pt; color: #C8102E; font-weight: 600; }
+.org { font-size: 9pt; color: #6B7072; font-weight: 600; }
 .org i { font-style: normal; color: #3F4648; font-weight: 400; }
 .note { font-size: 8.4pt; color: #3F4648; font-style: italic; margin-top: 1px; }
 ul { margin: 2px 0 2px; padding-left: 14px; }
@@ -144,7 +144,7 @@ li { margin: 0; }
 .edu { display: flex; justify-content: space-between; gap: 10px; }
 .edu span { color: #3F4648; white-space: nowrap; }
 .comp li b { color: #0C0C0E; }
-a.cert { border-bottom: 1px solid #C8102E; }
+a.cert { border-bottom: 1px solid #6B7072; }
 """
 
 def e(s): return html.escape(s)
