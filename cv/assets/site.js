@@ -73,7 +73,7 @@
     'sk.es': 'Spanish', 'sk.native': 'Native', 'sk.en': 'English',
     'sk.mision': 'I combine a strong commercial drive with data analysis. Having lived in Australia, Spain and Argentina, I adapt fast and work well with diverse teams.',
     'sk.mision.s': 'Proactive · hands-on · results-driven',
-    'sk.edu': 'Education',
+    'sk.edu': 'Education & certifications', 'sk.edu4.t': 'HubSpot Sales Software Certification', 'sk.edu4.l': 'View certificate →', 'sk.cert': 'Certified',
     'sk.edu1.t': 'Data Analyst',
     'sk.edu2.t': 'Associate Degree in Marketing & Sales',
     'sk.edu3.t': 'Google Project Management',
@@ -118,7 +118,7 @@
 
   var ES_UI = { more: 'Ver más', less: 'Ver menos', next: 'Siguiente', menu: 'Menú', close: 'Cerrar', scroll: 'Scroll', invert: 'Invertir colores', normal: 'Colores originales' };
   // bump when the CV PDFs are regenerated, so browsers and the host never serve an old copy
-  var CV_VERSION = '20261025';
+  var CV_VERSION = '20261007b';
   var MODE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 2.5a9.5 9.5 0 0 1 0 19z" fill="currentColor"/></svg>';
   var GLOBE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c3 3.2 3 15.8 0 19M12 2.5c-3 3.2-3 15.8 0 19"/></svg>';
 

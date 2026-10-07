@@ -11,141 +11,109 @@ WEB_URL = "pablohidalgo.site"
 
 HERE = pathlib.Path(__file__).parent
 
+HUBSPOT_URL = "https://app.hubspot.com/academy/achievements/zlnygxxg/es/1/pablo-hidalgo/certificacion-del-software-de-ventas-de-hubspot"
+
+# Content follows Pablo's CV (Oct 2026). Competencies are (label, text) pairs.
 CV = {
   "es": {
     "lang": "es",
-    "title": "Analista de Negocio y Datos | Gestión de Cuentas",
-    "loc": "Mendoza, Argentina · Remoto (GMT-3)",
-    "web_label": "Web / Portfolio",
-    "web_ph": "[agregar link de la web]",
-    "h_profile": "Perfil",
-    "profile": "Analista de negocio y datos con más de 8 años en gestión de cuentas B2B en seguros, salud y medios. "
-               "Combino la relación con el cliente con análisis de datos (SQL, Power BI, Qlik Sense, Oracle BI) para seguir KPIs, "
-               "entender la performance de la cartera y convertir hallazgos en acciones concretas. Experiencia liderando una unidad "
-               "regional y coordinando áreas de Cobranzas, Siniestros y Prevención. Viví en Australia, España y Argentina.",
-    "h_exp": "Experiencia",
-    "h_projects": "Proyectos",
-    "h_skills": "Habilidades",
-    "h_edu": "Formación",
-    "h_lang": "Idiomas",
-    "soft": "Soft skills",
-    "tools": "Herramientas",
+    "title": "Senior Account Manager | Sector Financiero y Seguros | Cuentas Enterprise",
+    "loc": "Mendoza, Argentina",
+    "web_label": "Web / Portfolio", "web_ph": "[agregar link de la web]",
+    "h_profile": "Perfil profesional", "h_comp": "Competencias clave", "h_exp": "Experiencia laboral",
+    "h_projects": "Proyectos", "h_edu": "Formación y certificaciones", "h_tools": "Herramientas", "h_lang": "Idiomas",
+    "profile": "Account Manager senior con más de 8 años de experiencia en el sector financiero y de seguros: más de 7 años en "
+               "Federación Patronal Seguros gestionando grandes cuentas corporativas, brokers y productores, y actualmente en "
+               "Grupo Omint (medicina prepaga) con clientes corporativos. Experiencia en estrategia de retención de cartera, "
+               "identificación de oportunidades de crecimiento (upsell y cross-sell) y liderazgo de un equipo comercial regional. "
+               "Perfil híbrido: formación como Analista de Datos (SQL, Power BI, Excel avanzado), experiencia como entrenador de "
+               "modelos de IA y desarrollo propio de un CRM para gestionar el pipeline. Acostumbrado a interactuar con niveles "
+               "gerenciales y a traducir necesidades de negocio en soluciones concretas.",
+    "comp": [
+      ("Gestión de cuentas enterprise", "retención de cartera y prevención de bajas, relaciones de largo plazo, upsell y cross-sell, negociación con niveles gerenciales."),
+      ("Industria", "seguros (ART y salud corporativa), gestión de brokers, PAS y canales."),
+      ("Tecnología e IA", "ecosistemas CRM (HubSpot, Salesforce fundamentos, CRM propio), inteligencia artificial conversacional (IA Trainer), uso de IA aplicada a procesos comerciales."),
+      ("Datos y resultados", "KPIs de cartera y retención, análisis de performance, dashboards, SQL, Power BI, Qlik Sense."),
+      ("Liderazgo", "conducción de equipo comercial regional, coordinación con áreas técnicas y comerciales."),
+    ],
     "jobs": [
-      {"t": "Ejecutivo Comercial PyME", "org": "Grupo Omint", "ind": "Beneficios de salud", "d": "Jun 2026 – Actualidad",
-       "b": ["Construí un CRM propio en React para registrar, segmentar y dar seguimiento al pipeline de cuentas PyME.",
-             "Diseñé un cotizador web (landing page) para planes individuales y corporativos.",
-             "Gestiono la cartera PyME y sus renovaciones."],
-       "s": ["Negociación", "Construcción de relaciones", "Resolución de problemas"],
-       "tl": ["React", "CRM", "Microsoft Dynamics 365 CRM"]},
-      {"t": "Account Manager – Medios", "org": "Grupo América", "ind": "Medios", "d": "May 2025 – Jun 2026",
-       "b": ["Gestioné una cartera de cuentas corporativas como punto de contacto principal.",
-             "Analicé resultados y seguí KPIs comerciales para detectar oportunidades y riesgos en la cartera.",
-             "Prospecté nuevas cuentas por redes sociales y venta en frío, y desarrollé las existentes con upselling y cross-selling."],
-       "s": ["Comunicación efectiva", "Orientación al cliente", "Adaptabilidad"],
-       "tl": ["Prospección en redes sociales", "Venta en frío", "Upselling", "Cross-selling"]},
-      {"t": "Analista de Datos – Entrenamiento y Evaluación de IA", "org": "Outlier", "ind": "", "d": "Jul 2024 – Abr 2025",
-       "b": ["Evalué y califiqué outputs de LLMs según precisión, coherencia y calidad lingüística.",
-             "Control de calidad de datos: validé interacciones y detecté errores e inconsistencias.",
-             "Apliqué criterios y rúbricas de evaluación para mejorar las respuestas del modelo."],
-       "s": ["Pensamiento crítico", "Atención al detalle", "Gestión del tiempo"],
-       "tl": ["Entrenamiento de IA", "Evaluación de LLMs", "Prompt Engineering", "IA Generativa", "Análisis de datos", "Control de calidad"]},
-      {"t": "Analista de Negocio → Responsable de Operaciones ART", "org": "Federación Patronal Seguros", "ind": "Seguros", "d": "Nov 2015 – Ene 2023",
-       "note": "ART: sistema argentino de cobertura de riesgos del trabajo (workers' compensation).",
-       "b": ["Analicé siniestralidad y cartera en Oracle BI (por zona, producto y riesgo) para definir políticas comerciales y de suscripción.",
-             "Construí reportes de gestión sobre KPIs de cartera, retención y cobranzas, con seguimiento de cuentas en Microsoft Dynamics 365 CRM.",
-             "Lideré la unidad ART regional, coordinando Cobranzas, Siniestros y Prevención para retener cartera, recuperar cobranzas y armar planes de pago."],
-       "s": ["Liderazgo", "Pensamiento analítico", "Gestión de stakeholders"],
-       "tl": ["Excel avanzado", "Oracle BI", "Microsoft Dynamics 365 CRM"]},
+      {"t": "Ejecutivo Comercial B2B PyME", "org": "Grupo Omint", "ind": "Medicina prepaga", "d": "Junio 2026 – Actualidad",
+       "b": ["Prospección y desarrollo de negocios B2B, gestión de pipeline comercial de clientes corporativos PyME.",
+             "Elaboración de propuestas comerciales y negociación con clientes corporativos."]},
+      {"t": "Account Manager", "org": "Grupo América", "ind": "Medios", "d": "Mayo 2025 – Junio 2026",
+       "b": ["Gestión de cuentas y atención directa a clientes corporativos.",
+             "Análisis de resultados y seguimiento de KPIs comerciales."]},
+      {"t": "Analista de Datos / IA Trainer", "org": "Outlier", "ind": "Tecnología – IA", "d": "Julio 2024 – Abril 2025",
+       "b": ["Análisis y validación de datos e interacciones de modelos de IA conversacional, con foco en calidad y métricas de desempeño."]},
+      {"t": "Jefe de ART", "org": "Federación Patronal Seguros", "ind": "Sector seguros", "d": "Abril 2016 – Enero 2023",
+       "b": ["Gestión y desarrollo de grandes cuentas corporativas, PAS y brokers; liderazgo de equipo comercial regional.",
+             "Análisis de KPIs de cartera y performance comercial; mejora de la retención de clientes."]},
+      {"t": "Analista Comercial", "org": "Federación Patronal Seguros", "ind": "", "d": "Noviembre 2015 – Abril 2016",
+       "b": ["Análisis técnico-comercial de clientes para evaluación de riesgos y reporting de indicadores clave."]},
     ],
     "projects": [
-      ("Tractchun · Power BI", "Reporte interactivo sobre 97.948 tickets de soporte TI: modelo estrella, KPIs en DAX (satisfacción, días abiertos, tickets por agente)."),
-      ("Higiene del sueño · Qlik Sense, SQL, Snowflake", "Análisis de 374 personas: limpieza y modelado de datos; 41,6% presenta trastornos del sueño, con el estrés como principal factor."),
-      ("Pipeline CRM · React", "CRM propio para gestionar el pipeline B2B: registro, segmentación y seguimiento de cuentas y oportunidades."),
-      ("Cotizador de Planes – Individuos y Empresas", "Cotizador web que compara planes según situación laboral o nómina y genera un PDF por cliente. 1 a 2 minutos por cotización."),
-      ("Landing Page y Generación de Leads", "Landing de captación con formulario de cotización, comparación de planes y consultas derivadas a WhatsApp y email."),
+      ("CRM propio de gestión de pipeline B2B", "diseño y desarrollo de una herramienta para registrar, segmentar y dar seguimiento a cuentas y oportunidades comerciales PyME."),
+      ("Cotizador comercial en Excel", "modelo para armar cotizaciones y propuestas comerciales."),
     ],
-    "skills": [
-      ("Business Analysis", "Seguimiento de KPIs y performance · Dashboards y reporting · ETL y modelado de datos · Storytelling con datos"),
-      ("Datos y BI", "SQL · MySQL · Snowflake · Power BI · Qlik Sense · Oracle BI · Excel avanzado · Google Workspace"),
-      ("Account Management", "Gestión de cartera y grandes cuentas · Retención · Upselling y cross-selling · Recupero de cobranzas · Negociación"),
-      ("CRM", "Microsoft Dynamics 365 · CRM propio en React · Salesforce (en estudio)"),
-      ("Liderazgo", "Conducción de equipos · Gestión de brokers y canales · Coordinación entre áreas"),
-    ],
-    "edu": [("Certificado de Project Management de Google", "Coursera", "En curso"),
-            ("Analista de Datos", "Jupi Digital", "2024 – 2025"),
-            ("Tecnicatura en Comercialización", "Universidad Siglo 21", "2016 – 2020")],
-    "langs": "Español (nativo) · Inglés (B2, intermedio avanzado)",
+    "edu": [("Certificación del software de Ventas de HubSpot", "HubSpot Academy", "2026", HUBSPOT_URL),
+            ("Certificado de Project Management de Google", "Coursera", "En curso", ""),
+            ("Analista de Datos", "Jupi Digital", "2024 – 2025", ""),
+            ("Tecnicatura en Comercialización", "Universidad Siglo 21", "2016 – 2020", "")],
+    "tools": "CRM, HubSpot Sales, Salesforce (fundamentos, en estudio), Power BI, Qlik Sense, SQL, Excel avanzado, Google Workspace",
+    "langs": "Español (nativo) · Inglés (intermedio avanzado, B2)",
   },
   "en": {
     "lang": "en",
-    "title": "Business & Data Analyst | Account Management",
-    "loc": "Mendoza, Argentina · Remote (GMT-3)",
-    "web_label": "Website / Portfolio",
-    "web_ph": "[add website link]",
-    "h_profile": "Profile",
-    "profile": "Business and data analyst with 8+ years managing B2B accounts in insurance, healthcare and media. "
-               "I combine client relationships with data analysis (SQL, Power BI, Qlik Sense, Oracle BI) to track KPIs, "
-               "understand portfolio performance and turn insights into concrete actions. Experience leading a regional unit and "
-               "coordinating Collections, Claims and Prevention teams. Lived in Australia, Spain and Argentina.",
-    "h_exp": "Experience",
-    "h_projects": "Projects",
-    "h_skills": "Skills",
-    "h_edu": "Education",
-    "h_lang": "Languages",
-    "soft": "Soft skills",
-    "tools": "Tools",
+    "title": "Senior Account Manager | Financial Services & Insurance | Enterprise Accounts",
+    "loc": "Mendoza, Argentina",
+    "web_label": "Website / Portfolio", "web_ph": "[add website link]",
+    "h_profile": "Professional summary", "h_comp": "Core competencies", "h_exp": "Work experience",
+    "h_projects": "Projects", "h_edu": "Education & certifications", "h_tools": "Tools", "h_lang": "Languages",
+    "profile": "Senior Account Manager with 8+ years of experience in financial services and insurance: 7+ years at "
+               "Federación Patronal Seguros managing key corporate accounts, brokers and agents, and currently at Grupo Omint "
+               "(private health insurance) serving corporate clients. Experienced in portfolio retention strategy, identifying "
+               "growth opportunities (upsell and cross-sell) and leading a regional sales team. Hybrid profile: trained as a "
+               "Data Analyst (SQL, Power BI, advanced Excel), experience as an AI model trainer, and built my own CRM to manage "
+               "the pipeline. Comfortable working with senior management and turning business needs into concrete solutions.",
+    "comp": [
+      ("Enterprise account management", "portfolio retention and churn prevention, long-term relationships, upsell and cross-sell, negotiation with senior management."),
+      ("Industry", "insurance (workers' compensation and corporate health), broker, agent and channel management."),
+      ("Technology & AI", "CRM ecosystems (HubSpot, Salesforce fundamentals, custom CRM), conversational AI (AI Trainer), AI applied to sales processes."),
+      ("Data & results", "portfolio and retention KPIs, performance analysis, dashboards, SQL, Power BI, Qlik Sense."),
+      ("Leadership", "leading a regional sales team, coordinating with technical and commercial teams."),
+    ],
     "jobs": [
-      {"t": "Account Manager, SMB – Health Benefits", "org": "Grupo Omint", "ind": "Health Benefits", "d": "Jun 2026 – Present",
-       "b": ["Built a custom React CRM to log, segment and track the SMB account pipeline.",
-             "Designed a web quoting tool (landing page) for individual and corporate plans.",
-             "Manage the SMB portfolio and its renewals."],
-       "s": ["Negotiation", "Relationship Building", "Problem Solving"],
-       "tl": ["React", "CRM", "Microsoft Dynamics 365 CRM"]},
-      {"t": "Account Manager – Media", "org": "Grupo América", "ind": "Media", "d": "May 2025 – Jun 2026",
-       "b": ["Managed a portfolio of corporate accounts as main point of contact.",
-             "Analyzed results and tracked commercial KPIs to spot opportunities and risks across the portfolio.",
-             "Prospected new accounts through social media and cold outreach, and grew existing ones through upselling and cross-selling."],
-       "s": ["Communication", "Customer Focus", "Adaptability"],
-       "tl": ["Social media prospecting", "Cold outreach", "Upselling", "Cross-selling"]},
-      {"t": "Data Analyst – AI Training & Evaluation", "org": "Outlier", "ind": "", "d": "Jul 2024 – Apr 2025",
-       "b": ["Evaluated and rated LLM outputs for accuracy, coherence and language quality.",
-             "Data quality control: validated interactions and flagged errors and inconsistencies.",
-             "Applied evaluation criteria and rubrics to improve model responses."],
-       "s": ["Critical Thinking", "Attention to Detail", "Time Management"],
-       "tl": ["AI Training", "LLM Evaluation", "Prompt Engineering", "Generative AI", "Data Analysis", "Quality Assurance"]},
-      {"t": "Business Analyst → Workers' Compensation Operations Manager", "org": "Federación Patronal Seguros", "ind": "Insurance", "d": "Nov 2015 – Jan 2023",
-       "note": "ART is Argentina's workers' compensation system for occupational risks.",
-       "b": ["Analyzed claims and portfolio data in Oracle BI (by region, product and risk) to set commercial and underwriting policies.",
-             "Built management reports on portfolio, retention and collections KPIs, with account tracking in Microsoft Dynamics 365 CRM.",
-             "Led the regional ART unit, coordinating Collections, Claims and Prevention to retain the portfolio, recover receivables and set up payment plans."],
-       "s": ["Leadership", "Analytical Thinking", "Stakeholder Management"],
-       "tl": ["Advanced Excel", "Oracle BI", "Microsoft Dynamics 365 CRM"]},
+      {"t": "SMB B2B Account Executive", "org": "Grupo Omint", "ind": "Private health insurance", "d": "June 2026 – Present",
+       "b": ["B2B prospecting and business development; managing the sales pipeline of SMB corporate clients.",
+             "Preparing commercial proposals and negotiating with corporate clients."]},
+      {"t": "Account Manager", "org": "Grupo América", "ind": "Media", "d": "May 2025 – June 2026",
+       "b": ["Account management and direct support to corporate clients.",
+             "Results analysis and tracking of commercial KPIs."]},
+      {"t": "Data Analyst / AI Trainer", "org": "Outlier", "ind": "Technology – AI", "d": "July 2024 – April 2025",
+       "b": ["Analysis and validation of conversational AI model data and interactions, focused on quality and performance metrics."]},
+      {"t": "Workers' Compensation (ART) Manager", "org": "Federación Patronal Seguros", "ind": "Insurance", "d": "April 2016 – January 2023",
+       "b": ["Managed and grew key corporate accounts, agents (PAS) and brokers; led a regional sales team.",
+             "Portfolio KPI and sales performance analysis; improved client retention."]},
+      {"t": "Commercial Analyst", "org": "Federación Patronal Seguros", "ind": "", "d": "November 2015 – April 2016",
+       "b": ["Technical-commercial client analysis for risk assessment and key-indicator reporting."]},
     ],
     "projects": [
-      ("Tractchun · Power BI", "Interactive report on 97,948 IT support tickets: star schema, DAX KPIs (satisfaction, days open, tickets per agent)."),
-      ("Sleep Hygiene · Qlik Sense, SQL, Snowflake", "Analysis of 374 people: data cleaning and modelling; 41.6% have a sleep disorder, with stress as the main driver."),
-      ("Pipeline CRM · React", "Custom CRM to manage the B2B pipeline: logging, segmentation and follow-up of accounts and opportunities."),
-      ("Pricing & Quoting Tool – Individuals & Companies", "Web quoting tool that compares plans by employment status or headcount and generates a client PDF. 1–2 minutes per quote."),
-      ("Landing Page & Lead Generation", "Lead-capture landing page with quote form, plan comparison and enquiries routed to WhatsApp and email."),
+      ("Custom B2B pipeline CRM", "designed and built a tool to log, segment and follow up SMB accounts and sales opportunities."),
+      ("Excel sales quoting tool", "model for building quotes and commercial proposals."),
     ],
-    "skills": [
-      ("Business Analysis", "KPI & performance tracking · Dashboards & reporting · ETL & data modelling · Data storytelling"),
-      ("Data & BI", "SQL · MySQL · Snowflake · Power BI · Qlik Sense · Oracle BI · Advanced Excel · Google Workspace"),
-      ("Account Management", "Portfolio & key accounts · Retention · Upselling & cross-selling · Debt recovery · Negotiation"),
-      ("CRM", "Microsoft Dynamics 365 · Custom React CRM · Salesforce (learning)"),
-      ("Leadership", "Team leadership · Broker & channel management · Cross-team coordination"),
-    ],
-    "edu": [("Google Project Management Certificate", "Coursera", "In progress"),
-            ("Data Analyst", "Jupi Digital", "2024 – 2025"),
-            ("Associate Degree in Marketing & Sales", "Universidad Siglo 21", "2016 – 2020")],
-    "langs": "Spanish (native) · English (B2, upper-intermediate)",
+    "edu": [("HubSpot Sales Software Certification", "HubSpot Academy", "2026", HUBSPOT_URL),
+            ("Google Project Management Certificate", "Coursera", "In progress", ""),
+            ("Data Analyst", "Jupi Digital", "2024 – 2025", ""),
+            ("Associate Degree in Marketing & Sales", "Universidad Siglo 21", "2016 – 2020", "")],
+    "tools": "CRM, HubSpot Sales, Salesforce (fundamentals, learning), Power BI, Qlik Sense, SQL, advanced Excel, Google Workspace",
+    "langs": "Spanish (native) · English (upper-intermediate, B2)",
   },
 }
 
 CSS = """
 @page { size: A4; margin: 11mm 14mm 10mm; }
 * { box-sizing: border-box; }
-body { margin: 0; font: 9.3pt/1.4 "Inter", Arial, sans-serif; color: #2B2E30; }
+body { margin: 0; font: 9pt/1.36 "Inter", Arial, sans-serif; color: #2B2E30; }
 a { color: inherit; text-decoration: none; }
 header { border-bottom: 2px solid #0C0C0E; padding-bottom: 8px; margin-bottom: 6px; }
 h1 { font: 700 22pt/1.05 "Inter", Arial, sans-serif; letter-spacing: -.01em; color: #0C0C0E; margin: 0; }
@@ -155,17 +123,17 @@ h1 { font: 700 22pt/1.05 "Inter", Arial, sans-serif; letter-spacing: -.01em; col
 .web b { color: #0C0C0E; }
 .web .ph { color: #C8102E; border-bottom: 1px dashed #C8102E; }
 h2 { font: 700 9pt/1 "Inter", Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #0C0C0E;
-     margin: 9px 0 5px; padding-bottom: 3px; border-bottom: 1px solid #D3D2CB; }
+     margin: 8px 0 4px; padding-bottom: 3px; border-bottom: 1px solid #D3D2CB; }
 p { margin: 0; }
-.job { margin-bottom: 6px; break-inside: avoid; }
+.job { margin-bottom: 4px; break-inside: avoid; }
 .jh { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 .jh b { font-size: 10.2pt; color: #0C0C0E; }
 .jh span { font-size: 8.6pt; color: #3F4648; white-space: nowrap; }
 .org { font-size: 9pt; color: #C8102E; font-weight: 600; }
 .org i { font-style: normal; color: #3F4648; font-weight: 400; }
 .note { font-size: 8.4pt; color: #3F4648; font-style: italic; margin-top: 1px; }
-ul { margin: 3px 0 3px; padding-left: 14px; }
-li { margin: 1px 0; }
+ul { margin: 2px 0 2px; padding-left: 14px; }
+li { margin: 0; }
 .kv { font-size: 8.6pt; color: #3F4648; }
 .kv b { color: #0C0C0E; font-weight: 600; }
 .proj { margin-bottom: 4px; break-inside: avoid; }
@@ -174,30 +142,36 @@ li { margin: 1px 0; }
 .grid b { color: #0C0C0E; }
 .edu { display: flex; justify-content: space-between; gap: 10px; }
 .edu span { color: #3F4648; white-space: nowrap; }
+.comp li b { color: #0C0C0E; }
+a.cert { border-bottom: 1px solid #C8102E; }
 """
 
 def e(s): return html.escape(s)
 
 def render(d):
     web = (f'<a href="https://{e(WEB_URL)}">{e(WEB_URL)}</a>' if WEB_URL else f'<span class="ph">{e(d["web_ph"])}</span>')
+    comp = "".join(f"<li><b>{e(k)}:</b> {e(v)}</li>" for k, v in d["comp"])
     jobs = ""
     for j in d["jobs"]:
         org = e(j["org"]) + (f' <i>· {e(j["ind"])}</i>' if j["ind"] else "")
-        note = f'<p class="note">{e(j["note"])}</p>' if j.get("note") else ""
         jobs += f'''<div class="job"><div class="jh"><b>{e(j["t"])}</b><span>{e(j["d"])}</span></div>
-<div class="org">{org}</div>{note}<ul>{"".join(f"<li>{e(x)}</li>" for x in j["b"])}</ul></div>'''
-    projects = "".join(f'<p class="proj"><b>{e(t)}</b> — {e(x)}</p>' for t, x in d["projects"])
-    skills = "".join(f"<b>{e(k)}</b><span>{e(v)}</span>" for k, v in d["skills"])
-    edu = "".join(f'<div class="edu"><p><b>{e(t)}</b> · {e(o)}</p><span>{e(y)}</span></div>' for t, o, y in d["edu"])
+<div class="org">{org}</div><ul>{"".join(f"<li>{e(x)}</li>" for x in j["b"])}</ul></div>'''
+    projects = "".join(f"<li><b>{e(t)}:</b> {e(x)}</li>" for t, x in d["projects"])
+    def edu_item(t, o, y, url):
+        title = f'<a class="cert" href="{e(url)}">{e(t)}</a>' if url else e(t)
+        return f'<div class="edu"><p><b>{title}</b> · {e(o)}</p><span>{e(y)}</span></div>'
+    edu = "".join(edu_item(*x) for x in d["edu"])
     return f'''<!doctype html><html lang="{d["lang"]}"><head><meta charset="utf-8"><title>Pablo Hidalgo — CV</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"><style>{CSS}</style></head><body>
 <header><h1>Pablo Hidalgo</h1><div class="role">{e(d["title"])}</div>
 <div class="contact"><span>{e(d["loc"])}</span><span>+54 261 510 2207</span><a href="mailto:pablohidalgo1188@gmail.com">pablohidalgo1188@gmail.com</a><a href="https://linkedin.com/in/pabloehidalgo">linkedin.com/in/pabloehidalgo</a></div>
 <div class="web"><b>{e(d["web_label"])}:</b> {web}</div></header>
 <h2>{e(d["h_profile"])}</h2><p>{e(d["profile"])}</p>
+<h2>{e(d["h_comp"])}</h2><ul class="comp">{comp}</ul>
 <h2>{e(d["h_exp"])}</h2>{jobs}
-<h2>{e(d["h_skills"])}</h2><div class="grid">{skills}</div>
+<h2>{e(d["h_projects"])}</h2><ul class="comp">{projects}</ul>
 <h2>{e(d["h_edu"])}</h2>{edu}
+<h2>{e(d["h_tools"])}</h2><p>{e(d["tools"])}</p>
 <h2>{e(d["h_lang"])}</h2><p>{e(d["langs"])}</p>
 </body></html>'''
 

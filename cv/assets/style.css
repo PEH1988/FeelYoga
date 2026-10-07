@@ -426,3 +426,6 @@ html, body, .nav.solid, .page, .h2, .next, footer { transition: background-color
 /* scroll cue in the accent red (same as nav hover), both modes */
 .cue, .cap .cue { color: var(--accent); }
 .cue:hover { color: var(--ink); }
+
+.cert-link { color: var(--accent); border-bottom: 1px solid currentColor; padding-bottom: 1px; }
+.cert-link:hover { color: var(--ink); }
