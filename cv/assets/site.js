@@ -17,19 +17,19 @@
   /* English copy. Keys match data-i18n attributes in the pages. */
   var EN = {
     /* home */
-    'home.sub': 'Business &amp; Data Analyst | Account Management',
+    'home.sub': 'Project Manager | Business Analyst | Account Manager',
     'home.tag': 'Remote · Argentina · <em>GMT-3</em>',
     'home.cue': 'Scroll down, or tap Menu to get to know me',
 
     /* experience */
     'exp.k': 'Experience',
-    'exp.h': 'I grow accounts and measure it with <em>data.</em>',
-    'exp.lead': '8+ years managing corporate accounts, brokers and commercial partners in insurance, healthcare and media. I build long-term relationships, spot growth opportunities and use KPIs to turn insights into concrete actions.',
+    'exp.h': 'I run projects, analyse data and grow <em>accounts.</em>',
+    'exp.lead': '8+ years in insurance, healthcare and media coordinating teams and departments, analysing KPIs and managing corporate accounts. I turn ideas into concrete solutions: from understanding the need to delivering a working tool.',
     'exp.omint.t': 'Account Manager, SMB – Health Benefits',
     'exp.omint.i': 'Health Benefits',
     'exp.omint.d': 'Jun 2026 — Present',
-    'exp.omint.1': 'Built a custom React CRM to log, segment and track the SMB account pipeline.',
-    'exp.omint.2': 'Designed a web quoting tool (landing page) for individual and corporate plans.',
+    'exp.omint.1': 'Delivered a custom React CRM end to end: gathered needs, defined the scope and rolled it out to track the SMB account pipeline.',
+    'exp.omint.2': 'Designed and launched a web quoting tool for individual and corporate plans: each quote takes 1 to 2 minutes.',
     'exp.omint.3': 'Manage the SMB portfolio and its renewals.',
     'exp.america.t': 'Account Manager – Media',
     'exp.america.i': 'Media',
@@ -61,8 +61,9 @@
 
     /* skills */
     'sk.k': 'Skills',
-    'sk.h': 'Commercial mindset, <em>analytical thinking.</em>',
-    'sk.lead': 'I understand what the client needs, measure how the account performs and turn what I find into concrete actions.',
+    'sk.h': 'I plan, analyse and <em>grow accounts.</em>',
+    'sk.lead': 'I break work into clear stages, measure how each initiative performs and look after the client relationship.',
+    'sk.p1': 'Needs & requirements gathering', 'sk.p2': 'Scoping & planning', 'sk.p3': 'Progress tracking & rollout', 'sk.p4': 'Stakeholder management',
     'sk.a1': 'Portfolio & key account management', 'sk.a2': 'Long-term relationships & retention',
     'sk.a3': 'Upselling & cross-selling', 'sk.a7': 'Debt recovery & payment plans', 'sk.a4': 'Proposals, negotiation & closing',
     'sk.a5': 'B2B prospecting (hunter)', 'sk.a6': 'Pipeline & CRM', 'sk.a6s': 'Learning',
@@ -71,8 +72,8 @@
     'sk.l': 'Leadership & languages',
     'sk.l1': 'Leading sales teams', 'sk.l2': 'Broker & channel management', 'sk.l3': 'Coordination with Collections, Claims & Prevention',
     'sk.es': 'Spanish', 'sk.native': 'Native', 'sk.en': 'English',
-    'sk.mision': 'I combine a strong commercial drive with data analysis. Having lived in Australia, Spain and Argentina, I adapt fast and work well with diverse teams.',
-    'sk.mision.s': 'Proactive · hands-on · results-driven',
+    'sk.mision': 'I combine project management, data analysis and a commercial drive. Having lived in Australia, Spain and Argentina, I adapt fast and work well with diverse teams.',
+    'sk.mision.s': 'Native Spanish · English B2 · results-driven',
     'sk.edu': 'Education & certifications', 'sk.edu4.t': 'HubSpot Sales Software Certification', 'sk.edu4.l': 'View certificate →', 'sk.cert': 'Certified',
     'sk.edu1.t': 'Data Analyst',
     'sk.edu2.t': 'Associate Degree in Marketing & Sales',
@@ -81,7 +82,9 @@
 
     /* portfolio */
     'pf.k': 'Portfolio',
-    'pf.lead': 'Two perspectives, one goal: growing accounts. I take care of the client relationship and use data to decide what to do next.',
+    'pf.lead': 'Three perspectives, one goal: getting things done. I take projects from idea to rollout, use data to decide and look after the client relationship.',
+    'pf.pm.w': 'tools taken from idea to production',
+    'pf.pm.t': 'CRM, web quoting tool and lead-generation landing page: I gathered the needs, defined the scope, designed, tested and launched each one. Google Project Management Certificate in progress.',
     'pf.am.w': 'years managing B2B accounts',
     'pf.am.t': 'Corporate and strategic accounts, brokers and commercial partners in insurance, healthcare and media. Long-term relationships, retention, debt recovery, upselling and cross-selling.',
     'pf.ba.w': 'records analysed in a single dashboard',
@@ -105,8 +108,8 @@
 
     /* contact */
     'ct.k': 'Contact',
-    'ct.h': 'Shall we grow your accounts? <em>Let’s talk.</em>',
-    'ct.lead': 'If your team needs someone who looks after the client relationship and backs it with numbers, let’s talk. I’m based in Mendoza and work in Spanish and English.',
+    'ct.h': 'A project to deliver or accounts to grow? <em>Let’s talk.</em>',
+    'ct.lead': 'If your team needs someone who organises projects, understands the data and looks after the client, let’s talk. I’m based in Mendoza and work in Spanish and English.',
     'ct.cv': 'Download CV (PDF)',
     'ct.mail': 'Write me',
     'ct.phone': 'Phone',
@@ -118,7 +121,7 @@
 
   var ES_UI = { more: 'Ver más', less: 'Ver menos', next: 'Siguiente', menu: 'Menú', close: 'Cerrar', scroll: 'Scroll', invert: 'Invertir colores', normal: 'Colores originales' };
   // bump when the CV PDFs are regenerated, so browsers and the host never serve an old copy
-  var CV_VERSION = '20261007g';
+  var CV_VERSION = '20261008a';
   var MODE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 2.5a9.5 9.5 0 0 1 0 19z" fill="currentColor"/></svg>';
   var GLOBE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c3 3.2 3 15.8 0 19M12 2.5c-3 3.2-3 15.8 0 19"/></svg>';
 
