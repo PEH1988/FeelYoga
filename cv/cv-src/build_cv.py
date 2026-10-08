@@ -157,10 +157,9 @@ def render(d):
 <div class="contact"><span>{e(d["loc"])}</span><span>+54 261 510 2207</span><a href="mailto:pablohidalgo1188@gmail.com">pablohidalgo1188@gmail.com</a><a href="https://linkedin.com/in/pabloehidalgo">linkedin.com/in/pabloehidalgo</a></div>
 <div class="web"><b>{e(d["web_label"])}:</b> {web}</div></header>
 
-<h2>{e(d["h_comp"])}</h2><ul class="comp">{comp}</ul>
 <h2>{e(d["h_exp"])}</h2>{jobs}
-<h2>{e(d["h_projects"])}</h2><ul class="comp">{projects}</ul>
 <h2>{e(d["h_edu"])}</h2>{edu}
+<h2>{e(d["h_comp"])}</h2><ul class="comp">{comp}</ul>
 <h2>{e(d["h_tools"])}</h2><p>{e(d["tools"])}</p>
 <h2>{e(d["h_lang"])}</h2><p>{e(d["langs"])}</p>
 </body></html>'''
