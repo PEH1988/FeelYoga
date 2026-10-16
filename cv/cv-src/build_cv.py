@@ -136,6 +136,40 @@ li { margin: 0; }
 a.cert { border-bottom: 1px solid #7D8185; }
 """
 
+# Tailored version for a specific application (Analista de Contratos, Venoil Energía).
+# Only tasks Pablo confirmed for his ART role: tenders, renewals, claims, internal
+# controls and negotiation of terms. Not published on the site.
+import copy
+_c = copy.deepcopy(CV["es"])
+_c["title"] = "Seguros Corporativos | Licitaciones y Renovaciones | Negociación y Control"
+_c["comp"] = [
+  ("Seguros corporativos y riesgos", "coberturas de ART para empresas, evaluación de riesgos y suscripción, análisis de siniestralidad."),
+  ("Licitaciones, renovaciones y reclamos", "coordinación de licitaciones y renovaciones de contratos de cobertura; gestión de reclamos y siniestros."),
+  ("Negociación y análisis de costos", "negociación de tarifas y condiciones comerciales con clientes, brokers y PAS a partir de datos de costos y siniestralidad."),
+  ("Controles internos", "aplicación de controles internos y procedimientos en la operación de la cartera, cobranzas y planes de pago."),
+  ("Planificación y liderazgo", "conducción de equipo regional y coordinación con Cobranzas, Siniestros y Prevención; trabajo bajo presión y orientación a resultados."),
+  ("Análisis y reporting", "KPIs y reportes de gestión en Oracle BI, Power BI y Excel avanzado; CRM Microsoft Dynamics 365."),
+]
+_c["jobs"] = [
+  {"t": "Ejecutivo Comercial B2B PyME", "org": "Grupo Omint", "ind": "Medicina prepaga", "d": "Junio 2026 – Actualidad",
+   "b": ["Elaboración de propuestas comerciales, negociación y renovaciones con clientes corporativos PyME.",
+         "Diseño de un cotizador web que compara planes y genera la propuesta en PDF en 1 a 2 minutos."]},
+  {"t": "Account Manager", "org": "Grupo América", "ind": "Medios", "d": "Mayo 2025 – Junio 2026",
+   "b": ["Gestión de una cartera de cuentas corporativas como punto de contacto principal; seguimiento de KPIs comerciales."]},
+  {"t": "Analista de Datos / IA Trainer", "org": "Outlier", "ind": "Tecnología – IA", "d": "Julio 2024 – Abril 2025",
+   "b": ["Control de calidad de datos con rúbricas y criterios de evaluación estrictos."]},
+  {"t": "Jefe de ART", "org": "Federación Patronal Seguros", "ind": "Sector seguros", "d": "Abril 2016 – Enero 2023",
+   "b": ["Jefatura de la unidad ART regional durante casi 7 años, con equipo a cargo y coordinación de las áreas de Cobranzas, Siniestros y Prevención.",
+         "Coordinación de licitaciones y renovaciones de contratos de cobertura de ART con clientes corporativos, brokers y PAS.",
+         "Negociación de tarifas y condiciones comerciales a partir del análisis de costos y siniestralidad en Oracle BI.",
+         "Gestión de reclamos y siniestros junto al área de Siniestros; recupero de cobranzas y armado de planes de pago.",
+         "Aplicación de controles internos en la operación de la cartera y reportes de gestión sobre retención y cobranzas."]},
+  {"t": "Analista Comercial", "org": "Federación Patronal Seguros", "ind": "", "d": "Noviembre 2015 – Abril 2016",
+   "b": ["Análisis técnico-comercial de clientes para evaluación de riesgos y reporting de indicadores clave."]},
+]
+_c["tools"] = "Excel avanzado, Oracle BI, Microsoft Dynamics 365 CRM, Power BI, SQL, HubSpot, Google Workspace"
+CV["es-contratos"] = _c
+
 def e(s): return html.escape(s)
 
 def render(d):
