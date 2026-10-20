@@ -170,6 +170,37 @@ _c["jobs"] = [
 _c["tools"] = "Excel avanzado, Oracle BI, Microsoft Dynamics 365 CRM, Power BI, SQL, HubSpot, Google Workspace"
 CV["es-contratos"] = _c
 
+# Tailored version for EY GDS — ET Risk & Compliance, Operations & Reporting Analyst.
+# Uses only confirmed experience; Pablo confirmed SharePoint, Teams/Planner and
+# budget/expense tracking. No audit experience is claimed. Not published on the site.
+_y = copy.deepcopy(CV["en"])
+_y["title"] = "Reporting & Data Analyst | KPI Dashboards & Internal Controls | Project Coordination"
+_y["comp"] = [
+  ("Management reporting & dashboards", "KPI and risk-indicator dashboards (loss ratio, retention, collections) in Power BI (DAX, Power Query), Oracle BI and Qlik Sense; recurring management reports, ad hoc and trend analysis for decision-making."),
+  ("Internal controls & records", "applied internal controls and procedures to portfolio operations; maintained account records in Microsoft Dynamics 365 CRM; data quality reviews and record validation."),
+  ("Project coordination & stakeholders", "requirements gathering, scoping, planning, progress tracking and rollout; cross-functional coordination and stakeholder communication."),
+  ("Microsoft 365 & collaboration", "SharePoint document libraries, Microsoft Teams, Planner and advanced Excel for team coordination and reporting."),
+  ("Vendor & financial administration", "contract renewals and tenders with corporate clients, brokers and agents; budget and expense tracking."),
+]
+_y["jobs"] = [
+  {"t": "SMB B2B Account Executive", "org": "Grupo Omint", "ind": "Private health insurance", "d": "June 2026 – Present",
+   "b": ["Coordinated a custom CRM and a web quoting tool end to end: requirements gathering, scoping, testing and rollout.",
+         "Manage the SMB pipeline: commercial proposals, negotiation and renewals."]},
+  {"t": "Account Manager", "org": "Grupo América", "ind": "Media", "d": "May 2025 – June 2026",
+   "b": ["Tracked and reported commercial KPIs to spot opportunities and risks across a corporate account portfolio."]},
+  {"t": "Data Analyst / AI Trainer", "org": "Outlier", "ind": "Technology – AI", "d": "July 2024 – April 2025",
+   "b": ["Data quality reviews of AI model outputs against evaluation rubrics and guidelines; flagged errors and inconsistencies."]},
+  {"t": "Workers' Compensation (ART) Manager", "org": "Federación Patronal Seguros", "ind": "Insurance", "d": "April 2016 – January 2023",
+   "b": ["Led the regional ART unit for nearly 7 years with a team, coordinating Collections, Claims and Prevention.",
+         "Built management reports and dashboards on portfolio, retention, collections and loss-ratio indicators in Oracle BI to support leadership decisions.",
+         "Applied internal controls to portfolio operations, collections and payment plans; maintained account records in Microsoft Dynamics 365 CRM.",
+         "Coordinated tenders, contract renewals and claims with corporate clients, brokers and agents."]},
+  {"t": "Commercial Analyst", "org": "Federación Patronal Seguros", "ind": "", "d": "November 2015 – April 2016",
+   "b": ["Client data analysis for risk assessment and KPI reporting."]},
+]
+_y["tools"] = "Power BI (DAX, Power Query), advanced Excel, SharePoint, Microsoft Teams, Planner, Oracle BI, Qlik Sense, SQL, Snowflake, Microsoft Dynamics 365 CRM, HubSpot, Google Workspace"
+CV["en-ey"] = _y
+
 def e(s): return html.escape(s)
 
 def render(d):
