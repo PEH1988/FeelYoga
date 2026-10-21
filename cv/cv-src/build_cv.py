@@ -199,6 +199,39 @@ _y["jobs"] = [
 _y["tools"] = "Power BI (DAX, Power Query), advanced Excel, SharePoint, Microsoft Teams, Planner, Oracle BI, Qlik Sense, SQL, Snowflake, Microsoft Dynamics 365 CRM, HubSpot, Asana, Gantt charts, Google Workspace"
 CV["en-ey"] = _y
 
+# Tailored version for a Data & BI Analyst search (project leadership, SQL, DW, ETL,
+# visualisation). Pablo confirmed integrations; no Looker/Data Studio and no APIs.
+_b = copy.deepcopy(CV["es"])
+_b["title"] = "Analista de Datos y BI | Liderazgo de Proyectos"
+_b["show_projects"] = True
+_b["comp"] = [
+  ("SQL y modelado de datos", "SQL, MySQL, bases de datos relacionales, data warehouse en Snowflake, modelo estrella."),
+  ("ETL e integraciones", "extracción, limpieza y transformación de datos de distintas fuentes con Power Query; integración de formularios, email y WhatsApp."),
+  ("Visualización", "dashboards de KPIs en Power BI (DAX), Qlik Sense, Oracle BI y Excel avanzado; data storytelling."),
+  ("Liderazgo de proyectos", "de los requerimientos a la puesta en marcha con Agile, Scrum y Kanban; equipo de 6 personas a cargo."),
+  ("Visión de negocio", "más de 10 años en seguros, salud y medios traduciendo necesidades del negocio en soluciones."),
+]
+_b["jobs"] = [
+  {"t": "Ejecutivo Comercial B2B PyME", "org": "Grupo Omint", "ind": "Medicina prepaga", "d": "Junio 2026 – Actualidad",
+   "b": ["Lideré de punta a punta un CRM propio y un cotizador web: relevamiento de requerimientos, diseño, pruebas y puesta en marcha."]},
+  {"t": "Account Manager", "org": "Grupo América", "ind": "Medios", "d": "Mayo 2025 – Junio 2026",
+   "b": ["Reporting y seguimiento de KPIs comerciales de una cartera de cuentas corporativas."]},
+  {"t": "Analista de Datos / IA Trainer", "org": "Outlier", "ind": "Tecnología – IA", "d": "Julio 2024 – Abril 2025",
+   "b": ["Análisis y control de calidad de datos de modelos de IA con rúbricas de evaluación y métricas de desempeño."]},
+  {"t": "Jefe de ART", "org": "Federación Patronal Seguros", "ind": "Sector seguros", "d": "Abril 2016 – Enero 2023",
+   "b": ["Lideré la unidad ART regional con un equipo de 6 personas, coordinando Cobranzas, Siniestros y Prevención.",
+         "Análisis de siniestralidad y cartera en Oracle BI; reportes y dashboards de KPIs para decisiones comerciales y de suscripción."]},
+  {"t": "Analista Comercial", "org": "Federación Patronal Seguros", "ind": "", "d": "Noviembre 2015 – Abril 2016",
+   "b": ["Análisis de datos de clientes para evaluación de riesgos y reporting de KPIs."]},
+]
+_b["projects"] = [
+  ("Tractchun (Power BI)", "97.948 tickets de soporte TI: ETL en Power Query, modelo estrella y KPIs en DAX."),
+  ("Higiene del sueño (Qlik Sense)", "limpieza y modelado de datos con SQL y Snowflake; análisis de 374 personas."),
+  ("Landing de generación de leads", "formulario de cotización integrado con WhatsApp y email para derivar consultas."),
+]
+_b["tools"] = "SQL, MySQL, Snowflake, Power BI (DAX, Power Query), Qlik Sense, Oracle BI, Excel avanzado, Dynamics 365, React, Asana, Google Workspace"
+CV["es-bi"] = _b
+
 def e(s): return html.escape(s)
 
 def render(d):
@@ -214,6 +247,7 @@ def render(d):
         title = f'<a class="cert" href="{e(url)}">{e(t)}</a>' if url else e(t)
         return f'<div class="edu"><p><b>{title}</b> · {e(o)}</p><span>{e(y)}</span></div>'
     edu = "".join(edu_item(*x) for x in d["edu"])
+    projects_html = (f'<h2>{e(d["h_projects"])}</h2><ul class="comp">{projects}</ul>\n' if d.get("show_projects") else "")
     return f'''<!doctype html><html lang="{d["lang"]}"><head><meta charset="utf-8"><title>Pablo Hidalgo — CV</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"><style>{CSS}</style></head><body>
 <header><h1>Pablo Hidalgo</h1><div class="role">{e(d["title"])}</div>
@@ -221,7 +255,7 @@ def render(d):
 <div class="web"><b>{e(d["web_label"])}:</b> {web}</div></header>
 
 <h2>{e(d["h_exp"])}</h2>{jobs}
-<h2>{e(d["h_edu"])}</h2>{edu}
+{projects_html}<h2>{e(d["h_edu"])}</h2>{edu}
 <h2>{e(d["h_comp"])}</h2><ul class="comp">{comp}</ul>
 <h2>{e(d["h_tools"])}</h2><p>{e(d["tools"])}</p>
 <h2>{e(d["h_lang"])}</h2><p>{e(d["langs"])}</p>
