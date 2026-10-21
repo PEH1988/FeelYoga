@@ -437,3 +437,7 @@ html, body, .nav.solid, .page, .h2, .next, footer { transition: background-color
   .cases.trio .case:first-child { padding-left: 0; border-left: 0; }
   .cases.trio .case .n { font-size: clamp(40px, 4.6vw, 72px); }
 }
+
+/* Google PM certificate skills under the three columns */
+.pm-skills { margin-top: clamp(40px, 6vw, 80px); }
+.pm-skills .chips { margin-top: 12px; }

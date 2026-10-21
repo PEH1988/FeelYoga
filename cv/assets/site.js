@@ -77,14 +77,15 @@
     'sk.edu': 'Education & certifications', 'sk.edu4.t': 'HubSpot Sales Software Certification', 'sk.edu4.l': 'View certificate →', 'sk.cert': 'Certified',
     'sk.edu1.t': 'Data Analyst',
     'sk.edu2.t': 'Associate Degree in Marketing & Sales',
-    'sk.edu3.t': 'Google Project Management',
-    'sk.edu3.d': 'In progress',
+    'sk.gpm': 'Google Project Management Certificate', 'sk.gpm1': 'Methodologies & management',
+    'sk.gpm2': 'Planning & control', 'sk.gpm3': 'Interpersonal skills',
+    'sk.edu3.t': 'Google Project Management Certificate',
 
     /* portfolio */
     'pf.k': 'Portfolio',
     'pf.lead': 'Three perspectives, one goal: getting things done. I take projects from idea to rollout, use data to decide and look after the client relationship.',
     'pf.pm.w': 'tools taken from idea to production',
-    'pf.pm.t': 'CRM, web quoting tool and lead-generation landing page: I coordinated requirements gathering, scoping, design, testing and rollout for each one. Google Project Management Certificate in progress.',
+    'pf.pm.t': 'CRM, web quoting tool and lead-generation landing page: I coordinated requirements gathering, scoping, design, testing and rollout for each one. Google Project Management Certificate.',
     'pf.am.w': 'years managing B2B accounts',
     'pf.am.t': 'Corporate and strategic accounts, brokers and commercial partners in insurance, healthcare and media. Long-term relationships, retention, debt recovery, upselling and cross-selling.',
     'pf.ba.w': 'records analysed in a single dashboard',
@@ -121,7 +122,7 @@
 
   var ES_UI = { more: 'Ver más', less: 'Ver menos', next: 'Siguiente', menu: 'Menú', close: 'Cerrar', scroll: 'Scroll', invert: 'Invertir colores', normal: 'Colores originales' };
   // bump when the CV PDFs are regenerated, so browsers and the host never serve an old copy
-  var CV_VERSION = '20261016a';
+  var CV_VERSION = '20261021a';
   var MODE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 2.5a9.5 9.5 0 0 1 0 19z" fill="currentColor"/></svg>';
   var GLOBE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c3 3.2 3 15.8 0 19M12 2.5c-3 3.2-3 15.8 0 19"/></svg>';
 

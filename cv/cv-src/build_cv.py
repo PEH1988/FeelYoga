@@ -12,6 +12,7 @@ WEB_URL = "pablohidalgo.site"
 HERE = pathlib.Path(__file__).parent
 
 JUPI_URL = "https://www.jupidigital.com/pablo-hidalgo-certificado-bootcamp-analisis-de-datos"
+GOOGLE_PM_URL = "https://www.credly.com/badges/cb4eed89-b2f5-4929-a1ce-de794096b387"
 HUBSPOT_URL = "https://app.hubspot.com/academy/achievements/zlnygxxg/es/1/pablo-hidalgo/certificacion-del-software-de-ventas-de-hubspot"
 
 # Content follows Pablo's CV (Oct 2026). Competencies are (label, text) pairs.
@@ -26,6 +27,7 @@ CV = {
     "profile": "",
     "comp": [
       ("Coordinación de proyectos", "relevamiento de requerimientos, definición de alcance, planificación, seguimiento de avances y puesta en marcha; coordinación cross-funcional y comunicación con stakeholders."),
+      ("Metodologías de proyectos", "Agile, Scrum, Kanban y Waterfall; planificación, ejecución y cierre; WBS, Project Charter y OKRs; gestión de riesgos, presupuesto, cambios y calidad."),
       ("Business Intelligence", "dashboards y reporting de KPIs en Power BI (DAX, Power Query), Qlik Sense y Oracle BI; SQL, Snowflake, ETL y modelado de datos; data storytelling."),
       ("Gestión de cuentas", "grandes cuentas corporativas, brokers y PAS; retención de cartera, upselling y cross-selling, negociación con niveles gerenciales; gestión de pipeline en CRM."),
       ("Liderazgo", "conducción de equipo comercial regional; coordinación con Cobranzas, Siniestros y Prevención."),
@@ -50,11 +52,11 @@ CV = {
       ("CRM propio de gestión de pipeline B2B", "proyecto propio de punta a punta: requerimientos, diseño y desarrollo de una herramienta para registrar, segmentar y seguir cuentas y oportunidades PyME."),
       ("Cotizador web de planes", "compara planes para individuos y empresas y genera un PDF para el cliente en 1 a 2 minutos por cotización."),
     ],
-    "edu": [("Certificado de Project Management de Google", "Coursera", "En curso", ""),
+    "edu": [("Certificado de Project Management de Google", "Coursera", "2026", GOOGLE_PM_URL),
             ("Certificación del software de Ventas de HubSpot", "HubSpot Academy", "2026", HUBSPOT_URL),
             ("Analista de Datos", "Jupi Digital", "2024 – 2025", JUPI_URL),
             ("Tecnicatura en Comercialización", "Universidad Siglo 21", "2016 – 2020", "")],
-    "tools": "Power BI (DAX, Power Query), Qlik Sense, Oracle BI, SQL, MySQL, Snowflake, Excel avanzado, HubSpot, Microsoft Dynamics 365 CRM, Salesforce (fundamentos), React, Google Workspace",
+    "tools": "Power BI (DAX, Power Query), Qlik Sense, Oracle BI, SQL, MySQL, Snowflake, Excel avanzado, HubSpot, Microsoft Dynamics 365 CRM, Salesforce (fundamentos), React, Asana, diagramas de Gantt, backlog ágil / user stories, Google Workspace",
     "langs": "Español (nativo) · Inglés (intermedio avanzado, B2)",
   },
   "en": {
@@ -67,6 +69,7 @@ CV = {
     "profile": "",
     "comp": [
       ("Project coordination", "requirements gathering, scoping, planning, progress tracking and rollout; cross-functional coordination and stakeholder communication."),
+      ("Project methodologies", "Agile, Scrum, Kanban and Waterfall; planning, execution and closure; WBS, project charter and OKRs; risk, budget, change and quality management."),
       ("Business Intelligence", "KPI dashboards and reporting in Power BI (DAX, Power Query), Qlik Sense and Oracle BI; SQL, Snowflake, ETL and data modelling; data storytelling."),
       ("Account management", "key corporate accounts, brokers and agents; client retention, upselling and cross-selling, negotiation with senior management; CRM pipeline management."),
       ("Leadership", "leading a regional sales team; coordinating Collections, Claims and Prevention."),
@@ -91,11 +94,11 @@ CV = {
       ("Custom B2B pipeline CRM", "end-to-end own project: requirements, design and build of a tool to log, segment and follow up SMB accounts and opportunities."),
       ("Web plan quoting tool", "compares plans for individuals and companies and generates a client PDF in 1 to 2 minutes per quote."),
     ],
-    "edu": [("Google Project Management Certificate", "Coursera", "In progress", ""),
+    "edu": [("Google Project Management Certificate", "Coursera", "2026", GOOGLE_PM_URL),
             ("HubSpot Sales Software Certification", "HubSpot Academy", "2026", HUBSPOT_URL),
             ("Data Analyst", "Jupi Digital", "2024 – 2025", JUPI_URL),
             ("Associate Degree in Marketing & Sales", "Universidad Siglo 21", "2016 – 2020", "")],
-    "tools": "Power BI (DAX, Power Query), Qlik Sense, Oracle BI, SQL, MySQL, Snowflake, advanced Excel, HubSpot, Microsoft Dynamics 365 CRM, Salesforce (fundamentals), React, Google Workspace",
+    "tools": "Power BI (DAX, Power Query), Qlik Sense, Oracle BI, SQL, MySQL, Snowflake, advanced Excel, HubSpot, Microsoft Dynamics 365 CRM, Salesforce (fundamentals), React, Asana, Gantt charts, Agile backlog / user stories, Google Workspace",
     "langs": "Spanish (native) · English (upper-intermediate, B2)",
   },
 }
@@ -179,6 +182,7 @@ _y["comp"] = [
   ("Management reporting & dashboards", "KPI and risk-indicator dashboards (loss ratio, retention, collections) in Power BI (DAX, Power Query), Oracle BI and Qlik Sense; recurring management reports, ad hoc and trend analysis for decision-making."),
   ("Internal controls & records", "applied internal controls and procedures to portfolio operations; maintained account records in Microsoft Dynamics 365 CRM; data quality reviews and record validation."),
   ("Project coordination & stakeholders", "requirements gathering, scoping, planning, progress tracking and rollout; cross-functional coordination and stakeholder communication."),
+  ("Project methodologies", "Agile, Scrum, Kanban and Waterfall; planning, execution and closure; WBS, project charter and OKRs; risk, budget, change and quality management."),
   ("Microsoft 365 & collaboration", "SharePoint document libraries, Microsoft Teams, Planner and advanced Excel for team coordination and reporting."),
   ("Vendor & financial administration", "contract renewals and tenders with corporate clients, brokers and agents; budget and expense tracking."),
 ]
@@ -198,7 +202,7 @@ _y["jobs"] = [
   {"t": "Commercial Analyst", "org": "Federación Patronal Seguros", "ind": "", "d": "November 2015 – April 2016",
    "b": ["Client data analysis for risk assessment and KPI reporting."]},
 ]
-_y["tools"] = "Power BI (DAX, Power Query), advanced Excel, SharePoint, Microsoft Teams, Planner, Oracle BI, Qlik Sense, SQL, Snowflake, Microsoft Dynamics 365 CRM, HubSpot, Google Workspace"
+_y["tools"] = "Power BI (DAX, Power Query), advanced Excel, SharePoint, Microsoft Teams, Planner, Oracle BI, Qlik Sense, SQL, Snowflake, Microsoft Dynamics 365 CRM, HubSpot, Asana, Gantt charts, Google Workspace"
 CV["en-ey"] = _y
 
 def e(s): return html.escape(s)
