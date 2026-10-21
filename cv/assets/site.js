@@ -79,6 +79,12 @@
     'sk.edu2.t': 'Associate Degree in Marketing & Sales',
     'sk.gpm': 'Google Project Management Certificate', 'sk.gpm1': 'Methodologies & management',
     'sk.gpm2': 'Planning & control', 'sk.gpm3': 'Interpersonal skills',
+    'gpm.c1': 'Project Management', 'gpm.c2': 'Agile Project Management', 'gpm.c3': 'Waterfall', 'gpm.c4': 'Project Planning',
+    'gpm.c5': 'Project Execution', 'gpm.c6': 'Project Closure', 'gpm.c7': 'Risk Management', 'gpm.c8': 'Budget Management',
+    'gpm.c9': 'Stakeholder Management', 'gpm.c10': 'Change Management', 'gpm.c11': 'Quality Management', 'gpm.c12': 'Work Breakdown Structure (WBS)',
+    'gpm.c13': 'Project Charter', 'gpm.c14': 'Strategic Thinking', 'gpm.c15': 'Effective Communication', 'gpm.c16': 'Influencing',
+    'gpm.c17': 'Team Leadership', 'gpm.c18': 'Problem Solving', 'gpm.c19': 'Conflict Resolution', 'gpm.c20': 'Advanced Excel',
+    'gpm.c21': 'Salesforce (fundamentals)', 'gpm.c22': 'Spreadsheets', 'gpm.c23': 'Gantt Charts', 'gpm.c24': 'Agile Backlog / User Stories',
     'sk.edu3.t': 'Google Project Management Certificate',
 
     /* portfolio */
