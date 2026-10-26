@@ -326,8 +326,20 @@ function PersonasList({ personas, setSelectedPersonaId, setShowNewPersona, setSh
 function PersonaDetail({ persona, onClose, updatePersona, deletePersona, setShowPersonaWhatsApp, askConfirm }) {
   const [f, setF] = useState({});
   useEffect(() => {
-    setF({ nombre: persona.nombre || "", telefono: persona.telefono || "", mail: persona.mail || "", obraSocial: persona.obraSocial || "", fechaNacimiento: persona.fechaNacimiento || "", nota: persona.nota || "", seguimiento: persona.seguimiento || "", grupo: persona.grupo || "" });
+    setF({ _id: persona.id, nombre: persona.nombre || "", telefono: persona.telefono || "", mail: persona.mail || "", obraSocial: persona.obraSocial || "", fechaNacimiento: persona.fechaNacimiento || "", nota: persona.nota || "", seguimiento: persona.seguimiento || "", grupo: persona.grupo || "" });
   }, [persona.id]);
+  const latest = useRef(null);
+  latest.current = { f, persona };
+  useEffect(
+    () => () => {
+      const { f: ff, persona: pp } = latest.current;
+      if (ff._id !== pp.id) return;
+      const patch = {};
+      Object.keys(ff).forEach((k) => k !== "_id" && ff[k] !== (pp[k] || "") && (patch[k] = ff[k]));
+      if (Object.keys(patch).length) updatePersona(pp.id, patch);
+    },
+    []
+  );
   const commit = (k) => f[k] !== undefined && f[k] !== (persona[k] || "") && updatePersona(persona.id, { [k]: f[k] });
   const edad = calcularEdad(persona.fechaNacimiento);
   const inp = (k, props = {}) => <input className="input" value={f[k] ?? ""} onChange={(e) => setF({ ...f, [k]: e.target.value })} onBlur={() => commit(k)} {...props} />;

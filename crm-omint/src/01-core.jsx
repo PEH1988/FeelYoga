@@ -8,7 +8,7 @@ import {
   Download, Upload, Instagram, Heart, LayoutDashboard, Megaphone,
   BookOpen, Activity, Zap, Sun, Moon, Calculator, Settings, AlertTriangle,
   Sunrise, FileText, Copy, ArrowRight, Trophy, Timer, Stethoscope,
-  Sparkles, Command, Award, Briefcase, Check,
+  Sparkles, Command, Award, Briefcase, Check, LogOut,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine, Cell,
@@ -614,6 +614,19 @@ const OBJECIONES = [
 ];
 
 // --------------------------------------------------------- Google Calendar ---
+
+// Versión web (hosting propio): no hay conector de Claude, así que en lugar de
+// sincronizar se abre Google Calendar con el evento ya completado.
+const HOSTED = typeof window !== "undefined" && !!window.__CRM_HOSTED__;
+
+function gcalTemplateLink(m) {
+  const start = localDateFromFechaHora(m.fecha, m.hora);
+  const end = new Date(start.getTime() + 30 * 60000);
+  const f = (d) => `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}T${pad2(d.getHours())}${pad2(d.getMinutes())}00`;
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const q = new URLSearchParams({ action: "TEMPLATE", text: `Reunión con ${m.empresa}`, dates: `${f(start)}/${f(end)}`, details: m.notas || "Reunión comercial Omint PyME", ctz: tz });
+  return `https://calendar.google.com/calendar/render?${q.toString()}`;
+}
 
 const GCAL_CALENDAR_ID = "pablohidalgo1188@gmail.com";
 const GCAL_SYSTEM = `You have access to a Google Calendar MCP tool connected to the user's real Google account. You must ONLY ever read from or write to the calendar with id "${GCAL_CALENDAR_ID}". Never use "primary" or any other calendar id, even if it is offered as a default. Always call the appropriate tool immediately when asked. Never ask clarifying questions and never refuse. After the tool call completes, output ONLY the exact JSON requested in the user message, with no code fences, no explanation, and no extra text before or after it.`;

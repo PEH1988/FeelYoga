@@ -1,0 +1,15 @@
+# Seguridad básica para la carpeta del CRM
+Options -Indexes
+<FilesMatch "^(config\.php)$">
+  Require all denied
+</FilesMatch>
+<IfModule mod_headers.c>
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "same-origin"
+</IfModule>
+# Forzar HTTPS (la clave viaja en cada pedido)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>

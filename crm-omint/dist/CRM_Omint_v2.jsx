@@ -8,7 +8,7 @@ import {
   Download, Upload, Instagram, Heart, LayoutDashboard, Megaphone,
   BookOpen, Activity, Zap, Sun, Moon, Calculator, Settings, AlertTriangle,
   Sunrise, FileText, Copy, ArrowRight, Trophy, Timer, Stethoscope,
-  Sparkles, Command, Award, Briefcase, Check,
+  Sparkles, Command, Award, Briefcase, Check, LogOut,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine, Cell,
@@ -614,6 +614,19 @@ const OBJECIONES = [
 ];
 
 // --------------------------------------------------------- Google Calendar ---
+
+// Versión web (hosting propio): no hay conector de Claude, así que en lugar de
+// sincronizar se abre Google Calendar con el evento ya completado.
+const HOSTED = typeof window !== "undefined" && !!window.__CRM_HOSTED__;
+
+function gcalTemplateLink(m) {
+  const start = localDateFromFechaHora(m.fecha, m.hora);
+  const end = new Date(start.getTime() + 30 * 60000);
+  const f = (d) => `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}T${pad2(d.getHours())}${pad2(d.getMinutes())}00`;
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const q = new URLSearchParams({ action: "TEMPLATE", text: `Reunión con ${m.empresa}`, dates: `${f(start)}/${f(end)}`, details: m.notas || "Reunión comercial Omint PyME", ctz: tz });
+  return `https://calendar.google.com/calendar/render?${q.toString()}`;
+}
 
 const GCAL_CALENDAR_ID = "pablohidalgo1188@gmail.com";
 const GCAL_SYSTEM = `You have access to a Google Calendar MCP tool connected to the user's real Google account. You must ONLY ever read from or write to the calendar with id "${GCAL_CALENDAR_ID}". Never use "primary" or any other calendar id, even if it is offered as a default. Always call the appropriate tool immediately when asked. Never ask clarifying questions and never refuse. After the tool call completes, output ONLY the exact JSON requested in the user message, with no code fences, no explanation, and no extra text before or after it.`;
@@ -1470,6 +1483,17 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companies, meetings, deletedEventIds, personas, contenido, waLog, settings, loaded]);
 
+  // Aviso al cerrar la pestaña si hay cambios que todavía no terminaron de guardarse.
+  useEffect(() => {
+    if (saveState !== "saving" && saveState !== "error") return;
+    const h = (e) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", h);
+    return () => window.removeEventListener("beforeunload", h);
+  }, [saveState]);
+
   // ---------------------------------------------------- Acciones: empresas
   const updateCompany = useCallback((id, patch) => {
     const hoy = hoyISO();
@@ -1590,7 +1614,8 @@ export default function App() {
 
   // ------------------------------------------------------ Reuniones / GCal
   const createMeeting = useCallback(async (data, syncToGoogle) => {
-    const localMeeting = { id: uid(), googleEventId: null, syncStatus: syncToGoogle ? "syncing" : "local", syncError: null, ...data };
+    const localMeeting = { id: uid(), googleEventId: null, syncStatus: syncToGoogle && !HOSTED ? "syncing" : "local", syncError: null, ...data };
+    if (syncToGoogle && HOSTED) window.open(gcalTemplateLink(localMeeting), "_blank");
     setMeetings((prev) => [...prev, localMeeting]);
     if (data.companyId) {
       setCompanies((prev) =>
@@ -1606,7 +1631,7 @@ export default function App() {
         })
       );
     }
-    if (syncToGoogle) {
+    if (syncToGoogle && !HOSTED) {
       const { eventId, error } = await pushMeetingToGoogle(localMeeting);
       setMeetings((prev) => prev.map((m) => (m.id === localMeeting.id ? { ...m, googleEventId: eventId, syncStatus: eventId ? "synced" : "error", syncError: error } : m)));
     }
@@ -1677,7 +1702,7 @@ export default function App() {
     syncRef.current = syncFromGoogle;
   }, [syncFromGoogle]);
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || HOSTED) return;
     const i = setInterval(() => syncRef.current(), 30 * 60 * 1000);
     return () => clearInterval(i);
   }, [loaded]);
@@ -1856,6 +1881,17 @@ export default function App() {
               <button className="nav-btn" style={{ justifyContent: "center", background: "var(--side-2)", flex: 1 }} onClick={() => setShowSettings(true)}>
                 <Settings size={14} /> Ajustes
               </button>
+              {HOSTED && window.__CRM_LOGOUT__ && (
+                <button
+                  className="nav-btn"
+                  style={{ justifyContent: "center", background: "var(--side-2)", width: 44, flex: "none" }}
+                  title="Cerrar sesión"
+                  aria-label="Cerrar sesión"
+                  onClick={() => askConfirm("¿Cerrar sesión en este dispositivo?", () => window.__CRM_LOGOUT__())}
+                >
+                  <LogOut size={15} />
+                </button>
+              )}
               <button
                 className="nav-btn"
                 style={{ justifyContent: "center", background: "var(--side-2)", width: 44, flex: "none" }}
@@ -3132,6 +3168,7 @@ function CompanyDetail({ company, onClose, updateCompany, addHistorial, deleteCo
   const [f, setF] = useState({});
   useEffect(() => {
     setF({
+      _id: company.id,
       empresa: company.empresa || "",
       nombreFantasia: company.nombreFantasia || "",
       cuit: company.cuit || "",
@@ -3149,6 +3186,23 @@ function CompanyDetail({ company, onClose, updateCompany, addHistorial, deleteCo
   useEffect(() => {
     setF((p) => ({ ...p, proximaAccion: company.proximaAccion || "", fechaProximaAccion: company.fechaProximaAccion || "", capitas: company.capitas || "" }));
   }, [company.proximaAccion, company.fechaProximaAccion, company.capitas]);
+
+  // Si la ficha se cierra (Esc, clic afuera) con un campo todavía en edición,
+  // lo guardamos igual: ningún cambio se pierde por no haber salido del campo.
+  const latest = useRef(null);
+  latest.current = { f, company };
+  useEffect(
+    () => () => {
+      const { f: ff, company: cc } = latest.current;
+      if (ff._id !== cc.id) return;
+      const patch = {};
+      Object.keys(ff).forEach((k) => {
+        if (k !== "_id" && ff[k] !== (cc[k] || "") && !(k === "empresa" && !ff[k].trim())) patch[k] = ff[k];
+      });
+      if (Object.keys(patch).length) updateCompany(cc.id, patch);
+    },
+    []
+  );
 
   const commit = (k) => {
     if (f[k] === undefined || f[k] === (company[k] || "")) return;
@@ -3549,11 +3603,11 @@ function Agenda({ agenda, companies, setShowNewMeeting, removeMeeting, syncFromG
     <div className="stack">
       <PageHeader
         title="Agenda de reuniones"
-        subtitle={`Se sincroniza con Google Calendar cada 30 minutos${lastSynced ? ` · última: ${lastSynced.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}` : ""}`}
+        subtitle={HOSTED ? "Usá “Agregar a Google Calendar” en cada reunión para tenerla también en tu calendario" : `Se sincroniza con Google Calendar cada 30 minutos${lastSynced ? ` · última: ${lastSynced.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}` : ""}`}
       >
-        <Btn icon={RefreshCw} onClick={syncFromGoogle} disabled={gcalStatus === "syncing"} className={gcalStatus === "syncing" ? "syncing" : ""}>
+        {!HOSTED && <Btn icon={RefreshCw} onClick={syncFromGoogle} disabled={gcalStatus === "syncing"} className={gcalStatus === "syncing" ? "syncing" : ""}>
           {gcalStatus === "syncing" ? "Sincronizando…" : gcalStatus === "done" ? "¡Listo!" : gcalStatus === "error" ? "Error, reintentar" : "Traer de Google Calendar"}
-        </Btn>
+        </Btn>}
         <Btn variant="primary" icon={Plus} onClick={() => setShowNewMeeting(true)}>Reunión</Btn>
       </PageHeader>
 
@@ -3632,6 +3686,11 @@ function MeetingRow({ m, past, onClick, onDelete, onRetry, onLog }) {
         )}
       </div>
       {onLog && <Btn size="sm" variant="soft" onClick={onLog}>Registrar resultado</Btn>}
+      {HOSTED && !past && (
+        <a className="btn btn-outline btn-sm" href={gcalTemplateLink(m)} target="_blank" rel="noreferrer" title="Agregar a Google Calendar">
+          <CalIcon size={13} /> Google Calendar
+        </a>
+      )}
       <button className="icon-btn" onClick={onDelete} aria-label="Borrar reunión"><Trash2 size={13} /></button>
     </div>
   );
@@ -3677,7 +3736,7 @@ function NewMeetingModal({ companies, preselectedId, onClose, onSave }) {
         <QuickDates onPick={(d) => setForm({ ...form, fecha: d })} />
         <Field label="Notas"><input className="input" value={form.notas} onChange={(e) => setForm({ ...form, notas: e.target.value })} placeholder="Ej: presentación de planes con RRHH" /></Field>
         <label className="row" style={{ gap: 8, fontSize: 13, cursor: "pointer" }}>
-          <input type="checkbox" checked={syncToGoogle} onChange={(e) => setSyncToGoogle(e.target.checked)} /> Crear también en Google Calendar
+          <input type="checkbox" checked={syncToGoogle} onChange={(e) => setSyncToGoogle(e.target.checked)} /> {HOSTED ? "Abrir Google Calendar para guardarla también ahí" : "Crear también en Google Calendar"}
         </label>
         {comp && ["prospeccion", "contacto"].includes(comp.stage) && <div className="note t-accent">La empresa pasa automáticamente a “Reunión Agendada”.</div>}
         <Btn
@@ -4385,8 +4444,20 @@ function PersonasList({ personas, setSelectedPersonaId, setShowNewPersona, setSh
 function PersonaDetail({ persona, onClose, updatePersona, deletePersona, setShowPersonaWhatsApp, askConfirm }) {
   const [f, setF] = useState({});
   useEffect(() => {
-    setF({ nombre: persona.nombre || "", telefono: persona.telefono || "", mail: persona.mail || "", obraSocial: persona.obraSocial || "", fechaNacimiento: persona.fechaNacimiento || "", nota: persona.nota || "", seguimiento: persona.seguimiento || "", grupo: persona.grupo || "" });
+    setF({ _id: persona.id, nombre: persona.nombre || "", telefono: persona.telefono || "", mail: persona.mail || "", obraSocial: persona.obraSocial || "", fechaNacimiento: persona.fechaNacimiento || "", nota: persona.nota || "", seguimiento: persona.seguimiento || "", grupo: persona.grupo || "" });
   }, [persona.id]);
+  const latest = useRef(null);
+  latest.current = { f, persona };
+  useEffect(
+    () => () => {
+      const { f: ff, persona: pp } = latest.current;
+      if (ff._id !== pp.id) return;
+      const patch = {};
+      Object.keys(ff).forEach((k) => k !== "_id" && ff[k] !== (pp[k] || "") && (patch[k] = ff[k]));
+      if (Object.keys(patch).length) updatePersona(pp.id, patch);
+    },
+    []
+  );
   const commit = (k) => f[k] !== undefined && f[k] !== (persona[k] || "") && updatePersona(persona.id, { [k]: f[k] });
   const edad = calcularEdad(persona.fechaNacimiento);
   const inp = (k, props = {}) => <input className="input" value={f[k] ?? ""} onChange={(e) => setF({ ...f, [k]: e.target.value })} onBlur={() => commit(k)} {...props} />;
@@ -4756,6 +4827,11 @@ function SettingsModal({ settings, onClose, onSave }) {
             <button className={s.theme === "dark" ? "on" : ""} onClick={() => setS({ ...s, theme: "dark" })}><Moon size={13} style={{ verticalAlign: -2 }} /> Oscuro</button>
           </div>
         </Field>
+        {HOSTED && (
+          <div className="note t-info">
+            Tus datos se guardan en <strong>este navegador</strong> (no en el servidor). No se comparten entre dispositivos y se pierden si borrás los datos del sitio: hacé <strong>Backup</strong> seguido y usá <strong>Restaurar</strong> para pasar la base a otra computadora.
+          </div>
+        )}
         <Btn variant="primary" style={{ width: "100%" }} onClick={() => onSave(s)}>Guardar ajustes</Btn>
       </div>
     </Modal>

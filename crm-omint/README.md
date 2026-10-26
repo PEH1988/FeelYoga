@@ -27,3 +27,16 @@ node build.mjs ruta/al/CRM_anterior.jsx dist/CRM_Omint_v2.jsx
 ```
 
 Sin argumentos, `node build.mjs` genera `dist/CRM_Omint_v2.jsx` con la base vacía.
+
+## Versión web (Hostinger u otro hosting con PHP)
+
+```bash
+cd crm-omint && npm install && node build-web.mjs
+```
+
+Genera `web-dist/` con `index.html` (la app completa en un solo archivo), `api.php`, `config.php` y `.htaccess`:
+
+- **Guardado en el servidor:** cada cambio se guarda solo en `crm-data/`, con una copia de seguridad diaria. Se ve igual desde cualquier dispositivo.
+- **Ingreso:** pide usuario y contraseña. La contraseña se guarda cifrada (bcrypt) en `config.php` y cada dispositivo recibe una sesión de 30 días.
+- **Conflictos:** si otro dispositivo guardó cambios, la app avisa en vez de pisarlos.
+- **Antes de subir:** completá `CRM_USER` y `CRM_PASSWORD_HASH` en `config.php`. Las credenciales nunca se versionan.

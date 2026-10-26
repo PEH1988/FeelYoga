@@ -7,10 +7,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
-const [seedSrc, out = path.join(dir, "dist", "CRM_Omint_v2.jsx")] = process.argv.slice(2);
+const [seedArg, out = path.join(dir, "dist", "CRM_Omint_v2.jsx")] = process.argv.slice(2);
 const files = fs.readdirSync(path.join(dir, "src")).filter((f) => f.endsWith(".jsx")).sort();
 let code = files.map((f) => fs.readFileSync(path.join(dir, "src", f), "utf8")).join("\n");
 
+const seedSrc = seedArg || null;
 if (seedSrc) {
   const raw = fs.readFileSync(seedSrc, "utf8");
   const m = raw.match(/const SEED = (\[[\s\S]*?\n\]);/);

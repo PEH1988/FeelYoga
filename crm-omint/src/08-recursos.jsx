@@ -186,6 +186,11 @@ function SettingsModal({ settings, onClose, onSave }) {
             <button className={s.theme === "dark" ? "on" : ""} onClick={() => setS({ ...s, theme: "dark" })}><Moon size={13} style={{ verticalAlign: -2 }} /> Oscuro</button>
           </div>
         </Field>
+        {HOSTED && (
+          <div className="note t-info">
+            Tus datos se guardan en <strong>este navegador</strong> (no en el servidor). No se comparten entre dispositivos y se pierden si borrás los datos del sitio: hacé <strong>Backup</strong> seguido y usá <strong>Restaurar</strong> para pasar la base a otra computadora.
+          </div>
+        )}
         <Btn variant="primary" style={{ width: "100%" }} onClick={() => onSave(s)}>Guardar ajustes</Btn>
       </div>
     </Modal>

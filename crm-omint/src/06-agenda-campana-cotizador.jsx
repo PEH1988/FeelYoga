@@ -20,11 +20,11 @@ function Agenda({ agenda, companies, setShowNewMeeting, removeMeeting, syncFromG
     <div className="stack">
       <PageHeader
         title="Agenda de reuniones"
-        subtitle={`Se sincroniza con Google Calendar cada 30 minutos${lastSynced ? ` · última: ${lastSynced.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}` : ""}`}
+        subtitle={HOSTED ? "Usá “Agregar a Google Calendar” en cada reunión para tenerla también en tu calendario" : `Se sincroniza con Google Calendar cada 30 minutos${lastSynced ? ` · última: ${lastSynced.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}` : ""}`}
       >
-        <Btn icon={RefreshCw} onClick={syncFromGoogle} disabled={gcalStatus === "syncing"} className={gcalStatus === "syncing" ? "syncing" : ""}>
+        {!HOSTED && <Btn icon={RefreshCw} onClick={syncFromGoogle} disabled={gcalStatus === "syncing"} className={gcalStatus === "syncing" ? "syncing" : ""}>
           {gcalStatus === "syncing" ? "Sincronizando…" : gcalStatus === "done" ? "¡Listo!" : gcalStatus === "error" ? "Error, reintentar" : "Traer de Google Calendar"}
-        </Btn>
+        </Btn>}
         <Btn variant="primary" icon={Plus} onClick={() => setShowNewMeeting(true)}>Reunión</Btn>
       </PageHeader>
 
@@ -103,6 +103,11 @@ function MeetingRow({ m, past, onClick, onDelete, onRetry, onLog }) {
         )}
       </div>
       {onLog && <Btn size="sm" variant="soft" onClick={onLog}>Registrar resultado</Btn>}
+      {HOSTED && !past && (
+        <a className="btn btn-outline btn-sm" href={gcalTemplateLink(m)} target="_blank" rel="noreferrer" title="Agregar a Google Calendar">
+          <CalIcon size={13} /> Google Calendar
+        </a>
+      )}
       <button className="icon-btn" onClick={onDelete} aria-label="Borrar reunión"><Trash2 size={13} /></button>
     </div>
   );
@@ -148,7 +153,7 @@ function NewMeetingModal({ companies, preselectedId, onClose, onSave }) {
         <QuickDates onPick={(d) => setForm({ ...form, fecha: d })} />
         <Field label="Notas"><input className="input" value={form.notas} onChange={(e) => setForm({ ...form, notas: e.target.value })} placeholder="Ej: presentación de planes con RRHH" /></Field>
         <label className="row" style={{ gap: 8, fontSize: 13, cursor: "pointer" }}>
-          <input type="checkbox" checked={syncToGoogle} onChange={(e) => setSyncToGoogle(e.target.checked)} /> Crear también en Google Calendar
+          <input type="checkbox" checked={syncToGoogle} onChange={(e) => setSyncToGoogle(e.target.checked)} /> {HOSTED ? "Abrir Google Calendar para guardarla también ahí" : "Crear también en Google Calendar"}
         </label>
         {comp && ["prospeccion", "contacto"].includes(comp.stage) && <div className="note t-accent">La empresa pasa automáticamente a “Reunión Agendada”.</div>}
         <Btn

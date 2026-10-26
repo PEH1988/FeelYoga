@@ -366,6 +366,7 @@ function CompanyDetail({ company, onClose, updateCompany, addHistorial, deleteCo
   const [f, setF] = useState({});
   useEffect(() => {
     setF({
+      _id: company.id,
       empresa: company.empresa || "",
       nombreFantasia: company.nombreFantasia || "",
       cuit: company.cuit || "",
@@ -383,6 +384,23 @@ function CompanyDetail({ company, onClose, updateCompany, addHistorial, deleteCo
   useEffect(() => {
     setF((p) => ({ ...p, proximaAccion: company.proximaAccion || "", fechaProximaAccion: company.fechaProximaAccion || "", capitas: company.capitas || "" }));
   }, [company.proximaAccion, company.fechaProximaAccion, company.capitas]);
+
+  // Si la ficha se cierra (Esc, clic afuera) con un campo todavía en edición,
+  // lo guardamos igual: ningún cambio se pierde por no haber salido del campo.
+  const latest = useRef(null);
+  latest.current = { f, company };
+  useEffect(
+    () => () => {
+      const { f: ff, company: cc } = latest.current;
+      if (ff._id !== cc.id) return;
+      const patch = {};
+      Object.keys(ff).forEach((k) => {
+        if (k !== "_id" && ff[k] !== (cc[k] || "") && !(k === "empresa" && !ff[k].trim())) patch[k] = ff[k];
+      });
+      if (Object.keys(patch).length) updateCompany(cc.id, patch);
+    },
+    []
+  );
 
   const commit = (k) => {
     if (f[k] === undefined || f[k] === (company[k] || "")) return;

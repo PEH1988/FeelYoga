@@ -130,6 +130,17 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companies, meetings, deletedEventIds, personas, contenido, waLog, settings, loaded]);
 
+  // Aviso al cerrar la pestaña si hay cambios que todavía no terminaron de guardarse.
+  useEffect(() => {
+    if (saveState !== "saving" && saveState !== "error") return;
+    const h = (e) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", h);
+    return () => window.removeEventListener("beforeunload", h);
+  }, [saveState]);
+
   // ---------------------------------------------------- Acciones: empresas
   const updateCompany = useCallback((id, patch) => {
     const hoy = hoyISO();
@@ -250,7 +261,8 @@ export default function App() {
 
   // ------------------------------------------------------ Reuniones / GCal
   const createMeeting = useCallback(async (data, syncToGoogle) => {
-    const localMeeting = { id: uid(), googleEventId: null, syncStatus: syncToGoogle ? "syncing" : "local", syncError: null, ...data };
+    const localMeeting = { id: uid(), googleEventId: null, syncStatus: syncToGoogle && !HOSTED ? "syncing" : "local", syncError: null, ...data };
+    if (syncToGoogle && HOSTED) window.open(gcalTemplateLink(localMeeting), "_blank");
     setMeetings((prev) => [...prev, localMeeting]);
     if (data.companyId) {
       setCompanies((prev) =>
@@ -266,7 +278,7 @@ export default function App() {
         })
       );
     }
-    if (syncToGoogle) {
+    if (syncToGoogle && !HOSTED) {
       const { eventId, error } = await pushMeetingToGoogle(localMeeting);
       setMeetings((prev) => prev.map((m) => (m.id === localMeeting.id ? { ...m, googleEventId: eventId, syncStatus: eventId ? "synced" : "error", syncError: error } : m)));
     }
@@ -337,7 +349,7 @@ export default function App() {
     syncRef.current = syncFromGoogle;
   }, [syncFromGoogle]);
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || HOSTED) return;
     const i = setInterval(() => syncRef.current(), 30 * 60 * 1000);
     return () => clearInterval(i);
   }, [loaded]);
@@ -516,6 +528,17 @@ export default function App() {
               <button className="nav-btn" style={{ justifyContent: "center", background: "var(--side-2)", flex: 1 }} onClick={() => setShowSettings(true)}>
                 <Settings size={14} /> Ajustes
               </button>
+              {HOSTED && window.__CRM_LOGOUT__ && (
+                <button
+                  className="nav-btn"
+                  style={{ justifyContent: "center", background: "var(--side-2)", width: 44, flex: "none" }}
+                  title="Cerrar sesión"
+                  aria-label="Cerrar sesión"
+                  onClick={() => askConfirm("¿Cerrar sesión en este dispositivo?", () => window.__CRM_LOGOUT__())}
+                >
+                  <LogOut size={15} />
+                </button>
+              )}
               <button
                 className="nav-btn"
                 style={{ justifyContent: "center", background: "var(--side-2)", width: 44, flex: "none" }}
