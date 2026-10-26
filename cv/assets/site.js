@@ -132,6 +132,7 @@
   var MODE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 2.5a9.5 9.5 0 0 1 0 19z" fill="currentColor"/></svg>';
   var GLOBE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c3 3.2 3 15.8 0 19M12 2.5c-3 3.2-3 15.8 0 19"/></svg>';
 
+  var langHooks = [];   // run after a language switch (see the fx section)
   var lang = 'es';
   try { lang = localStorage.getItem('lang') === 'en' ? 'en' : 'es'; } catch (e) {}
 
@@ -200,6 +201,7 @@
       lang = lang === 'es' ? 'en' : 'es';
       try { localStorage.setItem('lang', lang); } catch (err) {}
       apply();
+      langHooks.forEach(function (f) { f(); });
       return;
     }
     if (e.target.closest('[data-mode-toggle]')) {
@@ -351,5 +353,238 @@
     addEventListener('resize', size);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(size);
     size();
+  })();
+
+  /* ------------------------------------------------------------------
+   * fx: motion layer on top of the base site
+   *  - scroll progress bar
+   *  - hero h1 letter rise + kicker decode (replays on language switch)
+   *  - text decode on hover for the big menu / next-page links
+   *  - count-up for the big numbers
+   *  - staggered chips / list items
+   *  - home marquee of tools
+   *  - desktop only: custom cursor, magnetic buttons, 3D tilt on shots
+   * Everything is skipped (or left static) under prefers-reduced-motion.
+   * ------------------------------------------------------------------ */
+  (function () {
+    var root = document.documentElement;
+    var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+    var raf = requestAnimationFrame;
+
+    /* ---- scroll progress (feedback, not decoration: kept under reduced motion) ---- */
+    var bar = document.createElement('div');
+    bar.className = 'fx-progress'; bar.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(bar);
+    var barQueued = false;
+    function barUpdate() {
+      barQueued = false;
+      var max = root.scrollHeight - innerHeight;
+      bar.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0) + ')';
+    }
+    function barQueue() { if (!barQueued) { barQueued = true; raf(barUpdate); } }
+    addEventListener('scroll', barQueue, { passive: true });
+    addEventListener('resize', barQueue);
+    barUpdate();
+
+    if (reduce) return;
+    root.classList.add('fx');
+
+    /* ---- text decode (scramble that settles left to right) ---- */
+    var GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&/+';
+    function decode(el, dur, delay) {
+      var tok = (el._fxTok || 0) + 1; el._fxTok = tok;
+      var final = el.textContent, t0 = 0, last = 0;
+      (function step(t) {
+        if (el._fxTok !== tok) return;            // superseded (language switch, re-hover)
+        if (!t0) t0 = t + (delay || 0);
+        var p = (t - t0) / dur;
+        if (p >= 1) { el.textContent = final; return; }
+        if (p >= 0 && t - last > 45) {            // ~20 fps keeps it legible and "terminal-like"
+          last = t;
+          var n = Math.floor(p * final.length), out = '';
+          for (var i = 0; i < final.length; i++) {
+            var c = final[i];
+            out += (i < n || c === ' ' || c === '→' || c === '·') ? c : GLYPHS[(Math.random() * GLYPHS.length) | 0];
+          }
+          el.textContent = out;
+        }
+        raf(step);
+      })(performance.now());
+      return function cancel() { if (el._fxTok === tok) { el._fxTok++; el.textContent = final; } };
+    }
+
+    /* ---- hero h1: letters rise in, then the original markup is restored ---- */
+    function splitRise(h) {
+      var html = h.innerHTML, label = h.textContent.replace(/\s+/g, ' ').trim(), d = 0;
+      var tok = (h._fxTok || 0) + 1; h._fxTok = tok;
+      (function walk(node) {
+        [].slice.call(node.childNodes).forEach(function (c) {
+          if (c.nodeType === 1) return walk(c);
+          if (c.nodeType !== 3 || !c.nodeValue.trim()) return;
+          var frag = document.createDocumentFragment();
+          c.nodeValue.split(/(\s+)/).forEach(function (part) {
+            if (!part) return;
+            if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+            var w = document.createElement('span'); w.className = 'fx-w'; w.setAttribute('aria-hidden', 'true');
+            for (var i = 0; i < part.length; i++) {
+              var ch = document.createElement('span'); ch.className = 'fx-c';
+              ch.style.setProperty('--d', (d++ * 22) + 'ms'); ch.textContent = part[i];
+              w.appendChild(ch);
+            }
+            frag.appendChild(w);
+          });
+          node.replaceChild(frag, c);
+        });
+      })(h);
+      h.setAttribute('aria-label', label);
+      // restore the exact markup once done (kerning, screen readers, i18n source)
+      setTimeout(function () {
+        if (h._fxTok !== tok) return;
+        h.innerHTML = html; h.removeAttribute('aria-label');
+      }, d * 22 + 1000);
+    }
+    var hero = document.querySelector('.open .h'), kicker = document.querySelector('.open .k');
+    if (hero) splitRise(hero);
+    if (kicker) decode(kicker, 700, 150);
+    langHooks.push(function () {
+      // data-i18n elements were just rewritten by apply(): replay on the new text
+      if (hero && hero.hasAttribute('data-i18n')) splitRise(hero);
+      if (kicker) decode(kicker, 600, 0);
+    });
+
+    /* ---- decode on hover: big menu links (home) and the next-page link ---- */
+    var hoverEl = null, hoverCancel = null;
+    document.addEventListener('mouseover', function (e) {
+      var a = e.target.closest && e.target.closest('.menu2 a, .next a');
+      if (!a || a.contains(e.relatedTarget)) return;
+      if (hoverCancel) hoverCancel();
+      hoverEl = a; hoverCancel = decode(a, 420, 0);
+    });
+    // the text was just rewritten in the other language: stop without restoring the old one
+    langHooks.push(function () { if (hoverEl) hoverEl._fxTok++; hoverEl = hoverCancel = null; });
+
+    /* ---- count-up for the big numbers, ending on the exact original string ---- */
+    function parse(s) {
+      var m = s.match(/^([^\d]*)(\d[\d.,]*)([^\d]*)$/);
+      if (!m) return null;
+      var body = m[2], digits = body.replace(/\D/g, ''), dec = body.lastIndexOf(',');
+      return { pre: m[1], body: body, suf: m[3], n: parseInt(digits, 10),
+               min: dec >= 0 ? body.length - dec : 1 };      // "41,6" needs at least "0,x"
+    }
+    function fmt(p, k) {
+      var d = String(k); while (d.length < p.min) d = '0' + d;
+      var out = '', di = d.length - 1;
+      for (var i = p.body.length - 1; i >= 0 && di >= 0; i--) {
+        var c = p.body[i];
+        if (/\d/.test(c)) out = d[di--] + out;
+        else out = c + out;                                     // separator: only while digits remain
+      }
+      return p.pre + out + p.suf;
+    }
+    var nums = [].slice.call(document.querySelectorAll('.case .n, .stat .n')).map(function (el) {
+      return { el: el, txt: el.textContent.trim(), p: parse(el.textContent.trim()) };
+    }).filter(function (o) { return o.p && o.p.n > 0; });
+    if (nums.length && 'IntersectionObserver' in window) {
+      nums.forEach(function (o) {
+        o.el.textContent = fmt(o.p, 0); o.el.setAttribute('aria-label', o.txt);
+        o.el._fx = o;
+      });
+      var nio = new IntersectionObserver(function (en) {
+        en.forEach(function (x) {
+          if (!x.isIntersecting) return;
+          nio.unobserve(x.target);
+          var o = x.target._fx, t0 = performance.now(), dur = 1600;
+          // lock the final width (fonts are loaded by now) so the label beside it never jumps
+          o.el.textContent = o.txt; o.el.style.minWidth = o.el.offsetWidth + 'px';
+          (function step(t) {
+            var p = Math.min(1, (t - t0) / dur), e = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
+            o.el.textContent = p === 1 ? o.txt : fmt(o.p, Math.round(o.p.n * e));
+            if (p < 1) raf(step); else { o.el.removeAttribute('aria-label'); o.el.style.minWidth = ''; }
+          })(t0);
+        });
+      }, { threshold: .6 });
+      nums.forEach(function (o) { nio.observe(o.el); });
+    }
+
+    /* ---- stagger: chips and list items reveal one after another ---- */
+    document.querySelectorAll('.pm-skills .chips').forEach(function (row, r) {
+      [].slice.call(row.children).forEach(function (c, i) { c.style.setProperty('--i', r * 3 + i); });
+    });
+    document.querySelectorAll('.step ul').forEach(function (ul) {
+      [].slice.call(ul.children).forEach(function (c, i) { c.style.setProperty('--i', i); });
+    });
+
+    /* ---- marquee: clone the set so the loop is seamless ---- */
+    document.querySelectorAll('.mq-track').forEach(function (t) {
+      var set = t.firstElementChild; if (set) t.appendChild(set.cloneNode(true));
+      t.classList.add('on');
+    });
+
+    if (!fine) return;
+
+    /* ---- custom cursor + magnetic targets (mouse / trackpad only) ---- */
+    root.classList.add('fx-cursor');
+    var dot = document.createElement('div'), ring = document.createElement('div');
+    dot.className = 'fx-dot'; ring.className = 'fx-ring';
+    dot.setAttribute('aria-hidden', 'true'); ring.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(ring); document.body.appendChild(dot);
+    var mx = -100, my = -100, rx = -100, ry = -100, moving = false, mag = null;
+    var MAG = '.cta a, .lang, .mode, .nav .wm, .work-body .links a, .next a';
+    function loop() {
+      rx += (mx - rx) * .2; ry += (my - ry) * .2;
+      ring.style.transform = 'translate3d(' + rx + 'px,' + ry + 'px,0)';
+      if (Math.abs(mx - rx) + Math.abs(my - ry) > .1) raf(loop); else moving = false;
+    }
+    function unmag() {
+      if (!mag) return;
+      mag.style.translate = ''; mag.classList.remove('fx-mag');
+      delete mag.dataset.fxX; delete mag.dataset.fxY; mag = null;
+    }
+    document.addEventListener('pointermove', function (e) {
+      if (e.pointerType !== 'mouse') return;
+      mx = e.clientX; my = e.clientY;
+      dot.style.transform = 'translate3d(' + mx + 'px,' + my + 'px,0)';
+      root.classList.add('fx-cursor-on');
+      if (!moving) { moving = true; raf(loop); }
+      var t = e.target.closest ? e.target : null;
+      ring.classList.toggle('hot', !!(t && t.closest('a, button, [role="button"]')));
+      ring.classList.toggle('view', !!(t && t.closest('.work .shot')));
+      var m = t && t.closest(MAG);
+      if (m !== mag) unmag();
+      if (m) {
+        mag = m; m.classList.add('fx-mag');
+        var b = m.getBoundingClientRect(), ox = parseFloat(m.dataset.fxX || 0), oy = parseFloat(m.dataset.fxY || 0);
+        var cx = b.left - ox + b.width / 2, cy = b.top - oy + b.height / 2;
+        var dx = (mx - cx) * .25, dy = (my - cy) * .35;
+        m.dataset.fxX = dx; m.dataset.fxY = dy;
+        m.style.translate = dx.toFixed(1) + 'px ' + dy.toFixed(1) + 'px';
+      }
+    }, { passive: true });
+    document.addEventListener('pointerdown', function () { ring.classList.add('down'); });
+    document.addEventListener('pointerup', function () { ring.classList.remove('down'); });
+    document.documentElement.addEventListener('mouseleave', function () { root.classList.remove('fx-cursor-on'); unmag(); });
+    // the nav is rebuilt on language / mode switch: drop the stale reference
+    var navEl = document.getElementById('nav');
+    if (navEl && 'MutationObserver' in window) new MutationObserver(function () { mag = null; }).observe(navEl, { childList: true });
+
+    /* ---- 3D tilt + glare on the portfolio screenshots ---- */
+    document.querySelectorAll('.work .shot').forEach(function (s) {
+      var box = null, q = false, px = .5, py = .5;
+      function paint() {
+        q = false; if (!box) return;
+        s.style.transform = 'perspective(900px) rotateX(' + ((.5 - py) * 8).toFixed(2) + 'deg) rotateY(' + ((px - .5) * 10).toFixed(2) + 'deg)';
+        s.style.setProperty('--gx', (px * 100).toFixed(1) + '%');
+        s.style.setProperty('--gy', (py * 100).toFixed(1) + '%');
+      }
+      s.addEventListener('pointerenter', function () { box = s.getBoundingClientRect(); s.classList.add('tilt'); });
+      s.addEventListener('pointermove', function (e) {
+        if (!box) box = s.getBoundingClientRect();
+        px = (e.clientX - box.left) / box.width; py = (e.clientY - box.top) / box.height;
+        if (!q) { q = true; raf(paint); }
+      });
+      s.addEventListener('pointerleave', function () { box = null; s.classList.remove('tilt'); s.style.transform = ''; });
+      addEventListener('scroll', function () { box = null; }, { passive: true });
+    });
   })();
 })();

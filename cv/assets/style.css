@@ -441,3 +441,126 @@ html, body, .nav.solid, .page, .h2, .next, footer { transition: background-color
 /* Google PM certificate skills under the three columns */
 .pm-skills { margin-top: clamp(40px, 6vw, 80px); }
 .pm-skills .chips { margin-top: 12px; }
+
+/* ==================================================================
+ * fx: motion layer (scroll progress, hero letters, count-up, marquee,
+ * stagger, custom cursor, magnetic buttons, tilt, page transitions).
+ * The JS adds html.fx only when motion is allowed and html.fx-cursor
+ * only on mouse/trackpad devices.
+ * ================================================================== */
+
+/* thin accent progress bar */
+.fx-progress {
+  position: fixed; top: 0; left: 0; width: 100%; height: 2px; z-index: 60;
+  background: var(--accent); transform: scaleX(0); transform-origin: 0 50%;
+  pointer-events: none; will-change: transform;
+}
+
+/* hero h1: letters rise out of a soft blur, one after another */
+.fx-w { display: inline-block; white-space: nowrap; }
+.fx-c {
+  display: inline-block; animation: fx-rise .9s var(--ease) both; animation-delay: var(--d, 0ms);
+}
+@keyframes fx-rise {
+  from { opacity: 0; transform: translateY(.5em) rotate(6deg); filter: blur(8px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+/* staggered chips and skill rows, triggered by the parent's reveal */
+.fx .pm-skills .chips > span,
+.fx .step li {
+  opacity: 0; transform: translateY(10px);
+  transition: opacity .6s var(--ease) calc(var(--i, 0) * 28ms + .15s),
+              transform .7s var(--ease) calc(var(--i, 0) * 28ms + .15s),
+              translate .35s var(--ease), border-color .3s, color .3s, background-color .3s;
+}
+.fx .pm-skills.in .chips > span,
+.fx .step.in li { opacity: 1; transform: none; }
+.chips span:not(.tl) { transition: translate .35s var(--ease), border-color .3s, color .3s, background-color .3s; }
+@media (hover: hover) {
+  .chips span:not(.tl):hover { translate: 0 -3px; border-color: var(--accent); color: var(--accent); }
+  .chips.tools span:not(.tl):hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .step li:hover { color: var(--ink); }
+}
+.step li { transition: color .3s; }
+
+/* big numbers: accent flash on hover */
+.case .n, .stat .n { transition: color .4s var(--ease); }
+@media (hover: hover) { .case:hover .n, .work:hover .stat .n { color: var(--accent); } }
+
+/* ---- marquee (home): tools in alternating solid / outline type ---- */
+.marquee {
+  margin: clamp(36px, 6vw, 72px) calc(-1 * var(--pad)) 0; overflow: hidden;
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  padding: clamp(14px, 2vw, 22px) 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.marquee + .marquee { margin-top: 0; border-top: 0; }
+.mq-track { display: flex; width: max-content; }
+.mq-set { display: flex; align-items: center; flex-shrink: 0; }
+.mq-set span {
+  font-family: var(--f-display); text-transform: uppercase; white-space: nowrap;
+  font-size: clamp(22px, 3.4vw, 46px); line-height: 1; color: var(--ink); padding: 0 clamp(14px, 2vw, 28px);
+}
+.mq-set span.o { color: transparent; -webkit-text-stroke: 1px var(--ink); }
+.mq-set i { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.mq-track.on { animation: mq 46s linear infinite; }
+.marquee.rev .mq-track.on { animation-direction: reverse; animation-duration: 54s; }
+.marquee:hover .mq-track.on { animation-play-state: paused; }
+@keyframes mq { to { transform: translateX(-50%); } }
+
+/* ---- custom cursor (mouse / trackpad only) ---- */
+.fx-dot, .fx-ring {
+  position: fixed; top: 0; left: 0; z-index: 9999; pointer-events: none;
+  opacity: 0; transition: opacity .3s;
+}
+.fx-cursor-on .fx-dot, .fx-cursor-on .fx-ring { opacity: 1; }
+.fx-dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--accent); }
+.fx-ring { width: 36px; height: 36px; margin: -18px 0 0 -18px; }
+.fx-ring::before {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  border: 1px solid var(--accent); background: rgba(200, 16, 46, 0);
+  transition: transform .45s var(--ease), background-color .3s, border-color .3s;
+}
+.fx-ring::after {
+  content: "\2197"; position: absolute; inset: 0; display: grid; place-items: center;
+  font: 600 18px/1 var(--f-body); color: #fff; opacity: 0; transform: scale(.5);
+  transition: opacity .3s, transform .45s var(--ease);
+}
+.fx-ring.hot::before { transform: scale(1.6); background: rgba(200, 16, 46, .1); }
+.fx-ring.view::before { transform: scale(2.3); background: var(--accent); border-color: var(--accent); }
+.fx-ring.view::after { opacity: 1; transform: none; }
+.fx-ring.down::before { transform: scale(.8); }
+.fx-ring.view + .fx-dot { opacity: 0; }
+
+/* magnetic targets move with `translate`, so they compose with existing transforms */
+.cta a, .lang, .mode, .nav .wm, .work-body .links a, .next a { transition-property: border-color, background-color, color, transform, translate; transition-duration: .3s, .3s, .3s, .6s, .5s; transition-timing-function: var(--ease); }
+.fx-mag { transition-duration: .3s, .3s, .3s, .6s, .12s !important; }
+
+/* ---- portfolio screenshots: 3D tilt + moving glare ---- */
+.work .shot { position: relative; transition: transform .7s var(--ease); will-change: transform; }
+.work .shot.tilt { transition: transform .15s linear; }
+.work .shot::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255, 255, 255, .42), rgba(255, 255, 255, 0) 55%);
+  mix-blend-mode: soft-light; opacity: 0; transition: opacity .5s var(--ease);
+}
+.work .shot.tilt::after { opacity: 1; }
+
+/* ---- page transitions between the five pages (progressive enhancement) ---- */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: fx-vt-out .5s cubic-bezier(.16, 1, .3, 1) both; }
+::view-transition-new(root) { animation: fx-vt-in .7s cubic-bezier(.16, 1, .3, 1) both; }
+@keyframes fx-vt-out { to { opacity: .4; transform: translateY(-3%) scale(.98); } }
+@keyframes fx-vt-in { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+
+/* ---- reduced motion: everything new is static ---- */
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+  .fx-c { animation: none; }
+  .mq-track.on { animation: none; }
+  .work .shot, .work .shot::after { transition: none; }
+  .chips span:not(.tl):hover { translate: none; }
+}
