@@ -453,13 +453,28 @@
       if (kicker) decode(kicker, 600, 0);
     });
 
-    /* ---- decode on hover: big menu links (home) and the next-page link ---- */
+    /* ---- decode on hover: menus, next-page link and the titles of each section ----
+     * [hovered area, word that decodes inside it (null = the area itself)] */
+    var HOVER = [
+      ['.menu2 a, .next a, .nav li a', null],
+      ['.list .row', '.hd b'],            // experience roles, education
+      ['.step', 'b.disp'],                // skills columns
+      ['.work', 'h2.disp'],               // portfolio projects
+      ['.contact-lines a', 'b.disp']      // contact channels
+    ];
     var hoverEl = null, hoverCancel = null;
     document.addEventListener('mouseover', function (e) {
-      var a = e.target.closest && e.target.closest('.menu2 a, .next a');
-      if (!a || a.contains(e.relatedTarget)) return;
-      if (hoverCancel) hoverCancel();
-      hoverEl = a; hoverCancel = decode(a, 420, 0);
+      if (!e.target.closest) return;
+      for (var i = 0; i < HOVER.length; i++) {
+        var area = e.target.closest(HOVER[i][0]);
+        if (!area) continue;
+        if (area.contains(e.relatedTarget)) return;   // still inside the same area
+        var el = HOVER[i][1] ? area.querySelector(HOVER[i][1]) : area;
+        if (!el || el.children.length) return;        // only plain-text words, never markup
+        if (hoverCancel) hoverCancel();
+        hoverEl = el; hoverCancel = decode(el, 420, 0);
+        return;
+      }
     });
     // the text was just rewritten in the other language: stop without restoring the old one
     langHooks.push(function () { if (hoverEl) hoverEl._fxTok++; hoverEl = hoverCancel = null; });
