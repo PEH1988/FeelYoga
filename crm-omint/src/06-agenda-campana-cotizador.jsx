@@ -386,40 +386,56 @@ function NewCompanyModal({ onClose, onSave }) {
 // ============================================================= Cotizador ===
 
 function Cotizador({ companies, settings, presetCompanyId, guardarCotizacion, showToast, vars }) {
-  const [cant, setCant] = useState({ "00-25": 0, "26-35": 0, "36-54": 0, "55-59": 0, "60+": 0, hijo1: 0, hijo2: 0 });
-  const [descuento, setDescuento] = useState(DESCUENTO_CAMPANA_COTIZADOR);
+  const vacio = { "00-25": 0, "26-35": 0, "36-54": 0, "55-59": 0, "60+": 0, hijo1: 0, hijo2: 0 };
+  const [cant, setCant] = useState(vacio);
+  const [descuento, setDescuento] = useState(settings.descuento ?? CAMPANA.descuento);
   const [iva, setIva] = useState(0);
-  const [planSel, setPlanSel] = useState("6500_PYME");
+  const [planSel, setPlanSel] = useState("");
+  const [verNoDisp, setVerNoDisp] = useState(false);
   const [companyId, setCompanyId] = useState(presetCompanyId || "");
   const [busca, setBusca] = useState("");
   const [moverPropuesta, setMoverPropuesta] = useState(true);
   const comp = companies.find((c) => c.id === companyId);
+  const meses = settings.mesesCampana || CAMPANA.meses;
 
   useEffect(() => {
     if (presetCompanyId) setCompanyId(presetCompanyId);
   }, [presetCompanyId]);
 
-  const res = PYME_PLANES.map((p) => {
+  const f = 1 + num(iva) / 100;
+  const res = PLANES_EMPRESA.map((p) => {
     const r = cotizar(p, cant, descuento);
-    const f = 1 + num(iva) / 100;
-    return { plan: p, ...r, lista: r.lista * f, desc: r.desc * f, total: r.total * f, porCapita: r.porCapita * f };
+    return { ...r, lista: r.lista * f, desc: r.desc * f, total: r.total * f, porCapita: r.porCapita * f };
   });
   const capitas = res[0].capitas;
-  const sel = res.find((r) => r.plan.plan === planSel) || res[1];
+  const tramo = res[0].tramo;
+  const disponibles = res.filter((r) => r.disponible).sort((x, y) => x.total - y.total);
+  const noDisponibles = res.filter((r) => !r.disponible);
+  const sel = disponibles.find((r) => r.plan.plan === planSel) || disponibles[0] || null;
+  const minPrecio = disponibles.length ? disponibles[0].total : 0;
   const nombre = comp ? capitalizar(getFirstName(comp.contacto)) : "";
 
-  const texto = `Hola${nombre ? " " + nombre : ""}! Te paso la cotización de OMINT${comp ? ` para ${comp.empresa}` : ""}:
+  const beneficios = sel
+    ? sel.plan.tipo === "PYME" && PYME_EXTRA[sel.plan.plan]
+      ? [`Farmacia ${PYME_EXTRA[sel.plan.plan].farmacia}`, "Óptica, ortodoncia sin límite de edad y check-up anual", `Asistencia al viajero ${PYME_EXTRA[sel.plan.plan].modulo}`]
+      : sel.plan.bullets.slice(0, 3)
+    : [];
+  const texto = sel
+    ? `Hola${nombre ? " " + nombre : ""}! Te paso la cotización de OMINT${comp ? ` para ${comp.empresa}` : ""}:
 
-• Plan ${sel.plan.plan} (línea ${sel.plan.linea}) — ${capitas} cápitas
+• Plan ${sel.plan.plan} (línea ${sel.plan.linea}${sel.plan.tipo !== "Estándar" ? ` · ${sel.plan.tipo}` : ""}) — ${capitas} cápitas
 • Valor de lista: ${money(sel.lista)}/mes
-• Descuento campaña ${descuento}%: −${money(sel.desc)}
-• *Total mensual: ${money(sel.total)}* (≈ ${money(sel.porCapita)} por cápita)
+${num(descuento) ? `• Campaña: ${descuento}% de descuento durante ${meses} meses: −${money(sel.desc)}
+` : ""}• *Total mensual: ${money(sel.total)}* (≈ ${money(sel.porCapita)} por cápita)
+${num(descuento) ? `Desde el mes ${meses + 1} se aplica el valor de lista vigente.
+` : ""}
+${beneficios.map((b) => `✓ ${b}`).join("\n")}
 
-Incluye farmacia ${sel.plan.farmacia}, óptica, ortodoncia sin límite de edad, check-up anual y asistencia al viajero ${sel.plan.modulo}.
-${num(iva) ? `Valores con IVA ${iva}% incluido.` : "Valores sin IVA."} Sujeto a aprobación y vigencia de la campaña.
+${num(iva) ? `Valores con IVA ${iva}% incluido.` : "Valores sin IVA."} ${LISTA_PRECIOS}. Sujeto a aprobación.
 
 ¿Coordinamos 15 minutos para revisarla juntos?
-${vars.asesor} · OMINT`;
+${vars.asesor} · OMINT`
+    : "";
 
   const busqueda = useMemo(() => {
     const q = busca.trim().toLowerCase();
@@ -428,69 +444,92 @@ ${vars.asesor} · OMINT`;
   }, [busca, companies]);
 
   const setN = (k, v) => setCant((p) => ({ ...p, [k]: Math.max(0, Math.round(num(v))) }));
-  const minPrecio = Math.min(...res.map((r) => r.total));
+  const payload = () => ({ plan: sel.plan.plan, capitas, total: sel.total, lista: sel.lista, descuento, meses, detalle: cant });
 
   return (
     <div className="stack">
-      <PageHeader title="Cotizador PYME" subtitle="Cálculo rápido con las tarifas PYME del Cotizador Omint · tramos 11–99 y 100–199 cápitas">
-        <Btn icon={RefreshCw} onClick={() => setCant({ "00-25": 0, "26-35": 0, "36-54": 0, "55-59": 0, "60+": 0, hijo1: 0, hijo2: 0 })}>Limpiar</Btn>
+      <PageHeader title="Cotizador rápido" subtitle={`${LISTA_PRECIOS} · ${PLANES_EMPRESA.length} planes · campaña ${descuento}% por ${meses} meses`}>
+        <Btn icon={RefreshCw} onClick={() => setCant(vacio)}>Limpiar</Btn>
       </PageHeader>
 
       <div className="grid g3">
         <Card title="Composición del grupo" icon={Users}>
           <div className="stack-sm">
-            {FRANJAS.map((f) => (
-              <div key={f.key} className="row between">
-                <span className="ink2" style={{ fontSize: 13 }}>{f.label}</span>
+            {FRANJAS.map((fr) => (
+              <div key={fr.key} className="row between">
+                <span className="ink2" style={{ fontSize: 13 }}>{fr.label}</span>
                 <div className="row" style={{ gap: 4 }}>
-                  <button className="icon-btn" style={{ width: 28, height: 28 }} onClick={() => setN(f.key, cant[f.key] - 1)} aria-label={`Restar ${f.label}`}>−</button>
-                  <input className="input tnum" style={{ width: 56, textAlign: "center", padding: "5px 4px" }} type="number" min="0" value={cant[f.key]} onChange={(e) => setN(f.key, e.target.value)} aria-label={f.label} />
-                  <button className="icon-btn" style={{ width: 28, height: 28 }} onClick={() => setN(f.key, cant[f.key] + 1)} aria-label={`Sumar ${f.label}`}>+</button>
+                  <button className="icon-btn" style={{ width: 28, height: 28 }} onClick={() => setN(fr.key, cant[fr.key] - 1)} aria-label={`Restar ${fr.label}`}>−</button>
+                  <input className="input tnum" style={{ width: 56, textAlign: "center", padding: "5px 4px" }} type="number" min="0" value={cant[fr.key]} onChange={(e) => setN(fr.key, e.target.value)} aria-label={fr.label} />
+                  <button className="icon-btn" style={{ width: 28, height: 28 }} onClick={() => setN(fr.key, cant[fr.key] + 1)} aria-label={`Sumar ${fr.label}`}>+</button>
                 </div>
               </div>
             ))}
           </div>
+          <div className="muted" style={{ fontSize: 11.5, marginTop: 6 }}>Titulares incluye cónyuges, familiares a cargo e hijos de 25 años o más (según la lista).</div>
           <div className="divider" />
           <div className="grid g2" style={{ gap: 10 }}>
-            <Field label="Descuento %"><input className="input tnum" type="number" min="0" max="100" value={descuento} onChange={(e) => setDescuento(num(e.target.value))} /></Field>
+            <Field label={`Descuento % (${meses} meses)`}><input className="input tnum" type="number" min="0" max="100" value={descuento} onChange={(e) => setDescuento(num(e.target.value))} /></Field>
             <Field label="IVA % (lista sin IVA)"><input className="input tnum" type="number" min="0" value={iva} onChange={(e) => setIva(num(e.target.value))} /></Field>
           </div>
           <div className="row between" style={{ marginTop: 12 }}>
             <span style={{ fontWeight: 700 }}>Total cápitas</span>
             <span className="tnum" style={{ fontSize: 22, fontWeight: 800 }}>{capitas}</span>
           </div>
-          {capitas > 0 && capitas < MIN_CAPITAS_PYME && <div className="note t-warn" style={{ marginTop: 8 }}>La línea PYME aplica desde {MIN_CAPITAS_PYME} cápitas. Sumá familiares de los titulares para calificar.</div>}
-          {capitas >= 100 && capitas < 200 && <div className="note t-info" style={{ marginTop: 8 }}>Tramo 100 a 199 cápitas: se aplica la tarifa de ese tramo.</div>}
-          {capitas >= 200 && <div className="note t-warn" style={{ marginTop: 8 }}>Desde 200 cápitas los valores se consultan con Producto: este cálculo es solo orientativo.</div>}
+          {capitas > 0 && <div className="muted" style={{ fontSize: 12, textAlign: "right" }}>Tramo {tramo} cápitas</div>}
+          {capitas >= 200 && <div className="note t-warn" style={{ marginTop: 8 }}>Desde 200 cápitas los valores se consultan con Producto.</div>}
         </Card>
 
         <div className="span2 stack">
-          <div className="grid g3">
-            {res.map((r) => {
-              const on = planSel === r.plan.plan;
-              return (
-                <button
-                  key={r.plan.plan}
-                  className="card"
-                  onClick={() => setPlanSel(r.plan.plan)}
-                  style={{ padding: 16, textAlign: "left", cursor: "pointer", font: "inherit", color: "inherit", borderColor: on ? "var(--accent)" : "var(--border)", boxShadow: on ? "0 0 0 3px var(--accent-soft)" : "var(--shadow)" }}
-                >
-                  <div className="row between">
-                    <span style={{ fontWeight: 800 }}>{r.plan.plan}</span>
-                    {on ? <Chip tone="accent" icon={Check}>Elegido</Chip> : capitas > 0 && r.total === minPrecio ? <Chip tone="good">Más económico</Chip> : null}
-                  </div>
-                  <div className="muted" style={{ fontSize: 12 }}>Línea {r.plan.linea} · farmacia {r.plan.farmacia}</div>
-                  <div className="tnum" style={{ fontSize: 24, fontWeight: 800, marginTop: 10 }}>{money(r.total)}</div>
-                  <div className="muted" style={{ fontSize: 12 }}>por mes{capitas ? ` · ${money(r.porCapita)} por cápita` : ""}</div>
-                  {r.desc > 0 && <div style={{ fontSize: 12, marginTop: 6, color: "var(--good)", fontWeight: 600 }}>Ahorro {money(r.desc)}/mes · lista {money(r.lista)}</div>}
-                </button>
-              );
-            })}
-          </div>
+          <Card
+            title={capitas ? `${disponibles.length} planes disponibles para ${capitas} cápitas` : "Planes"}
+            icon={Stethoscope}
+            pad={false}
+            action={noDisponibles.length > 0 && capitas > 0 && <button className="btn btn-ghost btn-sm" onClick={() => setVerNoDisp((v) => !v)}>{verNoDisp ? "Ocultar" : "Ver"} no disponibles ({noDisponibles.length})</button>}
+          >
+            {!capitas ? (
+              <EmptyNote>Cargá la composición del grupo para ver los {PLANES_EMPRESA.length} planes de la lista.</EmptyNote>
+            ) : (
+              <div style={{ overflowX: "auto" }}>
+                <table className="tbl">
+                  <thead>
+                    <tr><th></th><th>Plan</th><th>Línea</th><th style={{ textAlign: "right" }}>Lista</th><th style={{ textAlign: "right" }}>Con {descuento}%</th><th style={{ textAlign: "right" }}>Por cápita</th></tr>
+                  </thead>
+                  <tbody>
+                    {disponibles.map((r) => {
+                      const on = sel && sel.plan.plan === r.plan.plan;
+                      return (
+                        <tr key={r.plan.plan} className="click" onClick={() => setPlanSel(r.plan.plan)} style={{ background: on ? "var(--accent-soft)" : undefined }}>
+                          <td style={{ width: 28 }}><input type="radio" checked={!!on} onChange={() => setPlanSel(r.plan.plan)} aria-label={`Elegir ${r.plan.plan}`} /></td>
+                          <td className="strong">
+                            {r.plan.plan} {r.total === minPrecio && <Chip tone="good">Más económico</Chip>}
+                          </td>
+                          <td>{r.plan.linea}{r.plan.tipo !== "Estándar" ? <span className="muted"> · {r.plan.tipo}</span> : ""}</td>
+                          <td className="tnum" style={{ textAlign: "right", textDecoration: r.desc > 0 ? "line-through" : "none" }}>{money(r.lista)}</td>
+                          <td className="tnum strong" style={{ textAlign: "right" }}>{money(r.total)}</td>
+                          <td className="tnum" style={{ textAlign: "right" }}>{money(r.porCapita)}</td>
+                        </tr>
+                      );
+                    })}
+                    {verNoDisp &&
+                      noDisponibles.map((r) => (
+                        <tr key={r.plan.plan} style={{ opacity: 0.6 }}>
+                          <td></td>
+                          <td>{r.plan.plan}</td>
+                          <td>{r.plan.linea}{r.plan.tipo !== "Estándar" ? ` · ${r.plan.tipo}` : ""}</td>
+                          <td colSpan={3} style={{ textAlign: "right" }}>{r.motivo}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+                {disponibles.length === 0 && <EmptyNote>Ningún plan de la lista aplica para {capitas} cápitas. {noDisponibles[0]?.motivo}</EmptyNote>}
+              </div>
+            )}
+          </Card>
 
-          <Card title="Propuesta para enviar" icon={FileText} action={<Btn size="sm" icon={Copy} disabled={!capitas} onClick={async () => showToast((await copiarTexto(texto)) ? "✓ Propuesta copiada" : "No se pudo copiar")}>Copiar</Btn>}>
+          <Card title="Propuesta para enviar" icon={FileText} action={<Btn size="sm" icon={Copy} disabled={!sel} onClick={async () => showToast((await copiarTexto(texto)) ? "✓ Propuesta copiada" : "No se pudo copiar")}>Copiar</Btn>}>
             <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", fontSize: 13, margin: 0, background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 10, padding: 12, color: "var(--ink)" }}>
-              {capitas ? texto : "Cargá la composición del grupo para generar la propuesta."}
+              {sel ? texto : "Cargá la composición del grupo y elegí un plan para generar la propuesta."}
             </pre>
             <div className="divider" />
             {comp ? (
@@ -504,12 +543,12 @@ ${vars.asesor} · OMINT`;
                 <label className="row ink2" style={{ gap: 6, fontSize: 12.5, cursor: "pointer" }}>
                   <input type="checkbox" checked={moverPropuesta} onChange={(e) => setMoverPropuesta(e.target.checked)} /> Pasar a “Propuesta Enviada”
                 </label>
-                {comp.telefono && (
-                  <a className="btn btn-wa" href={buildWaLink(normalizePhoneAR(comp.telefono), texto)} target="_blank" rel="noreferrer" onClick={() => capitas && guardarCotizacion(comp.id, { plan: sel.plan.plan, capitas, total: sel.total, lista: sel.lista, descuento, detalle: cant }, moverPropuesta)}>
+                {comp.telefono && sel && (
+                  <a className="btn btn-wa" href={buildWaLink(normalizePhoneAR(comp.telefono), texto)} target="_blank" rel="noreferrer" onClick={() => guardarCotizacion(comp.id, payload(), moverPropuesta)}>
                     <MessageCircle size={15} /> Enviar y guardar
                   </a>
                 )}
-                <Btn variant="primary" icon={Save} disabled={!capitas} onClick={() => guardarCotizacion(comp.id, { plan: sel.plan.plan, capitas, total: sel.total, lista: sel.lista, descuento, detalle: cant }, moverPropuesta)}>
+                <Btn variant="primary" icon={Save} disabled={!sel} onClick={() => guardarCotizacion(comp.id, payload(), moverPropuesta)}>
                   Guardar en la ficha
                 </Btn>
               </div>

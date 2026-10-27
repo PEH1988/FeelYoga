@@ -93,7 +93,11 @@ export default function App() {
         setContenido(parseJSONSafe(ct, CONTENIDO_SEED));
         setWaLog(parseJSONSafe(wl, []));
         const s = parseJSONSafe(st, {});
-        setSettings({ ...DEFAULT_SETTINGS, ...s, objetivos: { ...DEFAULT_SETTINGS.objetivos, ...(s.objetivos || {}) } });
+        const merged = { ...DEFAULT_SETTINGS, ...s, objetivos: { ...DEFAULT_SETTINGS.objetivos, ...(s.objetivos || {}) } };
+        // Campaña nueva (oct. 2026): 20% durante 12 meses. Se aplica una sola vez
+        // sobre ajustes guardados con la campaña anterior.
+        if ((s.campanaVersion || 1) < 2) Object.assign(merged, { descuento: CAMPANA.descuento, mesesCampana: CAMPANA.meses, campanaVersion: 2 });
+        setSettings(merged);
       } catch (e) {
         setLoadFailed(true);
         return; // sin "loaded" el autoguardado queda desactivado
@@ -223,7 +227,7 @@ export default function App() {
               { id: uid(), fecha: hoyISO(), origen: "rapido", tipo: "empresa", capitas: cot.capitas, planes: [{ plan: cot.plan, lista: Math.round(cot.lista), bonificado: Math.round(cot.total), aporte: 0, aPagar: Math.round(cot.total) }] },
               ...(c.cotizaciones || []),
             ],
-            historial: [{ fecha: hoyISO(), tipo: "propuesta", texto: `Cotización ${cot.plan}: ${cot.capitas} cápitas · ${money(cot.total)}/mes (desc. ${cot.descuento}%)` }, ...(c.historial || [])],
+            historial: [{ fecha: hoyISO(), tipo: "propuesta", texto: `Cotización ${cot.plan}: ${cot.capitas} cápitas · ${money(cot.total)}/mes (desc. ${cot.descuento}%${cot.meses ? ` × ${cot.meses} meses` : ""})` }, ...(c.historial || [])],
           };
         })
       );
@@ -470,7 +474,7 @@ export default function App() {
 
   const pendientes = useMemo(() => calcularPendientes(companies, personas, meetings), [companies, personas, meetings]);
 
-  const vars = useMemo(() => ({ asesor: settings.asesor, descuento: settings.descuento }), [settings.asesor, settings.descuento]);
+  const vars = useMemo(() => ({ asesor: settings.asesor, descuento: settings.descuento, meses: settings.mesesCampana }), [settings.asesor, settings.descuento, settings.mesesCampana]);
   const theme = settings.theme === "dark" ? "dark" : "light";
   const go = useCallback((v) => {
     setView(v);

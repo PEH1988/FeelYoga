@@ -63,7 +63,9 @@ const TIPOS_LOG = ["llamada", "whatsapp", "mail", "reunion", "propuesta", "nota"
 const DEFAULT_SETTINGS = {
   asesor: "Pablo Hidalgo",
   metaMensual: 30,
-  descuento: 30,
+  descuento: 20,
+  mesesCampana: 12,
+  campanaVersion: 2, // 2 = campaña 20% por 12 meses (octubre 2026)
   objetivos: { llamada: 15, whatsapp: 12, reunion: 2, propuesta: 2 },
   theme: "light",
 };
@@ -237,7 +239,7 @@ const WHATSAPP_SEQUENCE = [
     label: "Variante A",
     delayDays: 0,
     text: `Hola {Nombre}, ¿cómo estás? Soy {Asesor}, asesor de OMINT Medicina Prepaga.
-Te escribo porque contamos con un *{Descuento}% de descuento en planes de salud* para grupos familiares con CUIT, monotributistas, empleados en relación de dependencia y PyMEs.
+Te escribo porque contamos con un *{Descuento}% de descuento durante {Meses} meses en planes de salud* para grupos familiares con CUIT, monotributistas, empleados en relación de dependencia y PyMEs.
 ¿Querés que te arme una cotización sin compromiso?
 Contame tu situación y en minutos te paso los planes disponibles`,
   },
@@ -266,7 +268,8 @@ function fillVars(text, vars) {
   return text
     .replace(/{Nombre}/g, vars.nombre || "")
     .replace(/{Asesor}/g, vars.asesor || "")
-    .replace(/{Descuento}/g, String(vars.descuento ?? 30))
+    .replace(/{Descuento}/g, String(vars.descuento ?? CAMPANA.descuento))
+    .replace(/{Meses}/g, String(vars.meses ?? CAMPANA.meses))
     .replace(/{Empresa}/g, vars.empresa || "");
 }
 
@@ -386,22 +389,22 @@ const PERSONA_TEMPLATES = [
   {
     key: "directa",
     label: "Directa",
-    text: `Hola {Nombre}! Soy {Asesor}, Ejecutivo Comercial de OMINT Medicina Prepaga. Si cobrás con bono de sueldo, sos monotributista o responsable inscripto, este mes tenés *{Descuento}% de descuento* en los planes de OMINT. Tenés cobertura a nivel nacional e internacional, y podés sumar a toda tu familia. Contame tu situación y te armo una propuesta a medida, sin compromiso.`,
+    text: `Hola {Nombre}! Soy {Asesor}, Ejecutivo Comercial de OMINT Medicina Prepaga. Si cobrás con bono de sueldo, sos monotributista o responsable inscripto, este mes tenés *{Descuento}% de descuento durante {Meses} meses* en los planes de OMINT. Tenés cobertura a nivel nacional e internacional, y podés sumar a toda tu familia. Contame tu situación y te armo una propuesta a medida, sin compromiso.`,
   },
   {
     key: "conversacional",
     label: "Conversacional",
-    text: `Hola {Nombre}! Soy {Asesor}, Ejecutivo Comercial de OMINT Medicina Prepaga. Si tenés bono de sueldo, sos monotributista o responsable inscripto, aprovechá el *{Descuento}% de descuento* que tiene OMINT este mes. Cobertura en todo el país y también afuera si viajás, más la posibilidad de sumar a tu grupo familiar. Contame cómo estás cubierto hoy y vemos qué plan te conviene.`,
+    text: `Hola {Nombre}! Soy {Asesor}, Ejecutivo Comercial de OMINT Medicina Prepaga. Si tenés bono de sueldo, sos monotributista o responsable inscripto, aprovechá el *{Descuento}% de descuento por {Meses} meses* que tiene OMINT este mes. Cobertura en todo el país y también afuera si viajás, más la posibilidad de sumar a tu grupo familiar. Contame cómo estás cubierto hoy y vemos qué plan te conviene.`,
   },
   {
     key: "pregunta",
     label: "Pregunta abierta",
-    text: `Hola {Nombre}! Soy {Asesor}, Ejecutivo Comercial de OMINT Medicina Prepaga. ¿Sabías que con bono de sueldo, monotributo o RI podés acceder a un *{Descuento}% de descuento* en OMINT este mes? Es una cobertura con alcance nacional e internacional, ideal si viajás seguido o tenés familia en otras provincias. Te armo una cotización sin compromiso, contame tu caso.`,
+    text: `Hola {Nombre}! Soy {Asesor}, Ejecutivo Comercial de OMINT Medicina Prepaga. ¿Sabías que con bono de sueldo, monotributo o RI podés acceder a un *{Descuento}% de descuento durante {Meses} meses* en OMINT este mes? Es una cobertura con alcance nacional e internacional, ideal si viajás seguido o tenés familia en otras provincias. Te armo una cotización sin compromiso, contame tu caso.`,
   },
   {
     key: "beneficio",
     label: "Beneficio concreto",
-    text: `Hola {Nombre}! Soy {Asesor}, Ejecutivo Comercial de OMINT Medicina Prepaga. Con bono de sueldo, monotributo o RI, este mes accedés a un *{Descuento}% de descuento* en los planes de OMINT — con cobertura nacional e internacional y la posibilidad de sumar a toda tu familia. Contame tu situación y te paso una propuesta a medida, sin ningún compromiso.`,
+    text: `Hola {Nombre}! Soy {Asesor}, Ejecutivo Comercial de OMINT Medicina Prepaga. Con bono de sueldo, monotributo o RI, este mes accedés a un *{Descuento}% de descuento durante {Meses} meses* en los planes de OMINT — con cobertura nacional e internacional y la posibilidad de sumar a toda tu familia. Contame tu situación y te paso una propuesta a medida, sin ningún compromiso.`,
   },
 ];
 
@@ -512,8 +515,8 @@ const CONTENIDO_SEED = [
   {
     id: "content-seed-1",
     plataforma: "instagram",
-    titulo: "Post — 30% de descuento",
-    texto: `¿Sabías que podés acceder a un plan de salud premium con hasta 30% de descuento? 🏥✨
+    titulo: "Post — 20% de descuento por 12 meses",
+    texto: `¿Sabías que podés acceder a un plan de salud premium con 20% de descuento durante 12 meses? 🏥✨
 
 Si tenés CUIT, sos monotributista, trabajás en relación de dependencia o tenés una PyME, este descuento es para vos.
 
@@ -537,58 +540,75 @@ Si tenés CUIT, sos monotributista, trabajás en relación de dependencia o ten�
 
 // ------------------------------------------------------- Producto / precios ---
 
-// Precios PYME tomados del Cotizador Omint (tarifas de empresa por tramo de cápitas).
-// "precios" = tramo 11 a 99; "precios100" = tramo 100 a 199.
-const PYME_PLANES = [
-  {
-    plan: "4500_PYME",
-    linea: "Global",
-    cartilla: "4500 (línea Global)",
-    farmacia: "40%",
-    modulo: "OA_TURISTA",
-    precios: { "00-25": 150555, "26-35": 214348, "36-54": 256975, "55-59": 435490, "60+": 661886, hijo1: 130691, hijo2: 113162 },
-    precios100: { "00-25": 139142, "26-35": 198263, "36-54": 237863, "55-59": 403229, "60+": 612460, hijo1: 121174, hijo2: 104656 },
-  },
-  {
-    plan: "6500_PYME",
-    linea: "Clásico",
-    cartilla: "6500 (línea Clásico)",
-    farmacia: "50%",
-    modulo: "OA_TURISTA_PLUS",
-    precios: { "00-25": 164763, "26-35": 235558, "36-54": 275813, "55-59": 462243, "60+": 688541, hijo1: 144008, hijo2: 124848 },
-    precios100: { "00-25": 152439, "26-35": 218000, "36-54": 255185, "55-59": 427941, "60+": 637149, hijo1: 133245, hijo2: 115539 },
-  },
-  {
-    plan: "8500_PYME",
-    linea: "Premium",
-    cartilla: "8500 (línea Premium)",
-    farmacia: "50%",
-    modulo: "OA_EURO",
-    precios: { "00-25": 283132, "26-35": 377312, "36-54": 496624, "55-59": 691974, "60+": 943364, hijo1: 248381, hijo2: 216509 },
-    precios100: { "00-25": 262232, "26-35": 349159, "36-54": 459684, "55-59": 640526, "60+": 872991, hijo1: 229814, hijo2: 200472 },
-  },
+// ---------------------------------------------- Lista de precios EMPRESAS ---
+// Mendoza · vigente a octubre 2026 · sin IVA. Generado desde
+// "Lista de precios Empresas - Octubre 2026.xlsx" (hoja Mendoza) y verificado
+// contra el Cotizador Omint. null = "Consultar con Producto" / no se vende en ese tramo.
+const LISTA_PRECIOS = "Lista Empresas · Mendoza · octubre 2026";
+const TRAMOS = [
+  { key: "1 a 10", min: 1, max: 10 },
+  { key: "11 a 99", min: 11, max: 99 },
+  { key: "100 a 199", min: 100, max: 199 },
+  { key: "200 a 499", min: 200, max: Infinity },
 ];
-// Campaña vigente según el Cotizador Omint: 20% sobre el precio de lista.
-const DESCUENTO_CAMPANA_COTIZADOR = 20;
+const tramoDe = (capitas) => (TRAMOS.find((t) => capitas >= t.min && capitas <= t.max) || TRAMOS[0]).key;
+// Orden de la lista: 00-25, 26-35, 36-54, 55-59, 60+, Hijo 1, Hijo 2 o +.
+const P = (a) => ({ "00-25": a[0], "26-35": a[1], "36-54": a[2], "55-59": a[3], "60+": a[4], hijo1: a[5], hijo2: a[6] });
+// Planes B: precio único (no varía por tramo); exclusivos para holdings de hasta 25 cápitas.
+const B_250020 = P([87972, 120450, 157433, 297566, 434135, 83626, 75262]);
+const B_450020 = P([102861, 137695, 181709, 348095, 510584, 97301, 91140]);
+const B_650020 = P([125362, 176225, 216434, 419079, 597468, 116893, 109494]);
+const PLANES_EMPRESA = [
+  { plan: "2500_24", linea: "Génesis", tipo: "Estándar", tarifas: { "1 a 10": P([122675, 157565, 207359, 351532, 606839, 106841, 92159]), "11 a 99": P([114868, 147497, 194035, 328895, 567584, 99850, 86439]), "100 a 199": P([106356, 136400, 179658, 304378, 525446, 92474, 79849]), "200 a 499": null }, bullets: ["Habitación compartida (individual solo en Cl. Santa Isabel y Bazterrica)", "Ortodoncia cubierta solo entre 5 y 8 años", "Kinesiología y fonoaudiología: hasta 30 sesiones", "Extensión de cobertura por fallecimiento del titular: 6 meses"] },
+  { plan: "4500_23C", linea: "Global", tipo: "Estándar", tarifas: { "1 a 10": P([128964, 155823, 210561, 367228, 634165, 112005, 96997]), "11 a 99": P([120558, 145934, 196886, 343539, 593181, 104810, 90799]), "100 a 199": P([111760, 135049, 182155, 318126, 549253, 97005, 83876]), "200 a 499": null }, bullets: ["Habitación individual en todas las instituciones", "Ortodoncia cubierta hasta los 18 años", "Kinesiología y fonoaudiología: hasta 40 sesiones", "Extensión de cobertura por fallecimiento del titular: 12 meses"] },
+  { plan: "4500_PYME", linea: "Global", tipo: "PYME", tarifas: { "11 a 99": P([150555, 214348, 256975, 435490, 661886, 130691, 113162]), "100 a 199": P([139142, 198263, 237863, 403229, 612460, 121174, 104656]), "200 a 499": null }, bullets: [] },
+  { plan: "6500_21C", linea: "Clásico", tipo: "Estándar", tarifas: { "1 a 10": P([176076, 251710, 294817, 494117, 735721, 153745, 133427]) }, bullets: ["Habitación individual en todas las instituciones", "Ortodoncia cubierta hasta los 25 años", "Kinesiología y fonoaudiología sin tope de sesiones", "Reintegro de ecografías 3D/4D y consultas homeopáticas"] },
+  { plan: "6500_PYME", linea: "Clásico", tipo: "PYME", tarifas: { "11 a 99": P([164763, 235558, 275813, 462243, 688541, 144008, 124848]), "100 a 199": P([152439, 218000, 255185, 427941, 637149, 133245, 115539]), "200 a 499": null }, bullets: [] },
+  { plan: "8500_21", linea: "Premium", tipo: "Estándar", tarifas: { "1 a 10": P([302702, 403073, 530850, 739644, 1008040, 265165, 231252]), "11 a 99": P([283132, 377312, 496624, 691974, 943364, 248381, 216509]), "100 a 199": P([262232, 349159, 459684, 640526, 872991, 229814, 200472]), "200 a 499": null }, bullets: ["Habitación individual, con sistema Cerrado, Combinado y Abierto", "Ortodoncia cubierta hasta los 99 años (sin límite práctico)", "Única línea con cobertura de cirugía estética", "Única línea con reintegro de óptica", "Acompañante en internación hasta 4 días (el máximo de la línea)"] },
+  { plan: "8500_PYME", linea: "Premium", tipo: "PYME", tarifas: { "11 a 99": P([283132, 377312, 496624, 691974, 943364, 248381, 216509]), "100 a 199": P([262232, 349159, 459684, 640526, 872991, 229814, 200472]), "200 a 499": null }, bullets: [] },
+  { plan: "2500_20", linea: "Génesis", tipo: "Plan B", tarifas: { "1 a 10": B_250020, "11 a 99": B_250020, "100 a 199": B_250020 }, bullets: ["Habitación compartida (individual solo en Cl. Santa Isabel y Bazterrica)", "Ortodoncia cubierta solo entre 5 y 8 años c/copago", "Kinesiología y fonoaudiología: hasta 30 sesiones c/copago", "Extensión de cobertura por fallecimiento del titular: 6 meses c/copago"] },
+  { plan: "4500_20", linea: "Global", tipo: "Plan B", tarifas: { "1 a 10": B_450020, "11 a 99": B_450020, "100 a 199": B_450020 }, bullets: ["Habitación individual en todas las instituciones", "Ortodoncia cubierta hasta los 18 años c/copago", "Kinesiología y fonoaudiología: hasta 40 sesiones c/copago", "Extensión de cobertura por fallecimiento del titular: 12 meses c/copago"] },
+  { plan: "6500_20", linea: "Clásico", tipo: "Plan B", tarifas: { "1 a 10": B_650020, "11 a 99": B_650020, "100 a 199": B_650020 }, bullets: ["Habitación individual en todas las instituciones", "Ortodoncia cubierta hasta los 25 años c/copago", "Kinesiología y fonoaudiología sin tope de sesiones c/copago"] },
+];
+const MAX_CAPITAS_PLAN_B = 25;
+// Datos extra de la línea PYME (ficha de producto).
+const PYME_EXTRA = {
+  "4500_PYME": { farmacia: "40%", modulo: "OA_TURISTA" },
+  "6500_PYME": { farmacia: "50%", modulo: "OA_TURISTA_PLUS" },
+  "8500_PYME": { farmacia: "50%", modulo: "OA_EURO" },
+};
+// Campaña vigente: 20% sobre el precio de lista durante 12 meses.
+const CAMPANA = { descuento: 20, meses: 12 };
 const FRANJAS = [
   { key: "00-25", label: "Titulares 0–25" },
   { key: "26-35", label: "Titulares 26–35" },
   { key: "36-54", label: "Titulares 36–54" },
   { key: "55-59", label: "Titulares 55–59" },
   { key: "60+", label: "Titulares 60+" },
-  { key: "hijo1", label: "Hijo 1" },
-  { key: "hijo2", label: "Hijo 2 y siguientes" },
+  { key: "hijo1", label: "1er hijo menor de 25 (uno por familia)" },
+  { key: "hijo2", label: "2º hijo menor de 25 en adelante" },
 ];
 const MIN_CAPITAS_PYME = 11;
 
+// Cotiza un plan para la composición dada, aplicando el tramo por cápitas y
+// las reglas de venta (PYME desde 11, Plan B hasta 25, 200+ consultar).
 function cotizar(plan, cantidades, descuento) {
-  let lista = 0, capitas = 0;
+  let capitas = 0;
   FRANJAS.forEach((f) => (capitas += num(cantidades[f.key])));
-  const tabla = capitas >= 100 && plan.precios100 ? plan.precios100 : plan.precios;
+  const tramo = tramoDe(capitas);
+  const base = { plan, capitas, tramo, lista: 0, desc: 0, total: 0, porCapita: 0, disponible: false, motivo: "" };
+  if (!capitas) return { ...base, motivo: "Cargá la composición del grupo" };
+  if (plan.tipo === "Plan B" && capitas > MAX_CAPITAS_PLAN_B) return { ...base, motivo: `Plan B: hasta ${MAX_CAPITAS_PLAN_B} cápitas` };
+  const tabla = plan.tarifas[tramo];
+  if (!tabla) {
+    const motivo = tramo === "200 a 499" ? "Consultar con Producto" : plan.tipo === "PYME" ? `PYME: desde ${MIN_CAPITAS_PYME} cápitas` : `No se vende en el tramo ${tramo}`;
+    return { ...base, motivo };
+  }
+  let lista = 0;
   FRANJAS.forEach((f) => (lista += num(cantidades[f.key]) * tabla[f.key]));
   const desc = lista * (num(descuento) / 100);
   const total = lista - desc;
-  return { lista, desc, total, capitas, porCapita: capitas ? total / capitas : 0 };
+  return { ...base, disponible: true, lista, desc, total, porCapita: total / capitas };
 }
 
 const OBJECIONES = [
@@ -1451,7 +1471,11 @@ export default function App() {
         setContenido(parseJSONSafe(ct, CONTENIDO_SEED));
         setWaLog(parseJSONSafe(wl, []));
         const s = parseJSONSafe(st, {});
-        setSettings({ ...DEFAULT_SETTINGS, ...s, objetivos: { ...DEFAULT_SETTINGS.objetivos, ...(s.objetivos || {}) } });
+        const merged = { ...DEFAULT_SETTINGS, ...s, objetivos: { ...DEFAULT_SETTINGS.objetivos, ...(s.objetivos || {}) } };
+        // Campaña nueva (oct. 2026): 20% durante 12 meses. Se aplica una sola vez
+        // sobre ajustes guardados con la campaña anterior.
+        if ((s.campanaVersion || 1) < 2) Object.assign(merged, { descuento: CAMPANA.descuento, mesesCampana: CAMPANA.meses, campanaVersion: 2 });
+        setSettings(merged);
       } catch (e) {
         setLoadFailed(true);
         return; // sin "loaded" el autoguardado queda desactivado
@@ -1581,7 +1605,7 @@ export default function App() {
               { id: uid(), fecha: hoyISO(), origen: "rapido", tipo: "empresa", capitas: cot.capitas, planes: [{ plan: cot.plan, lista: Math.round(cot.lista), bonificado: Math.round(cot.total), aporte: 0, aPagar: Math.round(cot.total) }] },
               ...(c.cotizaciones || []),
             ],
-            historial: [{ fecha: hoyISO(), tipo: "propuesta", texto: `Cotización ${cot.plan}: ${cot.capitas} cápitas · ${money(cot.total)}/mes (desc. ${cot.descuento}%)` }, ...(c.historial || [])],
+            historial: [{ fecha: hoyISO(), tipo: "propuesta", texto: `Cotización ${cot.plan}: ${cot.capitas} cápitas · ${money(cot.total)}/mes (desc. ${cot.descuento}%${cot.meses ? ` × ${cot.meses} meses` : ""})` }, ...(c.historial || [])],
           };
         })
       );
@@ -1828,7 +1852,7 @@ export default function App() {
 
   const pendientes = useMemo(() => calcularPendientes(companies, personas, meetings), [companies, personas, meetings]);
 
-  const vars = useMemo(() => ({ asesor: settings.asesor, descuento: settings.descuento }), [settings.asesor, settings.descuento]);
+  const vars = useMemo(() => ({ asesor: settings.asesor, descuento: settings.descuento, meses: settings.mesesCampana }), [settings.asesor, settings.descuento, settings.mesesCampana]);
   const theme = settings.theme === "dark" ? "dark" : "light";
   const go = useCallback((v) => {
     setView(v);
@@ -4038,40 +4062,56 @@ function NewCompanyModal({ onClose, onSave }) {
 // ============================================================= Cotizador ===
 
 function Cotizador({ companies, settings, presetCompanyId, guardarCotizacion, showToast, vars }) {
-  const [cant, setCant] = useState({ "00-25": 0, "26-35": 0, "36-54": 0, "55-59": 0, "60+": 0, hijo1: 0, hijo2: 0 });
-  const [descuento, setDescuento] = useState(DESCUENTO_CAMPANA_COTIZADOR);
+  const vacio = { "00-25": 0, "26-35": 0, "36-54": 0, "55-59": 0, "60+": 0, hijo1: 0, hijo2: 0 };
+  const [cant, setCant] = useState(vacio);
+  const [descuento, setDescuento] = useState(settings.descuento ?? CAMPANA.descuento);
   const [iva, setIva] = useState(0);
-  const [planSel, setPlanSel] = useState("6500_PYME");
+  const [planSel, setPlanSel] = useState("");
+  const [verNoDisp, setVerNoDisp] = useState(false);
   const [companyId, setCompanyId] = useState(presetCompanyId || "");
   const [busca, setBusca] = useState("");
   const [moverPropuesta, setMoverPropuesta] = useState(true);
   const comp = companies.find((c) => c.id === companyId);
+  const meses = settings.mesesCampana || CAMPANA.meses;
 
   useEffect(() => {
     if (presetCompanyId) setCompanyId(presetCompanyId);
   }, [presetCompanyId]);
 
-  const res = PYME_PLANES.map((p) => {
+  const f = 1 + num(iva) / 100;
+  const res = PLANES_EMPRESA.map((p) => {
     const r = cotizar(p, cant, descuento);
-    const f = 1 + num(iva) / 100;
-    return { plan: p, ...r, lista: r.lista * f, desc: r.desc * f, total: r.total * f, porCapita: r.porCapita * f };
+    return { ...r, lista: r.lista * f, desc: r.desc * f, total: r.total * f, porCapita: r.porCapita * f };
   });
   const capitas = res[0].capitas;
-  const sel = res.find((r) => r.plan.plan === planSel) || res[1];
+  const tramo = res[0].tramo;
+  const disponibles = res.filter((r) => r.disponible).sort((x, y) => x.total - y.total);
+  const noDisponibles = res.filter((r) => !r.disponible);
+  const sel = disponibles.find((r) => r.plan.plan === planSel) || disponibles[0] || null;
+  const minPrecio = disponibles.length ? disponibles[0].total : 0;
   const nombre = comp ? capitalizar(getFirstName(comp.contacto)) : "";
 
-  const texto = `Hola${nombre ? " " + nombre : ""}! Te paso la cotización de OMINT${comp ? ` para ${comp.empresa}` : ""}:
+  const beneficios = sel
+    ? sel.plan.tipo === "PYME" && PYME_EXTRA[sel.plan.plan]
+      ? [`Farmacia ${PYME_EXTRA[sel.plan.plan].farmacia}`, "Óptica, ortodoncia sin límite de edad y check-up anual", `Asistencia al viajero ${PYME_EXTRA[sel.plan.plan].modulo}`]
+      : sel.plan.bullets.slice(0, 3)
+    : [];
+  const texto = sel
+    ? `Hola${nombre ? " " + nombre : ""}! Te paso la cotización de OMINT${comp ? ` para ${comp.empresa}` : ""}:
 
-• Plan ${sel.plan.plan} (línea ${sel.plan.linea}) — ${capitas} cápitas
+• Plan ${sel.plan.plan} (línea ${sel.plan.linea}${sel.plan.tipo !== "Estándar" ? ` · ${sel.plan.tipo}` : ""}) — ${capitas} cápitas
 • Valor de lista: ${money(sel.lista)}/mes
-• Descuento campaña ${descuento}%: −${money(sel.desc)}
-• *Total mensual: ${money(sel.total)}* (≈ ${money(sel.porCapita)} por cápita)
+${num(descuento) ? `• Campaña: ${descuento}% de descuento durante ${meses} meses: −${money(sel.desc)}
+` : ""}• *Total mensual: ${money(sel.total)}* (≈ ${money(sel.porCapita)} por cápita)
+${num(descuento) ? `Desde el mes ${meses + 1} se aplica el valor de lista vigente.
+` : ""}
+${beneficios.map((b) => `✓ ${b}`).join("\n")}
 
-Incluye farmacia ${sel.plan.farmacia}, óptica, ortodoncia sin límite de edad, check-up anual y asistencia al viajero ${sel.plan.modulo}.
-${num(iva) ? `Valores con IVA ${iva}% incluido.` : "Valores sin IVA."} Sujeto a aprobación y vigencia de la campaña.
+${num(iva) ? `Valores con IVA ${iva}% incluido.` : "Valores sin IVA."} ${LISTA_PRECIOS}. Sujeto a aprobación.
 
 ¿Coordinamos 15 minutos para revisarla juntos?
-${vars.asesor} · OMINT`;
+${vars.asesor} · OMINT`
+    : "";
 
   const busqueda = useMemo(() => {
     const q = busca.trim().toLowerCase();
@@ -4080,69 +4120,92 @@ ${vars.asesor} · OMINT`;
   }, [busca, companies]);
 
   const setN = (k, v) => setCant((p) => ({ ...p, [k]: Math.max(0, Math.round(num(v))) }));
-  const minPrecio = Math.min(...res.map((r) => r.total));
+  const payload = () => ({ plan: sel.plan.plan, capitas, total: sel.total, lista: sel.lista, descuento, meses, detalle: cant });
 
   return (
     <div className="stack">
-      <PageHeader title="Cotizador PYME" subtitle="Cálculo rápido con las tarifas PYME del Cotizador Omint · tramos 11–99 y 100–199 cápitas">
-        <Btn icon={RefreshCw} onClick={() => setCant({ "00-25": 0, "26-35": 0, "36-54": 0, "55-59": 0, "60+": 0, hijo1: 0, hijo2: 0 })}>Limpiar</Btn>
+      <PageHeader title="Cotizador rápido" subtitle={`${LISTA_PRECIOS} · ${PLANES_EMPRESA.length} planes · campaña ${descuento}% por ${meses} meses`}>
+        <Btn icon={RefreshCw} onClick={() => setCant(vacio)}>Limpiar</Btn>
       </PageHeader>
 
       <div className="grid g3">
         <Card title="Composición del grupo" icon={Users}>
           <div className="stack-sm">
-            {FRANJAS.map((f) => (
-              <div key={f.key} className="row between">
-                <span className="ink2" style={{ fontSize: 13 }}>{f.label}</span>
+            {FRANJAS.map((fr) => (
+              <div key={fr.key} className="row between">
+                <span className="ink2" style={{ fontSize: 13 }}>{fr.label}</span>
                 <div className="row" style={{ gap: 4 }}>
-                  <button className="icon-btn" style={{ width: 28, height: 28 }} onClick={() => setN(f.key, cant[f.key] - 1)} aria-label={`Restar ${f.label}`}>−</button>
-                  <input className="input tnum" style={{ width: 56, textAlign: "center", padding: "5px 4px" }} type="number" min="0" value={cant[f.key]} onChange={(e) => setN(f.key, e.target.value)} aria-label={f.label} />
-                  <button className="icon-btn" style={{ width: 28, height: 28 }} onClick={() => setN(f.key, cant[f.key] + 1)} aria-label={`Sumar ${f.label}`}>+</button>
+                  <button className="icon-btn" style={{ width: 28, height: 28 }} onClick={() => setN(fr.key, cant[fr.key] - 1)} aria-label={`Restar ${fr.label}`}>−</button>
+                  <input className="input tnum" style={{ width: 56, textAlign: "center", padding: "5px 4px" }} type="number" min="0" value={cant[fr.key]} onChange={(e) => setN(fr.key, e.target.value)} aria-label={fr.label} />
+                  <button className="icon-btn" style={{ width: 28, height: 28 }} onClick={() => setN(fr.key, cant[fr.key] + 1)} aria-label={`Sumar ${fr.label}`}>+</button>
                 </div>
               </div>
             ))}
           </div>
+          <div className="muted" style={{ fontSize: 11.5, marginTop: 6 }}>Titulares incluye cónyuges, familiares a cargo e hijos de 25 años o más (según la lista).</div>
           <div className="divider" />
           <div className="grid g2" style={{ gap: 10 }}>
-            <Field label="Descuento %"><input className="input tnum" type="number" min="0" max="100" value={descuento} onChange={(e) => setDescuento(num(e.target.value))} /></Field>
+            <Field label={`Descuento % (${meses} meses)`}><input className="input tnum" type="number" min="0" max="100" value={descuento} onChange={(e) => setDescuento(num(e.target.value))} /></Field>
             <Field label="IVA % (lista sin IVA)"><input className="input tnum" type="number" min="0" value={iva} onChange={(e) => setIva(num(e.target.value))} /></Field>
           </div>
           <div className="row between" style={{ marginTop: 12 }}>
             <span style={{ fontWeight: 700 }}>Total cápitas</span>
             <span className="tnum" style={{ fontSize: 22, fontWeight: 800 }}>{capitas}</span>
           </div>
-          {capitas > 0 && capitas < MIN_CAPITAS_PYME && <div className="note t-warn" style={{ marginTop: 8 }}>La línea PYME aplica desde {MIN_CAPITAS_PYME} cápitas. Sumá familiares de los titulares para calificar.</div>}
-          {capitas >= 100 && capitas < 200 && <div className="note t-info" style={{ marginTop: 8 }}>Tramo 100 a 199 cápitas: se aplica la tarifa de ese tramo.</div>}
-          {capitas >= 200 && <div className="note t-warn" style={{ marginTop: 8 }}>Desde 200 cápitas los valores se consultan con Producto: este cálculo es solo orientativo.</div>}
+          {capitas > 0 && <div className="muted" style={{ fontSize: 12, textAlign: "right" }}>Tramo {tramo} cápitas</div>}
+          {capitas >= 200 && <div className="note t-warn" style={{ marginTop: 8 }}>Desde 200 cápitas los valores se consultan con Producto.</div>}
         </Card>
 
         <div className="span2 stack">
-          <div className="grid g3">
-            {res.map((r) => {
-              const on = planSel === r.plan.plan;
-              return (
-                <button
-                  key={r.plan.plan}
-                  className="card"
-                  onClick={() => setPlanSel(r.plan.plan)}
-                  style={{ padding: 16, textAlign: "left", cursor: "pointer", font: "inherit", color: "inherit", borderColor: on ? "var(--accent)" : "var(--border)", boxShadow: on ? "0 0 0 3px var(--accent-soft)" : "var(--shadow)" }}
-                >
-                  <div className="row between">
-                    <span style={{ fontWeight: 800 }}>{r.plan.plan}</span>
-                    {on ? <Chip tone="accent" icon={Check}>Elegido</Chip> : capitas > 0 && r.total === minPrecio ? <Chip tone="good">Más económico</Chip> : null}
-                  </div>
-                  <div className="muted" style={{ fontSize: 12 }}>Línea {r.plan.linea} · farmacia {r.plan.farmacia}</div>
-                  <div className="tnum" style={{ fontSize: 24, fontWeight: 800, marginTop: 10 }}>{money(r.total)}</div>
-                  <div className="muted" style={{ fontSize: 12 }}>por mes{capitas ? ` · ${money(r.porCapita)} por cápita` : ""}</div>
-                  {r.desc > 0 && <div style={{ fontSize: 12, marginTop: 6, color: "var(--good)", fontWeight: 600 }}>Ahorro {money(r.desc)}/mes · lista {money(r.lista)}</div>}
-                </button>
-              );
-            })}
-          </div>
+          <Card
+            title={capitas ? `${disponibles.length} planes disponibles para ${capitas} cápitas` : "Planes"}
+            icon={Stethoscope}
+            pad={false}
+            action={noDisponibles.length > 0 && capitas > 0 && <button className="btn btn-ghost btn-sm" onClick={() => setVerNoDisp((v) => !v)}>{verNoDisp ? "Ocultar" : "Ver"} no disponibles ({noDisponibles.length})</button>}
+          >
+            {!capitas ? (
+              <EmptyNote>Cargá la composición del grupo para ver los {PLANES_EMPRESA.length} planes de la lista.</EmptyNote>
+            ) : (
+              <div style={{ overflowX: "auto" }}>
+                <table className="tbl">
+                  <thead>
+                    <tr><th></th><th>Plan</th><th>Línea</th><th style={{ textAlign: "right" }}>Lista</th><th style={{ textAlign: "right" }}>Con {descuento}%</th><th style={{ textAlign: "right" }}>Por cápita</th></tr>
+                  </thead>
+                  <tbody>
+                    {disponibles.map((r) => {
+                      const on = sel && sel.plan.plan === r.plan.plan;
+                      return (
+                        <tr key={r.plan.plan} className="click" onClick={() => setPlanSel(r.plan.plan)} style={{ background: on ? "var(--accent-soft)" : undefined }}>
+                          <td style={{ width: 28 }}><input type="radio" checked={!!on} onChange={() => setPlanSel(r.plan.plan)} aria-label={`Elegir ${r.plan.plan}`} /></td>
+                          <td className="strong">
+                            {r.plan.plan} {r.total === minPrecio && <Chip tone="good">Más económico</Chip>}
+                          </td>
+                          <td>{r.plan.linea}{r.plan.tipo !== "Estándar" ? <span className="muted"> · {r.plan.tipo}</span> : ""}</td>
+                          <td className="tnum" style={{ textAlign: "right", textDecoration: r.desc > 0 ? "line-through" : "none" }}>{money(r.lista)}</td>
+                          <td className="tnum strong" style={{ textAlign: "right" }}>{money(r.total)}</td>
+                          <td className="tnum" style={{ textAlign: "right" }}>{money(r.porCapita)}</td>
+                        </tr>
+                      );
+                    })}
+                    {verNoDisp &&
+                      noDisponibles.map((r) => (
+                        <tr key={r.plan.plan} style={{ opacity: 0.6 }}>
+                          <td></td>
+                          <td>{r.plan.plan}</td>
+                          <td>{r.plan.linea}{r.plan.tipo !== "Estándar" ? ` · ${r.plan.tipo}` : ""}</td>
+                          <td colSpan={3} style={{ textAlign: "right" }}>{r.motivo}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+                {disponibles.length === 0 && <EmptyNote>Ningún plan de la lista aplica para {capitas} cápitas. {noDisponibles[0]?.motivo}</EmptyNote>}
+              </div>
+            )}
+          </Card>
 
-          <Card title="Propuesta para enviar" icon={FileText} action={<Btn size="sm" icon={Copy} disabled={!capitas} onClick={async () => showToast((await copiarTexto(texto)) ? "✓ Propuesta copiada" : "No se pudo copiar")}>Copiar</Btn>}>
+          <Card title="Propuesta para enviar" icon={FileText} action={<Btn size="sm" icon={Copy} disabled={!sel} onClick={async () => showToast((await copiarTexto(texto)) ? "✓ Propuesta copiada" : "No se pudo copiar")}>Copiar</Btn>}>
             <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", fontSize: 13, margin: 0, background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 10, padding: 12, color: "var(--ink)" }}>
-              {capitas ? texto : "Cargá la composición del grupo para generar la propuesta."}
+              {sel ? texto : "Cargá la composición del grupo y elegí un plan para generar la propuesta."}
             </pre>
             <div className="divider" />
             {comp ? (
@@ -4156,12 +4219,12 @@ ${vars.asesor} · OMINT`;
                 <label className="row ink2" style={{ gap: 6, fontSize: 12.5, cursor: "pointer" }}>
                   <input type="checkbox" checked={moverPropuesta} onChange={(e) => setMoverPropuesta(e.target.checked)} /> Pasar a “Propuesta Enviada”
                 </label>
-                {comp.telefono && (
-                  <a className="btn btn-wa" href={buildWaLink(normalizePhoneAR(comp.telefono), texto)} target="_blank" rel="noreferrer" onClick={() => capitas && guardarCotizacion(comp.id, { plan: sel.plan.plan, capitas, total: sel.total, lista: sel.lista, descuento, detalle: cant }, moverPropuesta)}>
+                {comp.telefono && sel && (
+                  <a className="btn btn-wa" href={buildWaLink(normalizePhoneAR(comp.telefono), texto)} target="_blank" rel="noreferrer" onClick={() => guardarCotizacion(comp.id, payload(), moverPropuesta)}>
                     <MessageCircle size={15} /> Enviar y guardar
                   </a>
                 )}
-                <Btn variant="primary" icon={Save} disabled={!capitas} onClick={() => guardarCotizacion(comp.id, { plan: sel.plan.plan, capitas, total: sel.total, lista: sel.lista, descuento, detalle: cant }, moverPropuesta)}>
+                <Btn variant="primary" icon={Save} disabled={!sel} onClick={() => guardarCotizacion(comp.id, payload(), moverPropuesta)}>
                   Guardar en la ficha
                 </Btn>
               </div>
@@ -4893,45 +4956,88 @@ function NewPersonaModal({ onClose, onSave }) {
 
 function ProductoReferencia({ go }) {
   const [abierta, setAbierta] = useState(0);
+  const [tramo, setTramo] = useState("11 a 99");
+  const [linea, setLinea] = useState("todas");
+  const lineas = ["Génesis", "Global", "Clásico", "Premium"];
+  const planesVista = PLANES_EMPRESA.filter((p) => linea === "todas" || p.linea === linea);
+  const COLS = ["00-25", "26-35", "36-54", "55-59", "60+", "hijo1", "hijo2"];
   return (
     <div className="stack">
-      <PageHeader title="Producto y objeciones" subtitle="Línea PYME · tarifas del Cotizador Omint y beneficios de referencia">
+      <PageHeader title="Producto y objeciones" subtitle={`${LISTA_PRECIOS} · ${PLANES_EMPRESA.length} planes · campaña ${CAMPANA.descuento}% por ${CAMPANA.meses} meses`}>
         <Btn variant="primary" icon={Calculator} onClick={() => go("cotizador")}>Abrir cotizador</Btn>
       </PageHeader>
 
-      <div className="grid g3">
-        {PYME_PLANES.map((p) => (
-          <Card key={p.plan} title={p.plan} icon={Stethoscope} action={<Chip tone="accent">Línea {p.linea}</Chip>}>
-            <div className="stack-sm" style={{ fontSize: 13 }}>
-              <div className="row between"><span className="muted">Cartilla</span><span>{p.cartilla}</span></div>
-              <div className="row between"><span className="muted">Farmacia</span><span>{p.farmacia}</span></div>
-              <div className="row between"><span className="muted">Asistencia al viajero</span><span>{p.modulo}</span></div>
-              <div className="row between"><span className="muted">Óptica</span><span style={{ color: "var(--good)" }}>✓ 1 caso/año</span></div>
-              <div className="row between"><span className="muted">Ortodoncia</span><span style={{ color: "var(--good)" }}>✓ Sin límite de edad</span></div>
-              <div className="row between"><span className="muted">Check-up anual</span><span style={{ color: "var(--good)" }}>✓ Incluido</span></div>
+      <Card
+        title="Precios de lista por cápita (sin IVA)"
+        icon={FileText}
+        pad={false}
+        action={
+          <div className="row wrap" style={{ gap: 6 }}>
+            <div className="seg">
+              {TRAMOS.map((t) => (
+                <button key={t.key} className={tramo === t.key ? "on" : ""} onClick={() => setTramo(t.key)}>{t.key}</button>
+              ))}
             </div>
-          </Card>
-        ))}
-      </div>
-
-      <Card title="Precios de lista por cápita · tramo 11 a 99 cápitas" icon={FileText} pad={false}>
+            <select className="select" value={linea} onChange={(e) => setLinea(e.target.value)} aria-label="Línea">
+              <option value="todas">Todas las líneas</option>
+              {lineas.map((l) => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
+        }
+      >
         <div style={{ overflowX: "auto", padding: "8px 0 0" }}>
           <table className="tbl">
             <thead>
-              <tr>{["Plan", "0–25", "26–35", "36–54", "55–59", "60+", "Hijo 1", "Hijo 2+"].map((h) => <th key={h} style={{ textAlign: h === "Plan" ? "left" : "right" }}>{h}</th>)}</tr>
+              <tr>
+                <th>Plan</th>
+                <th>Línea</th>
+                {["0–25", "26–35", "36–54", "55–59", "60+", "Hijo 1", "Hijo 2+"].map((h) => <th key={h} style={{ textAlign: "right" }}>{h}</th>)}
+              </tr>
             </thead>
             <tbody>
-              {PYME_PLANES.map((p) => (
-                <tr key={p.plan}>
-                  <td className="strong">{p.plan}</td>
-                  {["00-25", "26-35", "36-54", "55-59", "60+", "hijo1", "hijo2"].map((k) => <td key={k} className="tnum" style={{ textAlign: "right" }}>{money(p.precios[k])}</td>)}
-                </tr>
-              ))}
+              {planesVista.map((p) => {
+                const t = p.tarifas[tramo];
+                const fueraB = p.tipo === "Plan B" && TRAMOS.find((x) => x.key === tramo).min > MAX_CAPITAS_PLAN_B;
+                return (
+                  <tr key={p.plan}>
+                    <td className="strong">{p.plan}</td>
+                    <td>{p.linea}{p.tipo !== "Estándar" ? <span className="muted"> · {p.tipo}</span> : ""}</td>
+                    {t && !fueraB ? (
+                      COLS.map((k) => <td key={k} className="tnum" style={{ textAlign: "right" }}>{money(t[k])}</td>)
+                    ) : (
+                      <td colSpan={7} className="muted" style={{ textAlign: "right" }}>
+                        {fueraB ? `Solo hasta ${MAX_CAPITAS_PLAN_B} cápitas` : tramo === "200 a 499" ? "Consultar con Producto" : p.tipo === "PYME" ? `Desde ${MIN_CAPITAS_PYME} cápitas` : "No se vende en este tramo"}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
-        <div className="muted" style={{ fontSize: 12, padding: "10px 18px 14px" }}>De 100 a 199 cápitas rige la tarifa del tramo siguiente (la aplica el cotizador). Desde 200 cápitas, consultar con Producto.</div>
+        <div className="muted" style={{ fontSize: 12, padding: "10px 18px 14px", lineHeight: 1.5 }}>
+          Adulto / cónyuge / familiar a cargo / hijo de 25 o más se cotizan por franja de edad; hijos menores de 25 como Hijo 1 e Hijo 2 o +. Planes B: exclusivos para empresas PYME, holdings de hasta {MAX_CAPITAS_PLAN_B} cápitas, precio único. Los precios no incluyen IVA (aplicable solo a socios directos).
+        </div>
       </Card>
+
+      <div className="grid g3">
+        {planesVista.map((p) => (
+          <Card key={p.plan} title={p.plan} icon={Stethoscope} action={<Chip tone={p.tipo === "PYME" ? "info" : p.tipo === "Plan B" ? "warn" : "accent"}>{p.linea}{p.tipo !== "Estándar" ? ` · ${p.tipo}` : ""}</Chip>}>
+            <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6, color: "var(--ink-2)", fontSize: 13 }}>
+              {p.tipo === "PYME" && PYME_EXTRA[p.plan] ? (
+                <>
+                  <li>Farmacia {PYME_EXTRA[p.plan].farmacia}</li>
+                  <li>Asistencia al viajero {PYME_EXTRA[p.plan].modulo}</li>
+                  <li>Óptica (1 caso/año), ortodoncia sin límite de edad y check-up anual</li>
+                  <li>Desde {MIN_CAPITAS_PYME} cápitas · solo empresas nuevas</li>
+                </>
+              ) : (
+                p.bullets.map((b) => <li key={b}>{b}</li>)
+              )}
+            </ul>
+          </Card>
+        ))}
+      </div>
 
       <div className="grid g2">
         <Card title="Requisitos para ofrecer PYME" icon={ClipboardList}>
@@ -5060,6 +5166,7 @@ function SettingsModal({ settings, onClose, onSave }) {
         <div className="grid g2" style={{ gap: 10 }}>
           <Field label="Meta mensual (cápitas)"><input className="input tnum" type="number" min="1" value={s.metaMensual} onChange={(e) => setS({ ...s, metaMensual: Math.max(1, Math.round(num(e.target.value))) })} /></Field>
           <Field label="Descuento de campaña %"><input className="input tnum" type="number" min="0" max="100" value={s.descuento} onChange={(e) => setS({ ...s, descuento: num(e.target.value) })} /></Field>
+          <Field label="Duración de la campaña (meses)"><input className="input tnum" type="number" min="1" max="60" value={s.mesesCampana} onChange={(e) => setS({ ...s, mesesCampana: Math.max(1, Math.round(num(e.target.value))) })} /></Field>
         </div>
         <div>
           <span className="label">Objetivos diarios de actividad</span>

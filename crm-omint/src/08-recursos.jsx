@@ -3,45 +3,88 @@
 
 function ProductoReferencia({ go }) {
   const [abierta, setAbierta] = useState(0);
+  const [tramo, setTramo] = useState("11 a 99");
+  const [linea, setLinea] = useState("todas");
+  const lineas = ["Génesis", "Global", "Clásico", "Premium"];
+  const planesVista = PLANES_EMPRESA.filter((p) => linea === "todas" || p.linea === linea);
+  const COLS = ["00-25", "26-35", "36-54", "55-59", "60+", "hijo1", "hijo2"];
   return (
     <div className="stack">
-      <PageHeader title="Producto y objeciones" subtitle="Línea PYME · tarifas del Cotizador Omint y beneficios de referencia">
+      <PageHeader title="Producto y objeciones" subtitle={`${LISTA_PRECIOS} · ${PLANES_EMPRESA.length} planes · campaña ${CAMPANA.descuento}% por ${CAMPANA.meses} meses`}>
         <Btn variant="primary" icon={Calculator} onClick={() => go("cotizador")}>Abrir cotizador</Btn>
       </PageHeader>
 
-      <div className="grid g3">
-        {PYME_PLANES.map((p) => (
-          <Card key={p.plan} title={p.plan} icon={Stethoscope} action={<Chip tone="accent">Línea {p.linea}</Chip>}>
-            <div className="stack-sm" style={{ fontSize: 13 }}>
-              <div className="row between"><span className="muted">Cartilla</span><span>{p.cartilla}</span></div>
-              <div className="row between"><span className="muted">Farmacia</span><span>{p.farmacia}</span></div>
-              <div className="row between"><span className="muted">Asistencia al viajero</span><span>{p.modulo}</span></div>
-              <div className="row between"><span className="muted">Óptica</span><span style={{ color: "var(--good)" }}>✓ 1 caso/año</span></div>
-              <div className="row between"><span className="muted">Ortodoncia</span><span style={{ color: "var(--good)" }}>✓ Sin límite de edad</span></div>
-              <div className="row between"><span className="muted">Check-up anual</span><span style={{ color: "var(--good)" }}>✓ Incluido</span></div>
+      <Card
+        title="Precios de lista por cápita (sin IVA)"
+        icon={FileText}
+        pad={false}
+        action={
+          <div className="row wrap" style={{ gap: 6 }}>
+            <div className="seg">
+              {TRAMOS.map((t) => (
+                <button key={t.key} className={tramo === t.key ? "on" : ""} onClick={() => setTramo(t.key)}>{t.key}</button>
+              ))}
             </div>
-          </Card>
-        ))}
-      </div>
-
-      <Card title="Precios de lista por cápita · tramo 11 a 99 cápitas" icon={FileText} pad={false}>
+            <select className="select" value={linea} onChange={(e) => setLinea(e.target.value)} aria-label="Línea">
+              <option value="todas">Todas las líneas</option>
+              {lineas.map((l) => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
+        }
+      >
         <div style={{ overflowX: "auto", padding: "8px 0 0" }}>
           <table className="tbl">
             <thead>
-              <tr>{["Plan", "0–25", "26–35", "36–54", "55–59", "60+", "Hijo 1", "Hijo 2+"].map((h) => <th key={h} style={{ textAlign: h === "Plan" ? "left" : "right" }}>{h}</th>)}</tr>
+              <tr>
+                <th>Plan</th>
+                <th>Línea</th>
+                {["0–25", "26–35", "36–54", "55–59", "60+", "Hijo 1", "Hijo 2+"].map((h) => <th key={h} style={{ textAlign: "right" }}>{h}</th>)}
+              </tr>
             </thead>
             <tbody>
-              {PYME_PLANES.map((p) => (
-                <tr key={p.plan}>
-                  <td className="strong">{p.plan}</td>
-                  {["00-25", "26-35", "36-54", "55-59", "60+", "hijo1", "hijo2"].map((k) => <td key={k} className="tnum" style={{ textAlign: "right" }}>{money(p.precios[k])}</td>)}
-                </tr>
-              ))}
+              {planesVista.map((p) => {
+                const t = p.tarifas[tramo];
+                const fueraB = p.tipo === "Plan B" && TRAMOS.find((x) => x.key === tramo).min > MAX_CAPITAS_PLAN_B;
+                return (
+                  <tr key={p.plan}>
+                    <td className="strong">{p.plan}</td>
+                    <td>{p.linea}{p.tipo !== "Estándar" ? <span className="muted"> · {p.tipo}</span> : ""}</td>
+                    {t && !fueraB ? (
+                      COLS.map((k) => <td key={k} className="tnum" style={{ textAlign: "right" }}>{money(t[k])}</td>)
+                    ) : (
+                      <td colSpan={7} className="muted" style={{ textAlign: "right" }}>
+                        {fueraB ? `Solo hasta ${MAX_CAPITAS_PLAN_B} cápitas` : tramo === "200 a 499" ? "Consultar con Producto" : p.tipo === "PYME" ? `Desde ${MIN_CAPITAS_PYME} cápitas` : "No se vende en este tramo"}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
-        <div className="muted" style={{ fontSize: 12, padding: "10px 18px 14px" }}>De 100 a 199 cápitas rige la tarifa del tramo siguiente (la aplica el cotizador). Desde 200 cápitas, consultar con Producto.</div>
+        <div className="muted" style={{ fontSize: 12, padding: "10px 18px 14px", lineHeight: 1.5 }}>
+          Adulto / cónyuge / familiar a cargo / hijo de 25 o más se cotizan por franja de edad; hijos menores de 25 como Hijo 1 e Hijo 2 o +. Planes B: exclusivos para empresas PYME, holdings de hasta {MAX_CAPITAS_PLAN_B} cápitas, precio único. Los precios no incluyen IVA (aplicable solo a socios directos).
+        </div>
       </Card>
+
+      <div className="grid g3">
+        {planesVista.map((p) => (
+          <Card key={p.plan} title={p.plan} icon={Stethoscope} action={<Chip tone={p.tipo === "PYME" ? "info" : p.tipo === "Plan B" ? "warn" : "accent"}>{p.linea}{p.tipo !== "Estándar" ? ` · ${p.tipo}` : ""}</Chip>}>
+            <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6, color: "var(--ink-2)", fontSize: 13 }}>
+              {p.tipo === "PYME" && PYME_EXTRA[p.plan] ? (
+                <>
+                  <li>Farmacia {PYME_EXTRA[p.plan].farmacia}</li>
+                  <li>Asistencia al viajero {PYME_EXTRA[p.plan].modulo}</li>
+                  <li>Óptica (1 caso/año), ortodoncia sin límite de edad y check-up anual</li>
+                  <li>Desde {MIN_CAPITAS_PYME} cápitas · solo empresas nuevas</li>
+                </>
+              ) : (
+                p.bullets.map((b) => <li key={b}>{b}</li>)
+              )}
+            </ul>
+          </Card>
+        ))}
+      </div>
 
       <div className="grid g2">
         <Card title="Requisitos para ofrecer PYME" icon={ClipboardList}>
@@ -170,6 +213,7 @@ function SettingsModal({ settings, onClose, onSave }) {
         <div className="grid g2" style={{ gap: 10 }}>
           <Field label="Meta mensual (cápitas)"><input className="input tnum" type="number" min="1" value={s.metaMensual} onChange={(e) => setS({ ...s, metaMensual: Math.max(1, Math.round(num(e.target.value))) })} /></Field>
           <Field label="Descuento de campaña %"><input className="input tnum" type="number" min="0" max="100" value={s.descuento} onChange={(e) => setS({ ...s, descuento: num(e.target.value) })} /></Field>
+          <Field label="Duración de la campaña (meses)"><input className="input tnum" type="number" min="1" max="60" value={s.mesesCampana} onChange={(e) => setS({ ...s, mesesCampana: Math.max(1, Math.round(num(e.target.value))) })} /></Field>
         </div>
         <div>
           <span className="label">Objetivos diarios de actividad</span>
