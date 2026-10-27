@@ -103,7 +103,7 @@
     'pf.p2.w': 'of 374 people have a sleep disorder',
     'pf.p2.1': 'More weight, less sleep? I cleaned and modelled the data and crossed weight, stress and work to find what keeps us awake. Spoiler: women suffer twice as many disorders (55.7% vs 27.5%) and stress is the main enemy.',
     'pf.case': 'Read the analysis →',
-    'pf.crm.1': 'React/JSX CRM to manage the B2B pipeline: logging, segmentation and follow-up of accounts and opportunities.',
+    'pf.crm.1': 'Web CRM I use in my daily work: company and patient pipeline, calendar, WhatsApp campaigns, KPIs and a built-in quoting tool that saves each proposal to the client record. The demo uses fictitious data.',
     'pf.crm.link': 'View live demo →',
     'pf.quote.t': 'Pricing &amp; Quoting Tool – Individuals &amp; Companies',
     'pf.quote.1': 'Web quoting tool for individuals and companies: based on employment status or headcount, it compares several plans and generates a personalized PDF for the client. It flags plans that don’t apply for the headcount. Time per quote: 1 to 2 minutes.',
