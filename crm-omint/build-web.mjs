@@ -1,5 +1,7 @@
 // Arma la versión web para subir a un hosting con PHP (ej. Hostinger).
-// Uso: node build-web.mjs [carpeta-salida]   (por defecto: web-dist/)
+// Uso: node build-web.mjs [carpeta-salida] [--cotizador ruta/al/cotizador.html]
+//   (por defecto: web-dist/). Con --cotizador se incorpora el Cotizador Omint
+//   (versión "index_sin_login.html" del paquete del cotizador).
 // Genera: index.html (app completa en un solo archivo), api.php, config.php y
 // .htaccess. Luego hay que completar usuario y contraseña en config.php.
 import fs from "node:fs";
@@ -7,9 +9,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import * as esbuild from "esbuild";
+import { integrarCotizador } from "./web/integrar-cotizador.mjs";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
-const out = path.resolve(process.argv[2] || path.join(dir, "web-dist"));
+const args = process.argv.slice(2);
+const iCot = args.indexOf("--cotizador");
+const cotizadorSrc = iCot >= 0 ? args.splice(iCot, 2)[1] : null;
+const out = path.resolve(args[0] || path.join(dir, "web-dist"));
 const tmp = path.join(dir, "web", ".build");
 fs.mkdirSync(tmp, { recursive: true });
 
@@ -56,5 +62,14 @@ fs.writeFileSync(path.join(out, "index.html"), html);
 fs.copyFileSync(path.join(dir, "web", "api.php"), path.join(out, "api.php"));
 if (!fs.existsSync(path.join(out, "config.php"))) fs.copyFileSync(path.join(dir, "web", "config.php"), path.join(out, "config.php"));
 fs.copyFileSync(path.join(dir, "web", "htaccess.txt"), path.join(out, ".htaccess"));
+fs.copyFileSync(path.join(dir, "web", "cotizador.php"), path.join(out, "cotizador.php"));
+if (cotizadorSrc) {
+  fs.writeFileSync(path.join(out, "cotizador-app.html"), integrarCotizador(cotizadorSrc));
+  const plantilla = path.join(path.dirname(cotizadorSrc), "Plantilla_Nomina_Empresas_Omint.xlsx");
+  if (fs.existsSync(plantilla)) fs.copyFileSync(plantilla, path.join(out, "Plantilla_Nomina_Empresas_Omint.xlsx"));
+  console.log("Cotizador Omint integrado");
+} else {
+  console.log("Aviso: sin --cotizador, la vista del cotizador oficial no va a tener contenido.");
+}
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log("Web lista en", out, "· index.html", (html.length / 1024).toFixed(0), "KB");

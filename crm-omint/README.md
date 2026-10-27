@@ -40,3 +40,13 @@ Genera `web-dist/` con `index.html` (la app completa en un solo archivo), `api.p
 - **Ingreso:** pide usuario y contraseña. La contraseña se guarda cifrada (bcrypt) en `config.php` y cada dispositivo recibe una sesión de 30 días.
 - **Conflictos:** si otro dispositivo guardó cambios, la app avisa en vez de pisarlos.
 - **Antes de subir:** completá `CRM_USER` y `CRM_PASSWORD_HASH` en `config.php`. Las credenciales nunca se versionan.
+
+### Cotizador Omint integrado
+
+```bash
+node build-web.mjs web-dist --cotizador ruta/a/index_sin_login.html
+```
+
+- **Integración sin tocar el cálculo:** `web/integrar-cotizador.mjs` agrega al cotizador un puente que no cambia precios ni cálculos. En cada PDF generado avisa al CRM qué se cotizó, y la cotización se guarda en la ficha vinculada (empresa o paciente).
+- **Protección:** `cotizador.php` sirve el cotizador solo con una sesión válida del CRM.
+- **Fuera del repo:** el HTML del cotizador no se versiona, porque contiene datos de contacto de los ejecutivos.

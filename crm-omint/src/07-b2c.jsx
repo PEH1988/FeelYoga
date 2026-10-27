@@ -323,7 +323,7 @@ function PersonasList({ personas, setSelectedPersonaId, setShowNewPersona, setSh
   );
 }
 
-function PersonaDetail({ persona, onClose, updatePersona, deletePersona, setShowPersonaWhatsApp, askConfirm }) {
+function PersonaDetail({ persona, onClose, updatePersona, deletePersona, setShowPersonaWhatsApp, askConfirm, abrirCotizador }) {
   const [f, setF] = useState({});
   useEffect(() => {
     setF({ _id: persona.id, nombre: persona.nombre || "", telefono: persona.telefono || "", mail: persona.mail || "", obraSocial: persona.obraSocial || "", fechaNacimiento: persona.fechaNacimiento || "", nota: persona.nota || "", seguimiento: persona.seguimiento || "", grupo: persona.grupo || "" });
@@ -357,6 +357,7 @@ function PersonaDetail({ persona, onClose, updatePersona, deletePersona, setShow
         <div className="row wrap">
           <Btn variant="wa" icon={MessageCircle} disabled={!persona.telefono} onClick={() => setShowPersonaWhatsApp(persona.id)}>WhatsApp</Btn>
           {persona.telefono && <a className="btn btn-outline" href={`tel:+${normalizePhoneAR(persona.telefono)}`}><Phone size={15} /> Llamar</a>}
+          {HOSTED && abrirCotizador && <Btn icon={Calculator} onClick={() => abrirCotizador({ tipo: "persona", id: persona.id, label: nombreLegible(persona.nombre) })}>Cotizar</Btn>}
         </div>
         <div className="grid g2" style={{ gap: 10 }}>
           <Field label="Estado">
@@ -373,6 +374,7 @@ function PersonaDetail({ persona, onClose, updatePersona, deletePersona, setShow
           <input type="checkbox" checked={!!persona.contactado} onChange={(e) => updatePersona(persona.id, { contactado: e.target.checked })} /> Ya la contacté (por acá o desde mi celular)
         </label>
         <Field label="Grupo familiar a cotizar"><input className="input" value={f.grupo ?? ""} onChange={(e) => setF({ ...f, grupo: e.target.value })} onBlur={() => commit("grupo")} placeholder="Ej: titular 38 + cónyuge 36 + 2 hijos" /></Field>
+        <CotizacionesList items={persona.cotizaciones} />
         <Field label="Nota"><textarea className="textarea" rows={3} value={f.nota ?? ""} onChange={(e) => setF({ ...f, nota: e.target.value })} onBlur={() => commit("nota")} /></Field>
         <div className="divider" />
         <Field label="Nombre y apellido">{inp("nombre")}</Field>

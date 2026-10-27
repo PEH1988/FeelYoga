@@ -537,6 +537,8 @@ Si tenés CUIT, sos monotributista, trabajás en relación de dependencia o ten�
 
 // ------------------------------------------------------- Producto / precios ---
 
+// Precios PYME tomados del Cotizador Omint (tarifas de empresa por tramo de cápitas).
+// "precios" = tramo 11 a 99; "precios100" = tramo 100 a 199.
 const PYME_PLANES = [
   {
     plan: "4500_PYME",
@@ -544,7 +546,8 @@ const PYME_PLANES = [
     cartilla: "4500 (línea Global)",
     farmacia: "40%",
     modulo: "OA_TURISTA",
-    precios: { "00-25": 148038, "26-35": 210765, "36-54": 252679, "55-59": 428210, "60+": 650822, hijo1: 128506, hijo2: 111270 },
+    precios: { "00-25": 150555, "26-35": 214348, "36-54": 256975, "55-59": 435490, "60+": 661886, hijo1: 130691, hijo2: 113162 },
+    precios100: { "00-25": 139142, "26-35": 198263, "36-54": 237863, "55-59": 403229, "60+": 612460, hijo1: 121174, hijo2: 104656 },
   },
   {
     plan: "6500_PYME",
@@ -552,7 +555,8 @@ const PYME_PLANES = [
     cartilla: "6500 (línea Clásico)",
     farmacia: "50%",
     modulo: "OA_TURISTA_PLUS",
-    precios: { "00-25": 162009, "26-35": 231620, "36-54": 271203, "55-59": 454516, "60+": 677031, hijo1: 141601, hijo2: 122761 },
+    precios: { "00-25": 164763, "26-35": 235558, "36-54": 275813, "55-59": 462243, "60+": 688541, hijo1: 144008, hijo2: 124848 },
+    precios100: { "00-25": 152439, "26-35": 218000, "36-54": 255185, "55-59": 427941, "60+": 637149, hijo1: 133245, hijo2: 115539 },
   },
   {
     plan: "8500_PYME",
@@ -560,9 +564,12 @@ const PYME_PLANES = [
     cartilla: "8500 (línea Premium)",
     farmacia: "50%",
     modulo: "OA_EURO",
-    precios: { "00-25": 278399, "26-35": 371005, "36-54": 488323, "55-59": 680407, "60+": 927595, hijo1: 244229, hijo2: 212890 },
+    precios: { "00-25": 283132, "26-35": 377312, "36-54": 496624, "55-59": 691974, "60+": 943364, hijo1: 248381, hijo2: 216509 },
+    precios100: { "00-25": 262232, "26-35": 349159, "36-54": 459684, "55-59": 640526, "60+": 872991, hijo1: 229814, hijo2: 200472 },
   },
 ];
+// Campaña vigente según el Cotizador Omint: 20% sobre el precio de lista.
+const DESCUENTO_CAMPANA_COTIZADOR = 20;
 const FRANJAS = [
   { key: "00-25", label: "Titulares 0–25" },
   { key: "26-35", label: "Titulares 26–35" },
@@ -576,11 +583,9 @@ const MIN_CAPITAS_PYME = 11;
 
 function cotizar(plan, cantidades, descuento) {
   let lista = 0, capitas = 0;
-  FRANJAS.forEach((f) => {
-    const n = num(cantidades[f.key]);
-    lista += n * plan.precios[f.key];
-    capitas += n;
-  });
+  FRANJAS.forEach((f) => (capitas += num(cantidades[f.key])));
+  const tabla = capitas >= 100 && plan.precios100 ? plan.precios100 : plan.precios;
+  FRANJAS.forEach((f) => (lista += num(cantidades[f.key]) * tabla[f.key]));
   const desc = lista * (num(descuento) / 100);
   const total = lista - desc;
   return { lista, desc, total, capitas, porCapita: capitas ? total / capitas : 0 };
@@ -1393,7 +1398,7 @@ export default function App() {
   const [lostFor, setLostFor] = useState(null); // companyId pendiente de motivo de pérdida
   const [showSettings, setShowSettings] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
-  const [cotizarPara, setCotizarPara] = useState(null); // companyId preseleccionado en el cotizador
+  const [cotizarPara, setCotizarPara] = useState(null); // { tipo: "empresa" | "persona", id, label } preseleccionado en el cotizador
   const [saveState, setSaveState] = useState("idle");
   const [confirmState, setConfirmState] = useState(null);
   const [toast, setToast] = useState(null);
@@ -1572,6 +1577,10 @@ export default function App() {
             planCotizado: cot.plan,
             montoMensual: Math.round(cot.total),
             cotizacion: { ...cot, fecha: hoyISO() },
+            cotizaciones: [
+              { id: uid(), fecha: hoyISO(), origen: "rapido", tipo: "empresa", capitas: cot.capitas, planes: [{ plan: cot.plan, lista: Math.round(cot.lista), bonificado: Math.round(cot.total), aporte: 0, aPagar: Math.round(cot.total) }] },
+              ...(c.cotizaciones || []),
+            ],
             historial: [{ fecha: hoyISO(), tipo: "propuesta", texto: `Cotización ${cot.plan}: ${cot.capitas} cápitas · ${money(cot.total)}/mes (desc. ${cot.descuento}%)` }, ...(c.historial || [])],
           };
         })
@@ -1581,6 +1590,62 @@ export default function App() {
         if (c && ["prospeccion", "contacto", "reunion"].includes(c.stage)) updateCompany(companyId, { stage: "propuesta" });
       }
       showToast("✓ Cotización guardada en la ficha de la empresa");
+    },
+    [companies, updateCompany, showToast]
+  );
+
+  // Cotización generada en el Cotizador Omint (PDF): se guarda en la ficha.
+  const registrarCotizacion = useCallback(
+    (ref, msg, moverEtapa) => {
+      const d = msg.datos || {};
+      const planes = (d.planes || []).map((p) => ({
+        plan: p.plan,
+        tag: p.tag || "",
+        lista: Math.round(num(p.lista)),
+        bonificado: Math.round(num(p.bonificado)),
+        aporte: Math.round(num(p.aporte)),
+        aPagar: Math.round(num(p.aPagar)),
+      }));
+      if (!planes.length) return;
+      const hoy = hoyISO();
+      const cot = { id: uid(), fecha: hoy, origen: "cotizador", tipo: msg.tipo, capitas: d.capitas || null, titulares: d.titulares || null, condicion: d.condicion || "", grupo: d.grupo || null, planes };
+      const resumen = planes.map((p) => `${p.plan.replace("Plan ", "")} ${money(p.aPagar)}`).join(" · ");
+      const texto = `Cotización ${planes.length > 1 ? "comparativa" : "PDF"}${d.capitas ? ` (${d.capitas} cápitas)` : ""}: ${resumen}`;
+      if (ref.tipo === "empresa") {
+        setCompanies((prev) =>
+          prev.map((c) => {
+            if (c.id !== ref.id) return c;
+            const p0 = planes[0];
+            return {
+              ...c,
+              cotizaciones: [cot, ...(c.cotizaciones || [])],
+              ...(planes.length === 1 ? { planCotizado: p0.plan.replace("Plan ", ""), montoMensual: p0.bonificado } : {}),
+              ...(d.capitas ? { capitas: String(d.capitas) } : {}),
+              historial: [{ fecha: hoy, tipo: "propuesta", texto }, ...(c.historial || [])],
+            };
+          })
+        );
+        if (moverEtapa) {
+          const c = companies.find((x) => x.id === ref.id);
+          if (c && ["prospeccion", "contacto", "reunion"].includes(c.stage)) updateCompany(ref.id, { stage: "propuesta" });
+        }
+      } else {
+        setPersonas((prev) =>
+          prev.map((p) =>
+            p.id !== ref.id
+              ? p
+              : {
+                  ...p,
+                  cotizaciones: [cot, ...(p.cotizaciones || [])],
+                  contactado: true,
+                  status: ["nuevo", "contactado"].includes(p.status) ? "interesado" : p.status,
+                  seguimiento: p.seguimiento && p.seguimiento > hoy ? p.seguimiento : addDaysISO(2),
+                  historial: [{ fecha: hoy, tipo: "propuesta", texto }, ...(p.historial || [])],
+                }
+          )
+        );
+      }
+      showToast(`✓ Cotización guardada en ${ref.label}`);
     },
     [companies, updateCompany, showToast]
   );
@@ -1773,8 +1838,9 @@ export default function App() {
       // no crítico
     }
   }, []);
-  const abrirCotizador = useCallback((companyId) => {
-    setCotizarPara(companyId || null);
+  const abrirCotizador = useCallback((ref) => {
+    setCotizarPara(ref || null);
+    setSelectedPersonaId(null);
     setSelectedId(null);
     setView("cotizador");
   }, []);
@@ -1957,7 +2023,7 @@ export default function App() {
             )}
             {view === "campana" && <Campaign {...common} waLog={waLog} />}
             {view === "cotizador" && (
-              <Cotizador companies={companies} settings={settings} presetCompanyId={cotizarPara} guardarCotizacion={guardarCotizacion} showToast={showToast} vars={vars} />
+              <CotizadorView companies={companies} personas={personas} settings={settings} preset={cotizarPara} guardarCotizacion={guardarCotizacion} registrarCotizacion={registrarCotizacion} showToast={showToast} vars={vars} />
             )}
             {view === "b2c" && <DashboardB2C personas={personas} waLog={waLog} go={go} setShowNewPersona={setShowNewPersona} />}
             {view === "personas" && (
@@ -1987,6 +2053,7 @@ export default function App() {
             deletePersona={deletePersona}
             setShowPersonaWhatsApp={setShowPersonaWhatsApp}
             askConfirm={askConfirm}
+            abrirCotizador={abrirCotizador}
           />
         )}
         {showNewPersona && <NewPersonaModal onClose={() => setShowNewPersona(false)} onSave={(data) => { addPersona(data); setShowNewPersona(false); }} />}
@@ -3276,7 +3343,7 @@ function CompanyDetail({ company, onClose, updateCompany, addHistorial, deleteCo
             </a>
           )}
           <Btn size="sm" icon={CalIcon} onClick={() => setShowNewMeeting(company.id)}>Reunión</Btn>
-          <Btn size="sm" icon={Calculator} onClick={() => abrirCotizador(company.id)}>Cotizar</Btn>
+          <Btn size="sm" icon={Calculator} onClick={() => abrirCotizador({ tipo: "empresa", id: company.id, label: company.empresa })}>Cotizar</Btn>
         </div>
         <div className="seg" style={{ margin: "0 18px 10px" }}>
           {[["gestion", "Gestión"], ["historial", `Historial (${timeline.length})`], ["datos", "Datos"]].map(([k, l]) => (
@@ -3355,6 +3422,8 @@ function CompanyDetail({ company, onClose, updateCompany, addHistorial, deleteCo
                 </button>
               </div>
             )}
+
+            <CotizacionesList items={company.cotizaciones} />
 
             {company.nota && <div className="note t-accent">{company.nota}</div>}
 
@@ -3970,7 +4039,7 @@ function NewCompanyModal({ onClose, onSave }) {
 
 function Cotizador({ companies, settings, presetCompanyId, guardarCotizacion, showToast, vars }) {
   const [cant, setCant] = useState({ "00-25": 0, "26-35": 0, "36-54": 0, "55-59": 0, "60+": 0, hijo1: 0, hijo2: 0 });
-  const [descuento, setDescuento] = useState(settings.descuento);
+  const [descuento, setDescuento] = useState(DESCUENTO_CAMPANA_COTIZADOR);
   const [iva, setIva] = useState(0);
   const [planSel, setPlanSel] = useState("6500_PYME");
   const [companyId, setCompanyId] = useState(presetCompanyId || "");
@@ -4015,7 +4084,7 @@ ${vars.asesor} · OMINT`;
 
   return (
     <div className="stack">
-      <PageHeader title="Cotizador PYME" subtitle="Precios de lista Mendoza · septiembre 2026 · escala 11 a 99 cápitas">
+      <PageHeader title="Cotizador PYME" subtitle="Cálculo rápido con las tarifas PYME del Cotizador Omint · tramos 11–99 y 100–199 cápitas">
         <Btn icon={RefreshCw} onClick={() => setCant({ "00-25": 0, "26-35": 0, "36-54": 0, "55-59": 0, "60+": 0, hijo1: 0, hijo2: 0 })}>Limpiar</Btn>
       </PageHeader>
 
@@ -4043,7 +4112,8 @@ ${vars.asesor} · OMINT`;
             <span className="tnum" style={{ fontSize: 22, fontWeight: 800 }}>{capitas}</span>
           </div>
           {capitas > 0 && capitas < MIN_CAPITAS_PYME && <div className="note t-warn" style={{ marginTop: 8 }}>La línea PYME aplica desde {MIN_CAPITAS_PYME} cápitas. Sumá familiares de los titulares para calificar.</div>}
-          {capitas > 99 && <div className="note t-info" style={{ marginTop: 8 }}>Más de 99 cápitas: verificá la escala con Producto (más de 200 tiene condiciones especiales).</div>}
+          {capitas >= 100 && capitas < 200 && <div className="note t-info" style={{ marginTop: 8 }}>Tramo 100 a 199 cápitas: se aplica la tarifa de ese tramo.</div>}
+          {capitas >= 200 && <div className="note t-warn" style={{ marginTop: 8 }}>Desde 200 cápitas los valores se consultan con Producto: este cálculo es solo orientativo.</div>}
         </Card>
 
         <div className="span2 stack">
@@ -4111,6 +4181,183 @@ ${vars.asesor} · OMINT`;
           </Card>
           <div className="note t-warn">Valores de referencia para la conversación de venta. Antes de confirmar un monto o cobertura puntual, verificá el cuadro oficial o el sistema.</div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================= Cotizador oficial (web) ===
+
+// "Apellido, Nombre" -> "Nombre Apellido" para encabezar la cotización.
+function nombreLegible(n) {
+  const s = (n || "").trim();
+  if (!s.includes(",")) return s;
+  const [ap, no] = s.split(",");
+  return `${(no || "").trim()} ${ap.trim()}`.trim();
+}
+
+function CotizadorView(props) {
+  const [modo, setModo] = useState(HOSTED ? "oficial" : "rapido");
+  const presetCompanyId = props.preset && props.preset.tipo === "empresa" ? props.preset.id : null;
+  if (!HOSTED) return <Cotizador {...props} presetCompanyId={presetCompanyId} />;
+  return (
+    <div className="stack">
+      <div className="seg">
+        <button className={modo === "oficial" ? "on" : ""} onClick={() => setModo("oficial")}>Cotizador Omint</button>
+        <button className={modo === "rapido" ? "on" : ""} onClick={() => setModo("rapido")}>Cálculo rápido PYME</button>
+      </div>
+      {modo === "oficial" ? <CotizadorOficial {...props} /> : <Cotizador {...props} presetCompanyId={presetCompanyId} />}
+    </div>
+  );
+}
+
+function CotizadorOficial({ companies, personas, preset, registrarCotizacion, showToast }) {
+  const [link, setLink] = useState(preset || null);
+  const [busca, setBusca] = useState("");
+  const [mover, setMover] = useState(true);
+  const [pendiente, setPendiente] = useState(null);
+  const [registradas, setRegistradas] = useState([]);
+  useEffect(() => {
+    if (preset) setLink(preset);
+  }, [preset]);
+
+  const linkRef = useRef(link);
+  linkRef.current = link;
+  const moverRef = useRef(mover);
+  moverRef.current = mover;
+
+  // El cotizador avisa (postMessage, mismo dominio) cada vez que genera un PDF.
+  useEffect(() => {
+    const h = (e) => {
+      if (e.origin !== window.location.origin) return;
+      const d = e.data;
+      if (!d || d.fuente !== "cotizador-omint" || !Array.isArray(d.datos && d.datos.planes)) return;
+      const l = linkRef.current;
+      if (l) {
+        registrarCotizacion(l, d, moverRef.current);
+        setRegistradas((r) => [{ ...d, label: l.label }, ...r].slice(0, 10));
+      } else {
+        setPendiente(d);
+        showToast("Cotización generada. Vinculala a una empresa o paciente para guardarla en su ficha.");
+      }
+    };
+    window.addEventListener("message", h);
+    return () => window.removeEventListener("message", h);
+  }, [registrarCotizacion, showToast]);
+
+  const ent = link ? (link.tipo === "empresa" ? companies.find((c) => c.id === link.id) : personas.find((p) => p.id === link.id)) : null;
+  const src = useMemo(() => {
+    const q = new URLSearchParams();
+    if (link) {
+      q.set("modo", link.tipo === "empresa" ? "empresas" : "individuos");
+      q.set("nombre", link.label);
+    }
+    return `cotizador.php${link ? "?" + q.toString() : ""}`;
+  }, [link && link.tipo, link && link.id]);
+
+  const resultados = useMemo(() => {
+    const t = stripAccents(busca.trim().toLowerCase());
+    if (t.length < 2) return [];
+    const m = (s) => stripAccents((s || "").toLowerCase()).includes(t);
+    return [
+      ...companies.filter((c) => m(c.empresa) || m(c.contacto) || (c.cuit || "").includes(t)).slice(0, 5).map((c) => ({ tipo: "empresa", id: c.id, label: c.empresa, hint: STAGE_BY_KEY[c.stage]?.label })),
+      ...personas.filter((p) => m(p.nombre) || (p.telefono || "").includes(t)).slice(0, 5).map((p) => ({ tipo: "persona", id: p.id, label: nombreLegible(p.nombre), hint: p.obraSocial || "Paciente" })),
+    ];
+  }, [busca, companies, personas]);
+
+  const resumenPlanes = (d) => d.datos.planes.map((p) => `${p.plan.replace("Plan ", "")} ${money(p.aPagar)}`).join(" · ");
+
+  return (
+    <div className="stack">
+      <Card title="Cotizando para" icon={Calculator}>
+        <div className="row wrap" style={{ gap: 10 }}>
+          {link ? (
+            <div className="tile row" style={{ gap: 8, flex: 1, minWidth: 260 }}>
+              {link.tipo === "empresa" ? <Building2 size={15} /> : <Users size={15} />}
+              <span style={{ fontWeight: 700 }}>{link.label}</span>
+              {ent && link.tipo === "empresa" && <StageChip stage={ent.stage} />}
+              {ent && link.tipo === "persona" && <Chip>{PERSONA_STATUS.find((s) => s.key === ent.status)?.label}</Chip>}
+              <button className="btn btn-ghost btn-sm" style={{ marginLeft: "auto" }} onClick={() => setLink(null)}>Cambiar</button>
+            </div>
+          ) : (
+            <div style={{ flex: 1, minWidth: 260 }}>
+              <SearchBox value={busca} onChange={setBusca} placeholder="Buscá la empresa o el paciente a cotizar…" />
+              <div className="stack-sm" style={{ marginTop: 6 }}>
+                {resultados.map((r) => (
+                  <button key={r.tipo + r.id} className="item" onClick={() => { setLink({ tipo: r.tipo, id: r.id, label: r.label }); setBusca(""); }}>
+                    {r.tipo === "empresa" ? <Building2 size={14} /> : <Users size={14} />}
+                    <span style={{ fontWeight: 600 }}>{r.label}</span>
+                    <span className="muted" style={{ fontSize: 12 }}>{r.hint}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {link && link.tipo === "empresa" && (
+            <label className="row ink2" style={{ gap: 6, fontSize: 12.5, cursor: "pointer" }}>
+              <input type="checkbox" checked={mover} onChange={(e) => setMover(e.target.checked)} /> Pasar a “Propuesta Enviada”
+            </label>
+          )}
+          <a className="btn btn-outline btn-sm" href={src} target="_blank" rel="noreferrer" title="En una pestaña aparte las cotizaciones no se registran en el CRM">
+            Abrir en pestaña nueva
+          </a>
+        </div>
+        <div className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+          Cotizá y generá el PDF como siempre: cada PDF que generes se guarda solo en la ficha vinculada (planes, valores y cápitas) y queda en su historial como propuesta.
+        </div>
+        {pendiente && link && (
+          <div className="note t-warn row between wrap" style={{ marginTop: 10, gap: 8 }}>
+            <span>Hay una cotización sin guardar: {resumenPlanes(pendiente)}</span>
+            <Btn size="sm" variant="primary" onClick={() => { registrarCotizacion(link, pendiente, mover); setRegistradas((r) => [{ ...pendiente, label: link.label }, ...r]); setPendiente(null); }}>
+              Guardar en {link.label}
+            </Btn>
+          </div>
+        )}
+        {registradas.length > 0 && (
+          <div className="stack-sm" style={{ marginTop: 10 }}>
+            {registradas.map((r, i) => (
+              <div key={i} className="note t-good">✓ Guardada en {r.label}: {resumenPlanes(r)}</div>
+            ))}
+          </div>
+        )}
+      </Card>
+      <iframe
+        key={src}
+        src={src}
+        title="Cotizador Omint"
+        style={{ width: "100%", height: "calc(100vh - 150px)", minHeight: 640, border: "1px solid var(--border)", borderRadius: 16, background: "#fff" }}
+      />
+    </div>
+  );
+}
+
+// Historial de cotizaciones de una empresa o paciente.
+function CotizacionesList({ items }) {
+  if (!items || !items.length) return null;
+  return (
+    <div>
+      <div className="label">Cotizaciones ({items.length})</div>
+      <div className="stack-sm">
+        {items.slice(0, 8).map((c) => (
+          <div key={c.id} className="tile" style={{ fontSize: 12.5 }}>
+            <div className="row between">
+              <span style={{ fontWeight: 700 }}>{fmtFecha(c.fecha, { day: "2-digit", month: "short", year: "numeric" })}</span>
+              <span className="muted">
+                {c.origen === "rapido" ? "Cálculo rápido" : c.tipo === "empresa" ? "Empresa · nómina" : "Particular"}
+                {c.capitas ? ` · ${c.capitas} cápitas` : ""}
+              </span>
+            </div>
+            {c.planes.map((p) => (
+              <div key={p.plan} className="row between tnum" style={{ marginTop: 3 }}>
+                <span>{p.plan.replace("Plan ", "")}</span>
+                <span>
+                  <span className="muted" style={{ textDecoration: p.bonificado < p.lista ? "line-through" : "none" }}>{money(p.lista)}</span>{" "}
+                  <strong>{money(p.aPagar)}</strong>/mes
+                </span>
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -4441,7 +4688,7 @@ function PersonasList({ personas, setSelectedPersonaId, setShowNewPersona, setSh
   );
 }
 
-function PersonaDetail({ persona, onClose, updatePersona, deletePersona, setShowPersonaWhatsApp, askConfirm }) {
+function PersonaDetail({ persona, onClose, updatePersona, deletePersona, setShowPersonaWhatsApp, askConfirm, abrirCotizador }) {
   const [f, setF] = useState({});
   useEffect(() => {
     setF({ _id: persona.id, nombre: persona.nombre || "", telefono: persona.telefono || "", mail: persona.mail || "", obraSocial: persona.obraSocial || "", fechaNacimiento: persona.fechaNacimiento || "", nota: persona.nota || "", seguimiento: persona.seguimiento || "", grupo: persona.grupo || "" });
@@ -4475,6 +4722,7 @@ function PersonaDetail({ persona, onClose, updatePersona, deletePersona, setShow
         <div className="row wrap">
           <Btn variant="wa" icon={MessageCircle} disabled={!persona.telefono} onClick={() => setShowPersonaWhatsApp(persona.id)}>WhatsApp</Btn>
           {persona.telefono && <a className="btn btn-outline" href={`tel:+${normalizePhoneAR(persona.telefono)}`}><Phone size={15} /> Llamar</a>}
+          {HOSTED && abrirCotizador && <Btn icon={Calculator} onClick={() => abrirCotizador({ tipo: "persona", id: persona.id, label: nombreLegible(persona.nombre) })}>Cotizar</Btn>}
         </div>
         <div className="grid g2" style={{ gap: 10 }}>
           <Field label="Estado">
@@ -4491,6 +4739,7 @@ function PersonaDetail({ persona, onClose, updatePersona, deletePersona, setShow
           <input type="checkbox" checked={!!persona.contactado} onChange={(e) => updatePersona(persona.id, { contactado: e.target.checked })} /> Ya la contacté (por acá o desde mi celular)
         </label>
         <Field label="Grupo familiar a cotizar"><input className="input" value={f.grupo ?? ""} onChange={(e) => setF({ ...f, grupo: e.target.value })} onBlur={() => commit("grupo")} placeholder="Ej: titular 38 + cónyuge 36 + 2 hijos" /></Field>
+        <CotizacionesList items={persona.cotizaciones} />
         <Field label="Nota"><textarea className="textarea" rows={3} value={f.nota ?? ""} onChange={(e) => setF({ ...f, nota: e.target.value })} onBlur={() => commit("nota")} /></Field>
         <div className="divider" />
         <Field label="Nombre y apellido">{inp("nombre")}</Field>
@@ -4646,7 +4895,7 @@ function ProductoReferencia({ go }) {
   const [abierta, setAbierta] = useState(0);
   return (
     <div className="stack">
-      <PageHeader title="Producto y objeciones" subtitle="Línea PYME · precios de lista Mendoza y beneficios vigentes a septiembre 2026">
+      <PageHeader title="Producto y objeciones" subtitle="Línea PYME · tarifas del Cotizador Omint y beneficios de referencia">
         <Btn variant="primary" icon={Calculator} onClick={() => go("cotizador")}>Abrir cotizador</Btn>
       </PageHeader>
 
@@ -4665,7 +4914,7 @@ function ProductoReferencia({ go }) {
         ))}
       </div>
 
-      <Card title="Precios de lista por cápita (11 a 99 cápitas, sin IVA)" icon={FileText} pad={false}>
+      <Card title="Precios de lista por cápita · tramo 11 a 99 cápitas" icon={FileText} pad={false}>
         <div style={{ overflowX: "auto", padding: "8px 0 0" }}>
           <table className="tbl">
             <thead>
@@ -4681,7 +4930,7 @@ function ProductoReferencia({ go }) {
             </tbody>
           </table>
         </div>
-        <div className="muted" style={{ fontSize: 12, padding: "10px 18px 14px" }}>Para más de 200 cápitas, consultar condiciones especiales con Producto.</div>
+        <div className="muted" style={{ fontSize: 12, padding: "10px 18px 14px" }}>De 100 a 199 cápitas rige la tarifa del tramo siguiente (la aplica el cotizador). Desde 200 cápitas, consultar con Producto.</div>
       </Card>
 
       <div className="grid g2">

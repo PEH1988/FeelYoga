@@ -33,6 +33,14 @@ if (!is_file("$dir/.htaccess")) {
     file_put_contents("$dir/.htaccess", "Require all denied\nDeny from all\n");
 }
 
+// Cookie de sesión para las páginas que no pueden mandar el token por
+// encabezado (el cotizador integrado, que se abre en un iframe).
+function set_session_cookie($token, $expires) {
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+    $path = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
+    setcookie('crm_sesion', $token, ['expires' => $expires, 'path' => $path, 'secure' => $https, 'httponly' => true, 'samesite' => 'Strict']);
+}
+
 function read_json($file, $default) {
     if (!is_file($file)) return $default;
     $d = json_decode(file_get_contents($file), true);
@@ -77,6 +85,7 @@ if ($action === 'login') {
     foreach ($tokens as $h => $exp) if ($exp < $now) unset($tokens[$h]);
     $tokens[hash('sha256', $token)] = $now + $ttl;
     file_put_contents($tokensFile, json_encode($tokens));
+    set_session_cookie($token, $now + $ttl);
     out(200, ['ok' => true, 'token' => $token]);
 }
 
@@ -90,6 +99,7 @@ if ($token === '' || !isset($tokens[$th]) || $tokens[$th] < time()) {
 if ($action === 'logout') {
     unset($tokens[$th]);
     file_put_contents($tokensFile, json_encode($tokens));
+    set_session_cookie('', 1);
     out(200, ['ok' => true]);
 }
 
@@ -132,6 +142,7 @@ function daily_backup($dir) {
 
 switch ($action) {
     case 'all':
+        set_session_cookie($token, $tokens[$th]); // renueva la cookie del cotizador
         $data = [];
         foreach (glob("$dir/*.val.php") as $f) $data[basename($f, '.val.php')] = val_read($f);
         out(200, ['ok' => true, 'data' => (object) $data, 'rev' => $meta['rev']]);

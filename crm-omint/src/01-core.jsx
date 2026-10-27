@@ -537,6 +537,8 @@ Si tenés CUIT, sos monotributista, trabajás en relación de dependencia o ten�
 
 // ------------------------------------------------------- Producto / precios ---
 
+// Precios PYME tomados del Cotizador Omint (tarifas de empresa por tramo de cápitas).
+// "precios" = tramo 11 a 99; "precios100" = tramo 100 a 199.
 const PYME_PLANES = [
   {
     plan: "4500_PYME",
@@ -544,7 +546,8 @@ const PYME_PLANES = [
     cartilla: "4500 (línea Global)",
     farmacia: "40%",
     modulo: "OA_TURISTA",
-    precios: { "00-25": 148038, "26-35": 210765, "36-54": 252679, "55-59": 428210, "60+": 650822, hijo1: 128506, hijo2: 111270 },
+    precios: { "00-25": 150555, "26-35": 214348, "36-54": 256975, "55-59": 435490, "60+": 661886, hijo1: 130691, hijo2: 113162 },
+    precios100: { "00-25": 139142, "26-35": 198263, "36-54": 237863, "55-59": 403229, "60+": 612460, hijo1: 121174, hijo2: 104656 },
   },
   {
     plan: "6500_PYME",
@@ -552,7 +555,8 @@ const PYME_PLANES = [
     cartilla: "6500 (línea Clásico)",
     farmacia: "50%",
     modulo: "OA_TURISTA_PLUS",
-    precios: { "00-25": 162009, "26-35": 231620, "36-54": 271203, "55-59": 454516, "60+": 677031, hijo1: 141601, hijo2: 122761 },
+    precios: { "00-25": 164763, "26-35": 235558, "36-54": 275813, "55-59": 462243, "60+": 688541, hijo1: 144008, hijo2: 124848 },
+    precios100: { "00-25": 152439, "26-35": 218000, "36-54": 255185, "55-59": 427941, "60+": 637149, hijo1: 133245, hijo2: 115539 },
   },
   {
     plan: "8500_PYME",
@@ -560,9 +564,12 @@ const PYME_PLANES = [
     cartilla: "8500 (línea Premium)",
     farmacia: "50%",
     modulo: "OA_EURO",
-    precios: { "00-25": 278399, "26-35": 371005, "36-54": 488323, "55-59": 680407, "60+": 927595, hijo1: 244229, hijo2: 212890 },
+    precios: { "00-25": 283132, "26-35": 377312, "36-54": 496624, "55-59": 691974, "60+": 943364, hijo1: 248381, hijo2: 216509 },
+    precios100: { "00-25": 262232, "26-35": 349159, "36-54": 459684, "55-59": 640526, "60+": 872991, hijo1: 229814, hijo2: 200472 },
   },
 ];
+// Campaña vigente según el Cotizador Omint: 20% sobre el precio de lista.
+const DESCUENTO_CAMPANA_COTIZADOR = 20;
 const FRANJAS = [
   { key: "00-25", label: "Titulares 0–25" },
   { key: "26-35", label: "Titulares 26–35" },
@@ -576,11 +583,9 @@ const MIN_CAPITAS_PYME = 11;
 
 function cotizar(plan, cantidades, descuento) {
   let lista = 0, capitas = 0;
-  FRANJAS.forEach((f) => {
-    const n = num(cantidades[f.key]);
-    lista += n * plan.precios[f.key];
-    capitas += n;
-  });
+  FRANJAS.forEach((f) => (capitas += num(cantidades[f.key])));
+  const tabla = capitas >= 100 && plan.precios100 ? plan.precios100 : plan.precios;
+  FRANJAS.forEach((f) => (lista += num(cantidades[f.key]) * tabla[f.key]));
   const desc = lista * (num(descuento) / 100);
   const total = lista - desc;
   return { lista, desc, total, capitas, porCapita: capitas ? total / capitas : 0 };

@@ -5,7 +5,7 @@ function ProductoReferencia({ go }) {
   const [abierta, setAbierta] = useState(0);
   return (
     <div className="stack">
-      <PageHeader title="Producto y objeciones" subtitle="Línea PYME · precios de lista Mendoza y beneficios vigentes a septiembre 2026">
+      <PageHeader title="Producto y objeciones" subtitle="Línea PYME · tarifas del Cotizador Omint y beneficios de referencia">
         <Btn variant="primary" icon={Calculator} onClick={() => go("cotizador")}>Abrir cotizador</Btn>
       </PageHeader>
 
@@ -24,7 +24,7 @@ function ProductoReferencia({ go }) {
         ))}
       </div>
 
-      <Card title="Precios de lista por cápita (11 a 99 cápitas, sin IVA)" icon={FileText} pad={false}>
+      <Card title="Precios de lista por cápita · tramo 11 a 99 cápitas" icon={FileText} pad={false}>
         <div style={{ overflowX: "auto", padding: "8px 0 0" }}>
           <table className="tbl">
             <thead>
@@ -40,7 +40,7 @@ function ProductoReferencia({ go }) {
             </tbody>
           </table>
         </div>
-        <div className="muted" style={{ fontSize: 12, padding: "10px 18px 14px" }}>Para más de 200 cápitas, consultar condiciones especiales con Producto.</div>
+        <div className="muted" style={{ fontSize: 12, padding: "10px 18px 14px" }}>De 100 a 199 cápitas rige la tarifa del tramo siguiente (la aplica el cotizador). Desde 200 cápitas, consultar con Producto.</div>
       </Card>
 
       <div className="grid g2">

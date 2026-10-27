@@ -474,7 +474,7 @@ function CompanyDetail({ company, onClose, updateCompany, addHistorial, deleteCo
             </a>
           )}
           <Btn size="sm" icon={CalIcon} onClick={() => setShowNewMeeting(company.id)}>Reunión</Btn>
-          <Btn size="sm" icon={Calculator} onClick={() => abrirCotizador(company.id)}>Cotizar</Btn>
+          <Btn size="sm" icon={Calculator} onClick={() => abrirCotizador({ tipo: "empresa", id: company.id, label: company.empresa })}>Cotizar</Btn>
         </div>
         <div className="seg" style={{ margin: "0 18px 10px" }}>
           {[["gestion", "Gestión"], ["historial", `Historial (${timeline.length})`], ["datos", "Datos"]].map(([k, l]) => (
@@ -553,6 +553,8 @@ function CompanyDetail({ company, onClose, updateCompany, addHistorial, deleteCo
                 </button>
               </div>
             )}
+
+            <CotizacionesList items={company.cotizaciones} />
 
             {company.nota && <div className="note t-accent">{company.nota}</div>}
 

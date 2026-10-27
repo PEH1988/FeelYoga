@@ -40,7 +40,7 @@ export default function App() {
   const [lostFor, setLostFor] = useState(null); // companyId pendiente de motivo de pérdida
   const [showSettings, setShowSettings] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
-  const [cotizarPara, setCotizarPara] = useState(null); // companyId preseleccionado en el cotizador
+  const [cotizarPara, setCotizarPara] = useState(null); // { tipo: "empresa" | "persona", id, label } preseleccionado en el cotizador
   const [saveState, setSaveState] = useState("idle");
   const [confirmState, setConfirmState] = useState(null);
   const [toast, setToast] = useState(null);
@@ -219,6 +219,10 @@ export default function App() {
             planCotizado: cot.plan,
             montoMensual: Math.round(cot.total),
             cotizacion: { ...cot, fecha: hoyISO() },
+            cotizaciones: [
+              { id: uid(), fecha: hoyISO(), origen: "rapido", tipo: "empresa", capitas: cot.capitas, planes: [{ plan: cot.plan, lista: Math.round(cot.lista), bonificado: Math.round(cot.total), aporte: 0, aPagar: Math.round(cot.total) }] },
+              ...(c.cotizaciones || []),
+            ],
             historial: [{ fecha: hoyISO(), tipo: "propuesta", texto: `Cotización ${cot.plan}: ${cot.capitas} cápitas · ${money(cot.total)}/mes (desc. ${cot.descuento}%)` }, ...(c.historial || [])],
           };
         })
@@ -228,6 +232,62 @@ export default function App() {
         if (c && ["prospeccion", "contacto", "reunion"].includes(c.stage)) updateCompany(companyId, { stage: "propuesta" });
       }
       showToast("✓ Cotización guardada en la ficha de la empresa");
+    },
+    [companies, updateCompany, showToast]
+  );
+
+  // Cotización generada en el Cotizador Omint (PDF): se guarda en la ficha.
+  const registrarCotizacion = useCallback(
+    (ref, msg, moverEtapa) => {
+      const d = msg.datos || {};
+      const planes = (d.planes || []).map((p) => ({
+        plan: p.plan,
+        tag: p.tag || "",
+        lista: Math.round(num(p.lista)),
+        bonificado: Math.round(num(p.bonificado)),
+        aporte: Math.round(num(p.aporte)),
+        aPagar: Math.round(num(p.aPagar)),
+      }));
+      if (!planes.length) return;
+      const hoy = hoyISO();
+      const cot = { id: uid(), fecha: hoy, origen: "cotizador", tipo: msg.tipo, capitas: d.capitas || null, titulares: d.titulares || null, condicion: d.condicion || "", grupo: d.grupo || null, planes };
+      const resumen = planes.map((p) => `${p.plan.replace("Plan ", "")} ${money(p.aPagar)}`).join(" · ");
+      const texto = `Cotización ${planes.length > 1 ? "comparativa" : "PDF"}${d.capitas ? ` (${d.capitas} cápitas)` : ""}: ${resumen}`;
+      if (ref.tipo === "empresa") {
+        setCompanies((prev) =>
+          prev.map((c) => {
+            if (c.id !== ref.id) return c;
+            const p0 = planes[0];
+            return {
+              ...c,
+              cotizaciones: [cot, ...(c.cotizaciones || [])],
+              ...(planes.length === 1 ? { planCotizado: p0.plan.replace("Plan ", ""), montoMensual: p0.bonificado } : {}),
+              ...(d.capitas ? { capitas: String(d.capitas) } : {}),
+              historial: [{ fecha: hoy, tipo: "propuesta", texto }, ...(c.historial || [])],
+            };
+          })
+        );
+        if (moverEtapa) {
+          const c = companies.find((x) => x.id === ref.id);
+          if (c && ["prospeccion", "contacto", "reunion"].includes(c.stage)) updateCompany(ref.id, { stage: "propuesta" });
+        }
+      } else {
+        setPersonas((prev) =>
+          prev.map((p) =>
+            p.id !== ref.id
+              ? p
+              : {
+                  ...p,
+                  cotizaciones: [cot, ...(p.cotizaciones || [])],
+                  contactado: true,
+                  status: ["nuevo", "contactado"].includes(p.status) ? "interesado" : p.status,
+                  seguimiento: p.seguimiento && p.seguimiento > hoy ? p.seguimiento : addDaysISO(2),
+                  historial: [{ fecha: hoy, tipo: "propuesta", texto }, ...(p.historial || [])],
+                }
+          )
+        );
+      }
+      showToast(`✓ Cotización guardada en ${ref.label}`);
     },
     [companies, updateCompany, showToast]
   );
@@ -420,8 +480,9 @@ export default function App() {
       // no crítico
     }
   }, []);
-  const abrirCotizador = useCallback((companyId) => {
-    setCotizarPara(companyId || null);
+  const abrirCotizador = useCallback((ref) => {
+    setCotizarPara(ref || null);
+    setSelectedPersonaId(null);
     setSelectedId(null);
     setView("cotizador");
   }, []);
@@ -604,7 +665,7 @@ export default function App() {
             )}
             {view === "campana" && <Campaign {...common} waLog={waLog} />}
             {view === "cotizador" && (
-              <Cotizador companies={companies} settings={settings} presetCompanyId={cotizarPara} guardarCotizacion={guardarCotizacion} showToast={showToast} vars={vars} />
+              <CotizadorView companies={companies} personas={personas} settings={settings} preset={cotizarPara} guardarCotizacion={guardarCotizacion} registrarCotizacion={registrarCotizacion} showToast={showToast} vars={vars} />
             )}
             {view === "b2c" && <DashboardB2C personas={personas} waLog={waLog} go={go} setShowNewPersona={setShowNewPersona} />}
             {view === "personas" && (
@@ -634,6 +695,7 @@ export default function App() {
             deletePersona={deletePersona}
             setShowPersonaWhatsApp={setShowPersonaWhatsApp}
             askConfirm={askConfirm}
+            abrirCotizador={abrirCotizador}
           />
         )}
         {showNewPersona && <NewPersonaModal onClose={() => setShowNewPersona(false)} onSave={(data) => { addPersona(data); setShowNewPersona(false); }} />}
