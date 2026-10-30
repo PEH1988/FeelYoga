@@ -2,3 +2,5 @@ node_modules/
 web-dist/
 web/.build/
 package-lock.json
+
+cotizador-dist/

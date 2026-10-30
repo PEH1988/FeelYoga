@@ -7,10 +7,6 @@ define('CRM_USER', 'CAMBIAR-USUARIO');
 // Para generar el valor: php -r "echo password_hash('TU-CONTRASEÑA', PASSWORD_DEFAULT);"
 define('CRM_PASSWORD_HASH', '');
 
-// Ejecutivo que firma los PDF del cotizador integrado (clave de EJECUTIVOS en el
-// cotizador: "pablo", "mario" o "mariana").
-define('CRM_EJECUTIVO', 'pablo');
-
 // Días que dura la sesión en cada dispositivo antes de volver a pedir login.
 define('CRM_SESSION_DAYS', 30);
 

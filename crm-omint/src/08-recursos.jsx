@@ -6,11 +6,17 @@ function ProductoReferencia({ go }) {
   const [tramo, setTramo] = useState("11 a 99");
   const [linea, setLinea] = useState("todas");
   const lineas = ["Génesis", "Global", "Clásico", "Premium"];
-  const planesVista = PLANES_EMPRESA.filter((p) => linea === "todas" || p.linea === linea);
+  const [provincia, setProvincia] = useState("Mendoza");
+  const PLANES = planesDeProvincia(provincia);
+  const lineas2 = [...new Set(PLANES.map((p) => p.linea))];
+  const planesVista = PLANES.filter((p) => linea === "todas" || p.linea === linea);
   const COLS = ["00-25", "26-35", "36-54", "55-59", "60+", "hijo1", "hijo2"];
   return (
     <div className="stack">
-      <PageHeader title="Producto y objeciones" subtitle={`${LISTA_PRECIOS} · ${PLANES_EMPRESA.length} planes · campaña ${CAMPANA.descuento}% por ${CAMPANA.meses} meses`}>
+      <PageHeader title="Producto y objeciones" subtitle={`${LISTA_PRECIOS} · ${provincia}: ${PLANES.length} planes${zonaTitulo(provincia) && zonaTitulo(provincia) !== provincia ? ` (grilla ${zonaTitulo(provincia).slice(0, 40)}${zonaTitulo(provincia).length > 40 ? "…" : ""})` : ""}`}>
+        <select className="select" value={provincia} onChange={(e) => { setProvincia(e.target.value); setLinea("todas"); }} aria-label="Provincia">
+          {PROVINCIAS.map((p) => <option key={p}>{p}</option>)}
+        </select>
         <Btn variant="primary" icon={Calculator} onClick={() => go("cotizador")}>Abrir cotizador</Btn>
       </PageHeader>
 
@@ -27,7 +33,7 @@ function ProductoReferencia({ go }) {
             </div>
             <select className="select" value={linea} onChange={(e) => setLinea(e.target.value)} aria-label="Línea">
               <option value="todas">Todas las líneas</option>
-              {lineas.map((l) => <option key={l} value={l}>{l}</option>)}
+              {lineas2.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
           </div>
         }
@@ -44,7 +50,7 @@ function ProductoReferencia({ go }) {
             <tbody>
               {planesVista.map((p) => {
                 const t = p.tarifas[tramo];
-                const fueraB = p.tipo === "Plan B" && TRAMOS.find((x) => x.key === tramo).min > MAX_CAPITAS_PLAN_B;
+                const fueraB = p.maxCapitas && TRAMOS.find((x) => x.key === tramo).min > p.maxCapitas;
                 return (
                   <tr key={p.plan}>
                     <td className="strong">{p.plan}</td>
@@ -53,7 +59,7 @@ function ProductoReferencia({ go }) {
                       COLS.map((k) => <td key={k} className="tnum" style={{ textAlign: "right" }}>{money(t[k])}</td>)
                     ) : (
                       <td colSpan={7} className="muted" style={{ textAlign: "right" }}>
-                        {fueraB ? `Solo hasta ${MAX_CAPITAS_PLAN_B} cápitas` : tramo === "200 a 499" ? "Consultar con Producto" : p.tipo === "PYME" ? `Desde ${MIN_CAPITAS_PYME} cápitas` : "No se vende en este tramo"}
+                        {fueraB ? `Solo hasta ${p.maxCapitas} cápitas` : tramo === "200 a 499" ? "Consultar con Producto" : p.tipo === "PYME" ? `Desde ${MIN_CAPITAS_PYME} cápitas` : "No se vende en este tramo"}
                       </td>
                     )}
                   </tr>
@@ -214,7 +220,17 @@ function SettingsModal({ settings, onClose, onSave }) {
           <Field label="Meta mensual (cápitas)"><input className="input tnum" type="number" min="1" value={s.metaMensual} onChange={(e) => setS({ ...s, metaMensual: Math.max(1, Math.round(num(e.target.value))) })} /></Field>
           <Field label="Descuento de campaña %"><input className="input tnum" type="number" min="0" max="100" value={s.descuento} onChange={(e) => setS({ ...s, descuento: num(e.target.value) })} /></Field>
           <Field label="Duración de la campaña (meses)"><input className="input tnum" type="number" min="1" max="60" value={s.mesesCampana} onChange={(e) => setS({ ...s, mesesCampana: Math.max(1, Math.round(num(e.target.value))) })} /></Field>
+          <Field label="Provincia habitual">
+            <select className="select full" value={s.provincia || "Mendoza"} onChange={(e) => setS({ ...s, provincia: e.target.value })}>
+              {(PROVINCIAS.length ? PROVINCIAS : ["Mendoza"]).map((p) => <option key={p}>{p}</option>)}
+            </select>
+          </Field>
         </div>
+        {HOSTED && (
+          <Field label="Dirección del Cotizador Omint" hint="Por defecto ../cotizador/ (la carpeta cotizador al lado de la del CRM, en el mismo dominio).">
+            <input className="input" value={s.cotizadorUrl || ""} onChange={(e) => setS({ ...s, cotizadorUrl: e.target.value })} placeholder="../cotizador/" />
+          </Field>
+        )}
         <div>
           <span className="label">Objetivos diarios de actividad</span>
           <div className="grid g2" style={{ gap: 10 }}>

@@ -41,12 +41,19 @@ Genera `web-dist/` con `index.html` (la app completa en un solo archivo), `api.p
 - **Conflictos:** si otro dispositivo guardó cambios, la app avisa en vez de pisarlos.
 - **Antes de subir:** completá `CRM_USER` y `CRM_PASSWORD_HASH` en `config.php`. Las credenciales nunca se versionan.
 
-### Cotizador Omint integrado
+## Cotizador Omint (multiusuario, por provincia)
+
+Aplicación aparte, pensada para toda la empresa. Se instala en `/cotizador`, al lado del CRM, en el mismo dominio.
 
 ```bash
-node build-web.mjs web-dist --cotizador ruta/a/index_sin_login.html
+node build-cotizador.mjs --lista "Lista de precios Empresas.xls" [--usuarios usuarios.json] cotizador-dist
 ```
 
-- **Integración sin tocar el cálculo:** `web/integrar-cotizador.mjs` agrega al cotizador un puente que no cambia precios ni cálculos. En cada PDF generado avisa al CRM qué se cotizó, y la cotización se guarda en la ficha vinculada (empresa o paciente).
-- **Protección:** `cotizador.php` sirve el cotizador solo con una sesión válida del CRM.
-- **Fuera del repo:** el HTML del cotizador no se versiona, porque contiene datos de contacto de los ejecutivos.
+- **Provincias:** los precios salen de la lista EMPRESAS de Omint. La hoja "Provincias" define a qué zona de precios corresponde cada provincia.
+- **Lectura de la lista:** `cotizador/src/lista.js` interpreta el Excel. Cada mes, un administrador lo sube desde Administración, sin recompilar.
+- **Motor de cálculo:** `cotizador/src/motor.js` cotiza particulares (condición fiscal, aportes, IVA, campaña) y empresas (nómina, tramos, Plan B ≤ 25, PYME desde 11).
+- **PDF:** `cotizador/src/pdf.js` arma el PDF con jsPDF y genera el QR de WhatsApp de cada ejecutivo.
+- **Servidor:** `cotizador/api.php` maneja usuarios (bcrypt, migra los APR1 de `.htpasswd`), listas de precios con historial, reglas comerciales, descripciones de planes, historial de cotizaciones y auditoría.
+- **Integración con el CRM:** el CRM web lo abre en un iframe (`?embed=crm`). Cada PDF generado avisa al CRM por `postMessage` y la cotización se guarda en la ficha.
+
+Ni la lista de precios ni los usuarios se versionan: se pasan al compilar. El CRM también recibe la lista con `--lista` (en `build.mjs` y `build-web.mjs`) para su cálculo rápido y la ficha de producto.

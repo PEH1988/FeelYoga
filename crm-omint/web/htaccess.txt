@@ -1,6 +1,6 @@
 # Seguridad básica para la carpeta del CRM
 Options -Indexes
-<FilesMatch "^(config\.php|cotizador-app\.html)$">
+<FilesMatch "^(config\.php)$">
   Require all denied
 </FilesMatch>
 <IfModule mod_headers.c>

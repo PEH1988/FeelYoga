@@ -1,0 +1,17 @@
+# Cotizador Omint
+Options -Indexes
+AddDefaultCharset UTF-8
+<FilesMatch "^(config\.php)$">
+  Require all denied
+</FilesMatch>
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "same-origin"
+</IfModule>
+# La carpeta de instalación solo la lee api.php
+RedirectMatch 404 ^.*/(instalacion|datos)/.*$
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>

@@ -397,18 +397,20 @@ function Cotizador({ companies, settings, presetCompanyId, guardarCotizacion, sh
   const [moverPropuesta, setMoverPropuesta] = useState(true);
   const comp = companies.find((c) => c.id === companyId);
   const meses = settings.mesesCampana || CAMPANA.meses;
+  const [provincia, setProvincia] = useState(settings.provincia || "Mendoza");
+  const PLANES = planesDeProvincia(provincia);
 
   useEffect(() => {
     if (presetCompanyId) setCompanyId(presetCompanyId);
   }, [presetCompanyId]);
 
   const f = 1 + num(iva) / 100;
-  const res = PLANES_EMPRESA.map((p) => {
+  const res = PLANES.map((p) => {
     const r = cotizar(p, cant, descuento);
     return { ...r, lista: r.lista * f, desc: r.desc * f, total: r.total * f, porCapita: r.porCapita * f };
   });
-  const capitas = res[0].capitas;
-  const tramo = res[0].tramo;
+  const capitas = res.length ? res[0].capitas : 0;
+  const tramo = res.length ? res[0].tramo : "1 a 10";
   const disponibles = res.filter((r) => r.disponible).sort((x, y) => x.total - y.total);
   const noDisponibles = res.filter((r) => !r.disponible);
   const sel = disponibles.find((r) => r.plan.plan === planSel) || disponibles[0] || null;
@@ -431,7 +433,7 @@ ${num(descuento) ? `Desde el mes ${meses + 1} se aplica el valor de lista vigent
 ` : ""}
 ${beneficios.map((b) => `✓ ${b}`).join("\n")}
 
-${num(iva) ? `Valores con IVA ${iva}% incluido.` : "Valores sin IVA."} ${LISTA_PRECIOS}. Sujeto a aprobación.
+${num(iva) ? `Valores con IVA ${iva}% incluido.` : "Valores sin IVA."} ${LISTA_PRECIOS} · ${provincia}. Sujeto a aprobación.
 
 ¿Coordinamos 15 minutos para revisarla juntos?
 ${vars.asesor} · OMINT`
@@ -448,7 +450,10 @@ ${vars.asesor} · OMINT`
 
   return (
     <div className="stack">
-      <PageHeader title="Cotizador rápido" subtitle={`${LISTA_PRECIOS} · ${PLANES_EMPRESA.length} planes · campaña ${descuento}% por ${meses} meses`}>
+      <PageHeader title="Cotizador rápido" subtitle={`${LISTA_PRECIOS} · ${provincia}: ${PLANES.length} planes · campaña ${descuento}% por ${meses} meses`}>
+        <select className="select" value={provincia} onChange={(e) => setProvincia(e.target.value)} aria-label="Provincia">
+          {PROVINCIAS.map((p) => <option key={p}>{p}</option>)}
+        </select>
         <Btn icon={RefreshCw} onClick={() => setCant(vacio)}>Limpiar</Btn>
       </PageHeader>
 
@@ -488,7 +493,7 @@ ${vars.asesor} · OMINT`
             action={noDisponibles.length > 0 && capitas > 0 && <button className="btn btn-ghost btn-sm" onClick={() => setVerNoDisp((v) => !v)}>{verNoDisp ? "Ocultar" : "Ver"} no disponibles ({noDisponibles.length})</button>}
           >
             {!capitas ? (
-              <EmptyNote>Cargá la composición del grupo para ver los {PLANES_EMPRESA.length} planes de la lista.</EmptyNote>
+              <EmptyNote>{PLANES.length ? `Cargá la composición del grupo para ver los ${PLANES.length} planes de ${provincia}.` : "No hay lista de precios cargada en este archivo."}</EmptyNote>
             ) : (
               <div style={{ overflowX: "auto" }}>
                 <table className="tbl">
@@ -598,7 +603,15 @@ function CotizadorView(props) {
   );
 }
 
-function CotizadorOficial({ companies, personas, preset, registrarCotizacion, showToast }) {
+function CotizadorOficial({ companies, personas, preset, registrarCotizacion, showToast, settings }) {
+  const baseUrl = (settings && settings.cotizadorUrl) || "../cotizador/";
+  const origenCotizador = (() => {
+    try {
+      return new URL(baseUrl, window.location.href).origin;
+    } catch (e) {
+      return window.location.origin;
+    }
+  })();
   const [link, setLink] = useState(preset || null);
   const [busca, setBusca] = useState("");
   const [mover, setMover] = useState(true);
@@ -616,7 +629,7 @@ function CotizadorOficial({ companies, personas, preset, registrarCotizacion, sh
   // El cotizador avisa (postMessage, mismo dominio) cada vez que genera un PDF.
   useEffect(() => {
     const h = (e) => {
-      if (e.origin !== window.location.origin) return;
+      if (e.origin !== origenCotizador) return;
       const d = e.data;
       if (!d || d.fuente !== "cotizador-omint" || !Array.isArray(d.datos && d.datos.planes)) return;
       const l = linkRef.current;
@@ -634,13 +647,15 @@ function CotizadorOficial({ companies, personas, preset, registrarCotizacion, sh
 
   const ent = link ? (link.tipo === "empresa" ? companies.find((c) => c.id === link.id) : personas.find((p) => p.id === link.id)) : null;
   const src = useMemo(() => {
-    const q = new URLSearchParams();
+    const q = new URLSearchParams({ embed: "crm", provincia: (settings && settings.provincia) || "Mendoza" });
     if (link) {
-      q.set("modo", link.tipo === "empresa" ? "empresas" : "individuos");
+      q.set("modo", link.tipo === "empresa" ? "empresas" : "particular");
       q.set("nombre", link.label);
+      const ent = link.tipo === "empresa" ? companies.find((c) => c.id === link.id) : personas.find((p) => p.id === link.id);
+      if (ent && ent.telefono) q.set("tel", ent.telefono);
     }
-    return `cotizador.php${link ? "?" + q.toString() : ""}`;
-  }, [link && link.tipo, link && link.id]);
+    return `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}${q.toString()}`;
+  }, [link && link.tipo, link && link.id, baseUrl]);
 
   const resultados = useMemo(() => {
     const t = stripAccents(busca.trim().toLowerCase());

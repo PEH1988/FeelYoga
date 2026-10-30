@@ -66,6 +66,8 @@ const DEFAULT_SETTINGS = {
   descuento: 20,
   mesesCampana: 12,
   campanaVersion: 2, // 2 = campaña 20% por 12 meses (octubre 2026)
+  provincia: "Mendoza", // provincia habitual para cotizar
+  cotizadorUrl: "../cotizador/", // versión web: dónde está instalado el Cotizador Omint
   objetivos: { llamada: 15, whatsapp: 12, reunion: 2, propuesta: 2 },
   theme: "light",
 };
@@ -541,10 +543,12 @@ Si tenés CUIT, sos monotributista, trabajás en relación de dependencia o ten�
 // ------------------------------------------------------- Producto / precios ---
 
 // ---------------------------------------------- Lista de precios EMPRESAS ---
-// Mendoza · vigente a octubre 2026 · sin IVA. Generado desde
-// "Lista de precios Empresas - Octubre 2026.xlsx" (hoja Mendoza) y verificado
-// contra el Cotizador Omint. null = "Consultar con Producto" / no se vende en ese tramo.
-const LISTA_PRECIOS = "Lista Empresas · Mendoza · octubre 2026";
+// La lista completa (todas las provincias) se inyecta al armar el archivo desde
+// el Excel de Omint: node build.mjs ... --lista "Lista de precios Empresas.xls".
+// No se versiona en el repositorio. null = sin lista cargada.
+const LISTA_DATA = /*__LISTA__*/null;
+const LISTA_PRECIOS = LISTA_DATA ? `Lista Empresas · ${LISTA_DATA.vigencia}` : "Sin lista de precios cargada";
+const PROVINCIAS = LISTA_DATA ? Object.keys(LISTA_DATA.provincias).sort((a, b) => (a === "AMBA" ? -1 : b === "AMBA" ? 1 : a.localeCompare(b, "es"))) : [];
 const TRAMOS = [
   { key: "1 a 10", min: 1, max: 10 },
   { key: "11 a 99", min: 11, max: 99 },
@@ -553,31 +557,44 @@ const TRAMOS = [
 ];
 const tramoDe = (capitas) => (TRAMOS.find((t) => capitas >= t.min && capitas <= t.max) || TRAMOS[0]).key;
 // Orden de la lista: 00-25, 26-35, 36-54, 55-59, 60+, Hijo 1, Hijo 2 o +.
-const P = (a) => ({ "00-25": a[0], "26-35": a[1], "36-54": a[2], "55-59": a[3], "60+": a[4], hijo1: a[5], hijo2: a[6] });
-// Planes B: precio único (no varía por tramo); exclusivos para holdings de hasta 25 cápitas.
-const B_250020 = P([87972, 120450, 157433, 297566, 434135, 83626, 75262]);
-const B_450020 = P([102861, 137695, 181709, 348095, 510584, 97301, 91140]);
-const B_650020 = P([125362, 176225, 216434, 419079, 597468, 116893, 109494]);
-const PLANES_EMPRESA = [
-  { plan: "2500_24", linea: "Génesis", tipo: "Estándar", tarifas: { "1 a 10": P([122675, 157565, 207359, 351532, 606839, 106841, 92159]), "11 a 99": P([114868, 147497, 194035, 328895, 567584, 99850, 86439]), "100 a 199": P([106356, 136400, 179658, 304378, 525446, 92474, 79849]), "200 a 499": null }, bullets: ["Habitación compartida (individual solo en Cl. Santa Isabel y Bazterrica)", "Ortodoncia cubierta solo entre 5 y 8 años", "Kinesiología y fonoaudiología: hasta 30 sesiones", "Extensión de cobertura por fallecimiento del titular: 6 meses"] },
-  { plan: "4500_23C", linea: "Global", tipo: "Estándar", tarifas: { "1 a 10": P([128964, 155823, 210561, 367228, 634165, 112005, 96997]), "11 a 99": P([120558, 145934, 196886, 343539, 593181, 104810, 90799]), "100 a 199": P([111760, 135049, 182155, 318126, 549253, 97005, 83876]), "200 a 499": null }, bullets: ["Habitación individual en todas las instituciones", "Ortodoncia cubierta hasta los 18 años", "Kinesiología y fonoaudiología: hasta 40 sesiones", "Extensión de cobertura por fallecimiento del titular: 12 meses"] },
-  { plan: "4500_PYME", linea: "Global", tipo: "PYME", tarifas: { "11 a 99": P([150555, 214348, 256975, 435490, 661886, 130691, 113162]), "100 a 199": P([139142, 198263, 237863, 403229, 612460, 121174, 104656]), "200 a 499": null }, bullets: [] },
-  { plan: "6500_21C", linea: "Clásico", tipo: "Estándar", tarifas: { "1 a 10": P([176076, 251710, 294817, 494117, 735721, 153745, 133427]) }, bullets: ["Habitación individual en todas las instituciones", "Ortodoncia cubierta hasta los 25 años", "Kinesiología y fonoaudiología sin tope de sesiones", "Reintegro de ecografías 3D/4D y consultas homeopáticas"] },
-  { plan: "6500_PYME", linea: "Clásico", tipo: "PYME", tarifas: { "11 a 99": P([164763, 235558, 275813, 462243, 688541, 144008, 124848]), "100 a 199": P([152439, 218000, 255185, 427941, 637149, 133245, 115539]), "200 a 499": null }, bullets: [] },
-  { plan: "8500_21", linea: "Premium", tipo: "Estándar", tarifas: { "1 a 10": P([302702, 403073, 530850, 739644, 1008040, 265165, 231252]), "11 a 99": P([283132, 377312, 496624, 691974, 943364, 248381, 216509]), "100 a 199": P([262232, 349159, 459684, 640526, 872991, 229814, 200472]), "200 a 499": null }, bullets: ["Habitación individual, con sistema Cerrado, Combinado y Abierto", "Ortodoncia cubierta hasta los 99 años (sin límite práctico)", "Única línea con cobertura de cirugía estética", "Única línea con reintegro de óptica", "Acompañante en internación hasta 4 días (el máximo de la línea)"] },
-  { plan: "8500_PYME", linea: "Premium", tipo: "PYME", tarifas: { "11 a 99": P([283132, 377312, 496624, 691974, 943364, 248381, 216509]), "100 a 199": P([262232, 349159, 459684, 640526, 872991, 229814, 200472]), "200 a 499": null }, bullets: [] },
-  { plan: "2500_20", linea: "Génesis", tipo: "Plan B", tarifas: { "1 a 10": B_250020, "11 a 99": B_250020, "100 a 199": B_250020 }, bullets: ["Habitación compartida (individual solo en Cl. Santa Isabel y Bazterrica)", "Ortodoncia cubierta solo entre 5 y 8 años c/copago", "Kinesiología y fonoaudiología: hasta 30 sesiones c/copago", "Extensión de cobertura por fallecimiento del titular: 6 meses c/copago"] },
-  { plan: "4500_20", linea: "Global", tipo: "Plan B", tarifas: { "1 a 10": B_450020, "11 a 99": B_450020, "100 a 199": B_450020 }, bullets: ["Habitación individual en todas las instituciones", "Ortodoncia cubierta hasta los 18 años c/copago", "Kinesiología y fonoaudiología: hasta 40 sesiones c/copago", "Extensión de cobertura por fallecimiento del titular: 12 meses c/copago"] },
-  { plan: "6500_20", linea: "Clásico", tipo: "Plan B", tarifas: { "1 a 10": B_650020, "11 a 99": B_650020, "100 a 199": B_650020 }, bullets: ["Habitación individual en todas las instituciones", "Ortodoncia cubierta hasta los 25 años c/copago", "Kinesiología y fonoaudiología sin tope de sesiones c/copago"] },
-];
+const P = (a) => (a ? { "00-25": a[0], "26-35": a[1], "36-54": a[2], "55-59": a[3], "60+": a[4], hijo1: a[5], hijo2: a[6] } : null);
 const MAX_CAPITAS_PLAN_B = 25;
+// Beneficios de referencia (los mismos que usa el Cotizador Omint).
+const BENEFICIOS_PLAN = {
+  "2500_24": ["Habitación compartida (individual solo en Cl. Santa Isabel y Bazterrica)", "Ortodoncia cubierta solo entre 5 y 8 años", "Kinesiología y fonoaudiología: hasta 30 sesiones", "Extensión de cobertura por fallecimiento del titular: 6 meses"],
+  "4500_23": ["Habitación individual en todas las instituciones", "Ortodoncia cubierta hasta los 18 años", "Kinesiología y fonoaudiología: hasta 40 sesiones", "Extensión de cobertura por fallecimiento del titular: 12 meses"],
+  "6500_21": ["Habitación individual en todas las instituciones", "Ortodoncia cubierta hasta los 25 años", "Kinesiología y fonoaudiología sin tope de sesiones", "Reintegro de ecografías 3D/4D y consultas homeopáticas"],
+  "8500_21": ["Habitación individual, con sistema Cerrado, Combinado y Abierto", "Ortodoncia cubierta hasta los 99 años (sin límite práctico)", "Única línea con cobertura de cirugía estética", "Única línea con reintegro de óptica", "Acompañante en internación hasta 4 días (el máximo de la línea)"],
+  "2500_20": ["Habitación compartida (individual solo en Cl. Santa Isabel y Bazterrica)", "Ortodoncia cubierta solo entre 5 y 8 años c/copago", "Kinesiología y fonoaudiología: hasta 30 sesiones c/copago", "Extensión de cobertura por fallecimiento del titular: 6 meses c/copago"],
+  "4500_20": ["Habitación individual en todas las instituciones", "Ortodoncia cubierta hasta los 18 años c/copago", "Kinesiología y fonoaudiología: hasta 40 sesiones c/copago", "Extensión de cobertura por fallecimiento del titular: 12 meses c/copago"],
+  "6500_20": ["Habitación individual en todas las instituciones", "Ortodoncia cubierta hasta los 25 años c/copago", "Kinesiología y fonoaudiología sin tope de sesiones c/copago"],
+  COMUNIDAD_SC: ["PMO Omint sin copagos"],
+  COMUNIDAD_CC: ["PMO Omint con copagos", "Exclusivo para holdings de hasta 25 cápitas"],
+};
 // Datos extra de la línea PYME (ficha de producto).
 const PYME_EXTRA = {
   "4500_PYME": { farmacia: "40%", modulo: "OA_TURISTA" },
   "6500_PYME": { farmacia: "50%", modulo: "OA_TURISTA_PLUS" },
   "8500_PYME": { farmacia: "50%", modulo: "OA_EURO" },
 };
-// Campaña vigente: 20% sobre el precio de lista durante 12 meses.
+
+// Planes que se venden en una provincia, con sus tarifas por tramo.
+const _planesCache = {};
+function planesDeProvincia(provincia) {
+  if (!LISTA_DATA) return [];
+  const zid = LISTA_DATA.provincias[provincia] || LISTA_DATA.provincias.Mendoza || Object.values(LISTA_DATA.provincias)[0];
+  if (_planesCache[zid]) return _planesCache[zid];
+  const zona = LISTA_DATA.zonas[zid];
+  _planesCache[zid] = zona.planes.map((p) => {
+    const tarifas = {};
+    TRAMOS.forEach((t) => (tarifas[t.key] = p.precioUnico ? (t.key === "200 a 499" ? null : P(p.precioUnico)) : P(p.tarifas[t.key])));
+    const tipo = p.planB ? "Plan B" : p.pyme ? "PYME" : p.seccion === "Planes Comunidad" ? "Comunidad" : "Estándar";
+    const base = p.codigo.replace(/C$/, "");
+    return { plan: p.codigo, linea: p.familia, tipo, tarifas, maxCapitas: p.maxCapitas, nota: p.nota || "", bullets: BENEFICIOS_PLAN[p.codigo] || BENEFICIOS_PLAN[base] || [] };
+  });
+  return _planesCache[zid];
+}
+const zonaTitulo = (provincia) => (LISTA_DATA && LISTA_DATA.zonas[LISTA_DATA.provincias[provincia]] ? LISTA_DATA.zonas[LISTA_DATA.provincias[provincia]].titulo : "");
 const CAMPANA = { descuento: 20, meses: 12 };
 const FRANJAS = [
   { key: "00-25", label: "Titulares 0–25" },
@@ -598,7 +615,7 @@ function cotizar(plan, cantidades, descuento) {
   const tramo = tramoDe(capitas);
   const base = { plan, capitas, tramo, lista: 0, desc: 0, total: 0, porCapita: 0, disponible: false, motivo: "" };
   if (!capitas) return { ...base, motivo: "Cargá la composición del grupo" };
-  if (plan.tipo === "Plan B" && capitas > MAX_CAPITAS_PLAN_B) return { ...base, motivo: `Plan B: hasta ${MAX_CAPITAS_PLAN_B} cápitas` };
+  if (plan.maxCapitas && capitas > plan.maxCapitas) return { ...base, motivo: `Solo hasta ${plan.maxCapitas} cápitas` };
   const tabla = plan.tarifas[tramo];
   if (!tabla) {
     const motivo = tramo === "200 a 499" ? "Consultar con Producto" : plan.tipo === "PYME" ? `PYME: desde ${MIN_CAPITAS_PYME} cápitas` : `No se vende en el tramo ${tramo}`;
@@ -4073,18 +4090,20 @@ function Cotizador({ companies, settings, presetCompanyId, guardarCotizacion, sh
   const [moverPropuesta, setMoverPropuesta] = useState(true);
   const comp = companies.find((c) => c.id === companyId);
   const meses = settings.mesesCampana || CAMPANA.meses;
+  const [provincia, setProvincia] = useState(settings.provincia || "Mendoza");
+  const PLANES = planesDeProvincia(provincia);
 
   useEffect(() => {
     if (presetCompanyId) setCompanyId(presetCompanyId);
   }, [presetCompanyId]);
 
   const f = 1 + num(iva) / 100;
-  const res = PLANES_EMPRESA.map((p) => {
+  const res = PLANES.map((p) => {
     const r = cotizar(p, cant, descuento);
     return { ...r, lista: r.lista * f, desc: r.desc * f, total: r.total * f, porCapita: r.porCapita * f };
   });
-  const capitas = res[0].capitas;
-  const tramo = res[0].tramo;
+  const capitas = res.length ? res[0].capitas : 0;
+  const tramo = res.length ? res[0].tramo : "1 a 10";
   const disponibles = res.filter((r) => r.disponible).sort((x, y) => x.total - y.total);
   const noDisponibles = res.filter((r) => !r.disponible);
   const sel = disponibles.find((r) => r.plan.plan === planSel) || disponibles[0] || null;
@@ -4107,7 +4126,7 @@ ${num(descuento) ? `Desde el mes ${meses + 1} se aplica el valor de lista vigent
 ` : ""}
 ${beneficios.map((b) => `✓ ${b}`).join("\n")}
 
-${num(iva) ? `Valores con IVA ${iva}% incluido.` : "Valores sin IVA."} ${LISTA_PRECIOS}. Sujeto a aprobación.
+${num(iva) ? `Valores con IVA ${iva}% incluido.` : "Valores sin IVA."} ${LISTA_PRECIOS} · ${provincia}. Sujeto a aprobación.
 
 ¿Coordinamos 15 minutos para revisarla juntos?
 ${vars.asesor} · OMINT`
@@ -4124,7 +4143,10 @@ ${vars.asesor} · OMINT`
 
   return (
     <div className="stack">
-      <PageHeader title="Cotizador rápido" subtitle={`${LISTA_PRECIOS} · ${PLANES_EMPRESA.length} planes · campaña ${descuento}% por ${meses} meses`}>
+      <PageHeader title="Cotizador rápido" subtitle={`${LISTA_PRECIOS} · ${provincia}: ${PLANES.length} planes · campaña ${descuento}% por ${meses} meses`}>
+        <select className="select" value={provincia} onChange={(e) => setProvincia(e.target.value)} aria-label="Provincia">
+          {PROVINCIAS.map((p) => <option key={p}>{p}</option>)}
+        </select>
         <Btn icon={RefreshCw} onClick={() => setCant(vacio)}>Limpiar</Btn>
       </PageHeader>
 
@@ -4164,7 +4186,7 @@ ${vars.asesor} · OMINT`
             action={noDisponibles.length > 0 && capitas > 0 && <button className="btn btn-ghost btn-sm" onClick={() => setVerNoDisp((v) => !v)}>{verNoDisp ? "Ocultar" : "Ver"} no disponibles ({noDisponibles.length})</button>}
           >
             {!capitas ? (
-              <EmptyNote>Cargá la composición del grupo para ver los {PLANES_EMPRESA.length} planes de la lista.</EmptyNote>
+              <EmptyNote>{PLANES.length ? `Cargá la composición del grupo para ver los ${PLANES.length} planes de ${provincia}.` : "No hay lista de precios cargada en este archivo."}</EmptyNote>
             ) : (
               <div style={{ overflowX: "auto" }}>
                 <table className="tbl">
@@ -4274,7 +4296,15 @@ function CotizadorView(props) {
   );
 }
 
-function CotizadorOficial({ companies, personas, preset, registrarCotizacion, showToast }) {
+function CotizadorOficial({ companies, personas, preset, registrarCotizacion, showToast, settings }) {
+  const baseUrl = (settings && settings.cotizadorUrl) || "../cotizador/";
+  const origenCotizador = (() => {
+    try {
+      return new URL(baseUrl, window.location.href).origin;
+    } catch (e) {
+      return window.location.origin;
+    }
+  })();
   const [link, setLink] = useState(preset || null);
   const [busca, setBusca] = useState("");
   const [mover, setMover] = useState(true);
@@ -4292,7 +4322,7 @@ function CotizadorOficial({ companies, personas, preset, registrarCotizacion, sh
   // El cotizador avisa (postMessage, mismo dominio) cada vez que genera un PDF.
   useEffect(() => {
     const h = (e) => {
-      if (e.origin !== window.location.origin) return;
+      if (e.origin !== origenCotizador) return;
       const d = e.data;
       if (!d || d.fuente !== "cotizador-omint" || !Array.isArray(d.datos && d.datos.planes)) return;
       const l = linkRef.current;
@@ -4310,13 +4340,15 @@ function CotizadorOficial({ companies, personas, preset, registrarCotizacion, sh
 
   const ent = link ? (link.tipo === "empresa" ? companies.find((c) => c.id === link.id) : personas.find((p) => p.id === link.id)) : null;
   const src = useMemo(() => {
-    const q = new URLSearchParams();
+    const q = new URLSearchParams({ embed: "crm", provincia: (settings && settings.provincia) || "Mendoza" });
     if (link) {
-      q.set("modo", link.tipo === "empresa" ? "empresas" : "individuos");
+      q.set("modo", link.tipo === "empresa" ? "empresas" : "particular");
       q.set("nombre", link.label);
+      const ent = link.tipo === "empresa" ? companies.find((c) => c.id === link.id) : personas.find((p) => p.id === link.id);
+      if (ent && ent.telefono) q.set("tel", ent.telefono);
     }
-    return `cotizador.php${link ? "?" + q.toString() : ""}`;
-  }, [link && link.tipo, link && link.id]);
+    return `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}${q.toString()}`;
+  }, [link && link.tipo, link && link.id, baseUrl]);
 
   const resultados = useMemo(() => {
     const t = stripAccents(busca.trim().toLowerCase());
@@ -4959,11 +4991,17 @@ function ProductoReferencia({ go }) {
   const [tramo, setTramo] = useState("11 a 99");
   const [linea, setLinea] = useState("todas");
   const lineas = ["Génesis", "Global", "Clásico", "Premium"];
-  const planesVista = PLANES_EMPRESA.filter((p) => linea === "todas" || p.linea === linea);
+  const [provincia, setProvincia] = useState("Mendoza");
+  const PLANES = planesDeProvincia(provincia);
+  const lineas2 = [...new Set(PLANES.map((p) => p.linea))];
+  const planesVista = PLANES.filter((p) => linea === "todas" || p.linea === linea);
   const COLS = ["00-25", "26-35", "36-54", "55-59", "60+", "hijo1", "hijo2"];
   return (
     <div className="stack">
-      <PageHeader title="Producto y objeciones" subtitle={`${LISTA_PRECIOS} · ${PLANES_EMPRESA.length} planes · campaña ${CAMPANA.descuento}% por ${CAMPANA.meses} meses`}>
+      <PageHeader title="Producto y objeciones" subtitle={`${LISTA_PRECIOS} · ${provincia}: ${PLANES.length} planes${zonaTitulo(provincia) && zonaTitulo(provincia) !== provincia ? ` (grilla ${zonaTitulo(provincia).slice(0, 40)}${zonaTitulo(provincia).length > 40 ? "…" : ""})` : ""}`}>
+        <select className="select" value={provincia} onChange={(e) => { setProvincia(e.target.value); setLinea("todas"); }} aria-label="Provincia">
+          {PROVINCIAS.map((p) => <option key={p}>{p}</option>)}
+        </select>
         <Btn variant="primary" icon={Calculator} onClick={() => go("cotizador")}>Abrir cotizador</Btn>
       </PageHeader>
 
@@ -4980,7 +5018,7 @@ function ProductoReferencia({ go }) {
             </div>
             <select className="select" value={linea} onChange={(e) => setLinea(e.target.value)} aria-label="Línea">
               <option value="todas">Todas las líneas</option>
-              {lineas.map((l) => <option key={l} value={l}>{l}</option>)}
+              {lineas2.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
           </div>
         }
@@ -4997,7 +5035,7 @@ function ProductoReferencia({ go }) {
             <tbody>
               {planesVista.map((p) => {
                 const t = p.tarifas[tramo];
-                const fueraB = p.tipo === "Plan B" && TRAMOS.find((x) => x.key === tramo).min > MAX_CAPITAS_PLAN_B;
+                const fueraB = p.maxCapitas && TRAMOS.find((x) => x.key === tramo).min > p.maxCapitas;
                 return (
                   <tr key={p.plan}>
                     <td className="strong">{p.plan}</td>
@@ -5006,7 +5044,7 @@ function ProductoReferencia({ go }) {
                       COLS.map((k) => <td key={k} className="tnum" style={{ textAlign: "right" }}>{money(t[k])}</td>)
                     ) : (
                       <td colSpan={7} className="muted" style={{ textAlign: "right" }}>
-                        {fueraB ? `Solo hasta ${MAX_CAPITAS_PLAN_B} cápitas` : tramo === "200 a 499" ? "Consultar con Producto" : p.tipo === "PYME" ? `Desde ${MIN_CAPITAS_PYME} cápitas` : "No se vende en este tramo"}
+                        {fueraB ? `Solo hasta ${p.maxCapitas} cápitas` : tramo === "200 a 499" ? "Consultar con Producto" : p.tipo === "PYME" ? `Desde ${MIN_CAPITAS_PYME} cápitas` : "No se vende en este tramo"}
                       </td>
                     )}
                   </tr>
@@ -5167,7 +5205,17 @@ function SettingsModal({ settings, onClose, onSave }) {
           <Field label="Meta mensual (cápitas)"><input className="input tnum" type="number" min="1" value={s.metaMensual} onChange={(e) => setS({ ...s, metaMensual: Math.max(1, Math.round(num(e.target.value))) })} /></Field>
           <Field label="Descuento de campaña %"><input className="input tnum" type="number" min="0" max="100" value={s.descuento} onChange={(e) => setS({ ...s, descuento: num(e.target.value) })} /></Field>
           <Field label="Duración de la campaña (meses)"><input className="input tnum" type="number" min="1" max="60" value={s.mesesCampana} onChange={(e) => setS({ ...s, mesesCampana: Math.max(1, Math.round(num(e.target.value))) })} /></Field>
+          <Field label="Provincia habitual">
+            <select className="select full" value={s.provincia || "Mendoza"} onChange={(e) => setS({ ...s, provincia: e.target.value })}>
+              {(PROVINCIAS.length ? PROVINCIAS : ["Mendoza"]).map((p) => <option key={p}>{p}</option>)}
+            </select>
+          </Field>
         </div>
+        {HOSTED && (
+          <Field label="Dirección del Cotizador Omint" hint="Por defecto ../cotizador/ (la carpeta cotizador al lado de la del CRM, en el mismo dominio).">
+            <input className="input" value={s.cotizadorUrl || ""} onChange={(e) => setS({ ...s, cotizadorUrl: e.target.value })} placeholder="../cotizador/" />
+          </Field>
+        )}
         <div>
           <span className="label">Objetivos diarios de actividad</span>
           <div className="grid g2" style={{ gap: 10 }}>
