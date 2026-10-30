@@ -58,20 +58,45 @@ $now = time();
 function normUser($u) { return strtolower(trim((string) $u)); }
 
 // Primera instalación: importa los usuarios iniciales del paquete (si los hay).
+// Usuarios del paquete (instalacion/usuarios-iniciales.php): se incorporan en
+// la primera instalación y también sobre una ya instalada (agrega o actualiza
+// los usuarios que trae y quita los marcados con "eliminar"). Después se borra
+// el archivo, porque tiene hashes de contraseñas.
 function usuarios() {
     global $DIR;
-    $u = leer('usuarios', null);
-    if ($u === null) {
-        $seed = __DIR__ . '/instalacion/usuarios-iniciales.php';
-        $u = [];
-        if (is_file($seed)) {
-            $data = json_decode(substr(file_get_contents($seed), strlen(GUARD)), true);
-            if (is_array($data)) foreach ($data as $x) if (!empty($x['usuario'])) $u[normUser($x['usuario'])] = ['usuario' => normUser($x['usuario'])] + $x + ['activo' => true, 'rol' => 'ejecutivo'];
-        }
-        if ($u) {
+    $u = leer('usuarios', []);
+    $seed = __DIR__ . '/instalacion/usuarios-iniciales.php';
+    if (is_file($seed)) {
+        $data = json_decode(substr(file_get_contents($seed), strlen(GUARD)), true);
+        if (is_array($data)) {
+            foreach ($data as $x) {
+                if (empty($x['usuario'])) continue;
+                $k = normUser($x['usuario']);
+                if (!empty($x['soloSiNoExiste']) && isset($u[$k])) continue; // no pisa a quien ya está
+                unset($x['soloSiNoExiste']);
+                if (!empty($x['reemplaza'])) {
+                    // Renombre de usuario: su historial de cotizaciones pasa al nuevo.
+                    $viejo = normUser($x['reemplaza']);
+                    foreach (glob("$DIR/cotizaciones/*.php") as $f) {
+                        $nombre = 'cotizaciones/' . basename($f, '.php');
+                        $lista = leer($nombre, []);
+                        $cambio = false;
+                        foreach ($lista as &$c) if (isset($c['usuario']) && $c['usuario'] === $viejo) { $c['usuario'] = $k; $cambio = true; }
+                        unset($c);
+                        if ($cambio) escribir($nombre, $lista);
+                    }
+                    unset($x['reemplaza']);
+                }
+                if (!empty($x['eliminar'])) {
+                    unset($u[$k]);
+                    continue;
+                }
+                $previo = isset($u[$k]) ? $u[$k] : [];
+                $u[$k] = ['usuario' => $k] + $x + $previo + ['activo' => true, 'rol' => 'ejecutivo'];
+            }
             escribir('usuarios', $u);
-            @unlink($seed); // ya no hace falta y tiene hashes de contraseñas
         }
+        @unlink($seed);
     }
     return $u;
 }
