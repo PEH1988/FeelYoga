@@ -589,16 +589,154 @@ function nombreLegible(n) {
 }
 
 function CotizadorView(props) {
-  const [modo, setModo] = useState(HOSTED ? "oficial" : "rapido");
+  const modo = props.vista || (HOSTED ? "oficial" : "rapido");
+  const setModo = props.setVista || (() => {});
   const presetCompanyId = props.preset && props.preset.tipo === "empresa" ? props.preset.id : null;
   if (!HOSTED) return <Cotizador {...props} presetCompanyId={presetCompanyId} />;
+  const n = props.cotSync ? props.cotSync.pendientes.length : 0;
   return (
     <div className="stack">
       <div className="seg">
         <button className={modo === "oficial" ? "on" : ""} onClick={() => setModo("oficial")}>Cotizador Omint</button>
+        <button className={modo === "pendientes" ? "on" : ""} onClick={() => setModo("pendientes")}>
+          Por vincular{n ? ` (${n})` : ""}
+        </button>
         <button className={modo === "rapido" ? "on" : ""} onClick={() => setModo("rapido")}>Cálculo rápido PYME</button>
       </div>
-      {modo === "oficial" ? <CotizadorOficial {...props} /> : <Cotizador {...props} presetCompanyId={presetCompanyId} />}
+      {modo === "oficial" && <CotizadorOficial {...props} />}
+      {modo === "pendientes" && <CotizacionesPorVincular {...props} />}
+      {modo === "rapido" && <Cotizador {...props} presetCompanyId={presetCompanyId} />}
+    </div>
+  );
+}
+
+// Cotizaciones hechas con tu usuario en el Cotizador Omint que todavía no están
+// en ninguna ficha. Las que coinciden con una sola ficha se guardan solas.
+function CotizacionesPorVincular({ cotSync, sincronizarCotizador, conectarCotizador, vincularCotizacion, crearDesdeCotizacion, ignorarCotizacion, companies, personas }) {
+  const [u, setU] = useState("");
+  const [c, setC] = useState("");
+  const [err, setErr] = useState("");
+  const [conectando, setConectando] = useState(false);
+  const [buscando, setBuscando] = useState(null); // id de la cotización en la que se busca ficha
+  const [q, setQ] = useState("");
+  const est = cotSync.estado;
+  // Al abrir la bandeja: si ya hay sesión del cotizador en este navegador, sincroniza.
+  useEffect(() => {
+    let hay = false;
+    try {
+      hay = !!localStorage.getItem("cot_omint_token");
+    } catch (e) {
+      hay = false;
+    }
+    if (hay && (est === "desconectado" || est === "inicial")) sincronizarCotizador();
+  }, []);
+
+  const resultados = useMemo(() => {
+    const t = stripAccents(q.trim().toLowerCase());
+    if (t.length < 2 || !buscando) return [];
+    const m = (s) => stripAccents((s || "").toLowerCase()).includes(t);
+    const cot = cotSync.pendientes.find((x) => x.id === buscando);
+    const empresas = companies.filter((x) => m(x.empresa) || m(x.nombreFantasia) || (x.cuit || "").includes(t)).slice(0, 6).map((x) => ({ tipo: "empresa", id: x.id, label: x.empresa, hint: STAGE_BY_KEY[x.stage]?.label }));
+    const pers = personas.filter((x) => m(x.nombre) || (x.telefono || "").includes(t)).slice(0, 6).map((x) => ({ tipo: "persona", id: x.id, label: x.nombre, hint: x.obraSocial || "Paciente" }));
+    return cot && cot.tipo === "empresa" ? [...empresas, ...pers] : [...pers, ...empresas];
+  }, [q, buscando, companies, personas, cotSync.pendientes]);
+
+  if (est === "desconectado" || est === "inicial") {
+    return (
+      <Card title="Conectar con el Cotizador Omint" icon={Link2}>
+        <div className="stack" style={{ maxWidth: 460 }}>
+          <div className="muted">
+            Conectá tu usuario del cotizador una sola vez: el CRM trae solas las cotizaciones que hagas (también desde el celular o fuera del CRM) y las guarda en la ficha de cada cliente para que le hagas seguimiento.
+          </div>
+          <form
+            className="stack"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setConectando(true);
+              setErr("");
+              try {
+                await conectarCotizador(u, c);
+              } catch (ex) {
+                setErr(ex.message);
+              }
+              setConectando(false);
+            }}
+          >
+            <div className="grid g2" style={{ gap: 10 }}>
+              <Field label="Usuario del cotizador"><input className="input" value={u} onChange={(e) => setU(e.target.value)} autoComplete="username" /></Field>
+              <Field label="Contraseña"><input className="input" type="password" value={c} onChange={(e) => setC(e.target.value)} autoComplete="current-password" /></Field>
+            </div>
+            {err && <div className="note t-bad">{err}</div>}
+            <Btn variant="primary" icon={Link2} type="submit" disabled={!u || !c || conectando}>{conectando ? "Conectando…" : "Conectar"}</Btn>
+          </form>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="stack">
+      <div className="row between wrap">
+        <div>
+          <h1>Cotizaciones por vincular</h1>
+          <div className="sub">
+            Hechas con tu usuario en el Cotizador Omint y sin ficha en el CRM. Las que coinciden con una sola empresa o paciente se guardan solas.
+            {cotSync.ultima && ` · Revisado ${cotSync.ultima.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}`}
+          </div>
+        </div>
+        <Btn icon={RefreshCw} onClick={() => sincronizarCotizador(true)} disabled={est === "sincronizando"}>{est === "sincronizando" ? "Revisando…" : "Revisar ahora"}</Btn>
+      </div>
+      {est === "error" && <div className="note t-bad">No se pudo conectar con el cotizador: {cotSync.error}</div>}
+      {cotSync.pendientes.length === 0 ? (
+        <Card><EmptyNote>✓ No hay cotizaciones pendientes. Todo lo que cotizás queda en las fichas.</EmptyNote></Card>
+      ) : (
+        <div className="stack-sm">
+          {cotSync.pendientes.map((x) => {
+            const min = Math.min(...x.planes.map((p) => p.aPagar));
+            return (
+              <div key={x.id} className="card" style={{ padding: 14 }}>
+                <div className="row between wrap" style={{ alignItems: "flex-start", gap: 10 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div className="row wrap" style={{ gap: 6 }}>
+                      <span style={{ fontWeight: 800, fontSize: 15 }}>{x.cliente || "Sin nombre"}</span>
+                      <Chip tone={x.tipo === "empresa" ? "info" : "accent"}>{x.tipo === "empresa" ? `Empresa · ${x.capitas} cápitas` : "Particular"}</Chip>
+                      {x.via === "whatsapp" && <Chip tone="good">Enviada por WhatsApp</Chip>}
+                    </div>
+                    <div className="muted" style={{ fontSize: 12.5, marginTop: 3 }}>
+                      {fmtFecha(isoLocal(new Date(x.fecha)), { day: "2-digit", month: "short" })} · {x.provincia}
+                      {x.telefono ? ` · ${x.telefono}` : ""} · {x.planes.map((p) => p.nombre.replace("Plan ", "")).join(", ")} · desde {money(min)}/mes
+                    </div>
+                    {x.sugeridas && x.sugeridas.length > 1 && <div style={{ fontSize: 12.5, marginTop: 4 }}>Coincide con {x.sugeridas.length} fichas: elegí cuál.</div>}
+                  </div>
+                  <div className="row wrap" style={{ gap: 6 }}>
+                    {(x.sugeridas || []).slice(0, 3).map((s) => (
+                      <Btn key={s.id} size="sm" variant="soft" icon={Check} onClick={() => vincularCotizacion(x, s)}>{s.label.length > 28 ? s.label.slice(0, 28) + "…" : s.label}</Btn>
+                    ))}
+                    <Btn size="sm" variant="primary" icon={Plus} onClick={() => crearDesdeCotizacion(x)}>{x.tipo === "empresa" ? "Crear empresa" : "Crear paciente"}</Btn>
+                    <Btn size="sm" icon={Search} onClick={() => { setBuscando(buscando === x.id ? null : x.id); setQ(""); }}>Buscar ficha</Btn>
+                    <Btn size="sm" variant="ghost" onClick={() => ignorarCotizacion(x)}>Ignorar</Btn>
+                  </div>
+                </div>
+                {buscando === x.id && (
+                  <div style={{ marginTop: 10 }}>
+                    <SearchBox value={q} onChange={setQ} placeholder="Empresa, paciente, CUIT o teléfono…" />
+                    <div className="stack-sm" style={{ marginTop: 6 }}>
+                      {resultados.map((r) => (
+                        <button key={r.tipo + r.id} className="item" onClick={() => { vincularCotizacion(x, r); setBuscando(null); }}>
+                          {r.tipo === "empresa" ? <Building2 size={14} /> : <Users size={14} />}
+                          <span style={{ fontWeight: 600 }}>{r.label}</span>
+                          <span className="muted" style={{ fontSize: 12 }}>{r.hint}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      <div className="muted" style={{ fontSize: 12 }}>Al vincular o crear, la cotización queda en la ficha y en su historial, la empresa pasa a “Propuesta Enviada” y se agenda “Seguimiento de cotización” a 2 días (si no tenía otra próxima acción).</div>
     </div>
   );
 }

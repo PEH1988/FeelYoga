@@ -973,6 +973,56 @@ function construirActividad(companies, personas, meetings, waLog) {
 }
 const totalToques = (o) => (o ? o.llamada + o.whatsapp + o.mail + o.reunion + o.propuesta : 0);
 
+// --------------------------------------- Cotizaciones del Cotizador Omint ---
+
+// Nombre comparable: sin acentos, mayúsculas, puntuación ni forma societaria.
+function claveNombre(s) {
+  return stripAccents(String(s || ""))
+    .toLowerCase()
+    .replace(/\b(s\.?\s?a\.?\s?s?|s\.?\s?r\.?\s?l|s\.?\s?a\.?\s?u|sociedad anonima|srl|sas|sa)\b\.?/g, " ")
+    .replace(/[^a-z0-9ñ ]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .sort()
+    .join(" ");
+}
+const telClave = (t) => {
+  const d = normalizePhoneAR(t);
+  return d.length >= 8 ? d.slice(-10) : "";
+};
+
+// Convierte una cotización guardada en el cotizador al formato que registra el CRM.
+function cotizacionAMensaje(q) {
+  return {
+    tipo: q.tipo === "empresa" ? "empresa" : "individual",
+    fecha: q.fecha,
+    datos: {
+      cid: q.id,
+      nombre: q.cliente || "",
+      telefono: q.telefono || "",
+      provincia: q.provincia || "",
+      capitas: q.tipo === "empresa" ? q.capitas : null,
+      condicion: q.condicion || "",
+      planes: (q.planes || []).map((p) => ({ plan: p.nombre, tag: "", lista: p.lista, bonificado: p.bonificado, aporte: p.aporte, aPagar: p.aPagar })),
+    },
+  };
+}
+
+// Posibles fichas para una cotización: por CUIT, teléfono o nombre.
+function coincidenciasCotizacion(q, companies, personas) {
+  const nom = claveNombre(q.cliente);
+  const tel = telClave(q.telefono);
+  const cuit = normcuitStr(q.cuit);
+  if (q.tipo === "empresa") {
+    return companies
+      .filter((c) => (cuit.length >= 10 && normcuitStr(c.cuit) === cuit) || (nom && (claveNombre(c.empresa) === nom || (c.nombreFantasia && claveNombre(c.nombreFantasia) === nom))) || (tel && telClave(c.telefono) === tel))
+      .map((c) => ({ tipo: "empresa", id: c.id, label: c.empresa }));
+  }
+  return personas
+    .filter((p) => (tel && telClave(p.telefono) === tel) || (nom && claveNombre(p.nombre) === nom))
+    .map((p) => ({ tipo: "persona", id: p.id, label: p.nombre }));
+}
+
 const ThemeCtx = createContext("light");
 const CHART = {
   light: { accent: "#0E8C7F", accent2: "#86B6EF", grid: "#E3E8EF", axis: "#6B788C", ref: "#B86E00" },

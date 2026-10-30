@@ -1,7 +1,7 @@
 
 // ================================================================ Mi día ===
 
-function MiDia({ companies, settings, metrics, pendientes, agenda, actividad, personas, setSelectedId, setShowWhatsApp, go, setLogFor, setShowNewMeeting, setShowNewCompany, setSelectedPersonaId, setShowPersonaWhatsApp }) {
+function MiDia({ companies, settings, metrics, pendientes, agenda, actividad, personas, setSelectedId, setShowWhatsApp, go, setLogFor, setShowNewMeeting, setShowNewCompany, setSelectedPersonaId, setShowPersonaWhatsApp, cotPendientes = [], abrirPorVincular }) {
   const hoy = hoyISO();
   const act = actividad.get(hoy) || { llamada: 0, whatsapp: 0, mail: 0, reunion: 0, propuesta: 0 };
   const obj = settings.objetivos;
@@ -98,6 +98,15 @@ function MiDia({ companies, settings, metrics, pendientes, agenda, actividad, pe
           </div>
         </Card>
       </div>
+
+      {cotPendientes.length > 0 && (
+        <div className="note t-warn row between wrap" style={{ gap: 10 }}>
+          <span>
+            <strong>{cotPendientes.length} cotización{cotPendientes.length > 1 ? "es" : ""} del cotizador</strong> sin ficha en el CRM ({cotPendientes.slice(0, 3).map((q) => q.cliente || "sin nombre").join(", ")}{cotPendientes.length > 3 ? "…" : ""}). Vinculalas para hacerles seguimiento.
+          </span>
+          <Btn size="sm" variant="primary" onClick={abrirPorVincular}>Vincular ahora</Btn>
+        </div>
+      )}
 
       <div className="grid g3">
         <Card title="Reuniones de hoy" icon={CalIcon} action={<LinkBtn onClick={() => go("agenda")}>Agenda</LinkBtn>}>

@@ -973,6 +973,56 @@ function construirActividad(companies, personas, meetings, waLog) {
 }
 const totalToques = (o) => (o ? o.llamada + o.whatsapp + o.mail + o.reunion + o.propuesta : 0);
 
+// --------------------------------------- Cotizaciones del Cotizador Omint ---
+
+// Nombre comparable: sin acentos, mayúsculas, puntuación ni forma societaria.
+function claveNombre(s) {
+  return stripAccents(String(s || ""))
+    .toLowerCase()
+    .replace(/\b(s\.?\s?a\.?\s?s?|s\.?\s?r\.?\s?l|s\.?\s?a\.?\s?u|sociedad anonima|srl|sas|sa)\b\.?/g, " ")
+    .replace(/[^a-z0-9ñ ]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .sort()
+    .join(" ");
+}
+const telClave = (t) => {
+  const d = normalizePhoneAR(t);
+  return d.length >= 8 ? d.slice(-10) : "";
+};
+
+// Convierte una cotización guardada en el cotizador al formato que registra el CRM.
+function cotizacionAMensaje(q) {
+  return {
+    tipo: q.tipo === "empresa" ? "empresa" : "individual",
+    fecha: q.fecha,
+    datos: {
+      cid: q.id,
+      nombre: q.cliente || "",
+      telefono: q.telefono || "",
+      provincia: q.provincia || "",
+      capitas: q.tipo === "empresa" ? q.capitas : null,
+      condicion: q.condicion || "",
+      planes: (q.planes || []).map((p) => ({ plan: p.nombre, tag: "", lista: p.lista, bonificado: p.bonificado, aporte: p.aporte, aPagar: p.aPagar })),
+    },
+  };
+}
+
+// Posibles fichas para una cotización: por CUIT, teléfono o nombre.
+function coincidenciasCotizacion(q, companies, personas) {
+  const nom = claveNombre(q.cliente);
+  const tel = telClave(q.telefono);
+  const cuit = normcuitStr(q.cuit);
+  if (q.tipo === "empresa") {
+    return companies
+      .filter((c) => (cuit.length >= 10 && normcuitStr(c.cuit) === cuit) || (nom && (claveNombre(c.empresa) === nom || (c.nombreFantasia && claveNombre(c.nombreFantasia) === nom))) || (tel && telClave(c.telefono) === tel))
+      .map((c) => ({ tipo: "empresa", id: c.id, label: c.empresa }));
+  }
+  return personas
+    .filter((p) => (tel && telClave(p.telefono) === tel) || (nom && claveNombre(p.nombre) === nom))
+    .map((p) => ({ tipo: "persona", id: p.id, label: p.nombre }));
+}
+
 const ThemeCtx = createContext("light");
 const CHART = {
   light: { accent: "#0E8C7F", accent2: "#86B6EF", grid: "#E3E8EF", axis: "#6B788C", ref: "#B86E00" },
@@ -1435,7 +1485,8 @@ export default function App() {
   const [lostFor, setLostFor] = useState(null); // companyId pendiente de motivo de pérdida
   const [showSettings, setShowSettings] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
-  const [cotizarPara, setCotizarPara] = useState(null); // { tipo: "empresa" | "persona", id, label } preseleccionado en el cotizador
+  const [cotizarPara, setCotizarPara] = useState(null);
+  const [cotVista, setCotVista] = useState(HOSTED ? "oficial" : "rapido"); // oficial | pendientes | rapido // { tipo: "empresa" | "persona", id, label } preseleccionado en el cotizador
   const [saveState, setSaveState] = useState("idle");
   const [confirmState, setConfirmState] = useState(null);
   const [toast, setToast] = useState(null);
@@ -1449,6 +1500,10 @@ export default function App() {
   const companyChunkCountRef = useRef(0);
   const companyChunkContentsRef = useRef([]);
   const toastTimer = useRef(null);
+  const companiesRef = useRef([]);
+  const personasRef = useRef([]);
+  companiesRef.current = companies;
+  personasRef.current = personas;
 
   const askConfirm = useCallback((message, onConfirm) => setConfirmState({ message, onConfirm }), []);
   const showToast = useCallback((message) => {
@@ -1636,8 +1691,11 @@ export default function App() {
   );
 
   // Cotización generada en el Cotizador Omint (PDF): se guarda en la ficha.
+  // Cotización del Cotizador Omint: se guarda en la ficha (empresa o paciente),
+  // queda en el historial como propuesta y deja agendado el seguimiento.
+  // El "cid" la identifica: si ya está registrada, no se duplica.
   const registrarCotizacion = useCallback(
-    (ref, msg, moverEtapa) => {
+    (ref, msg, moverEtapa, silencioso) => {
       const d = msg.datos || {};
       const planes = (d.planes || []).map((p) => ({
         plan: p.plan,
@@ -1647,49 +1705,169 @@ export default function App() {
         aporte: Math.round(num(p.aporte)),
         aPagar: Math.round(num(p.aPagar)),
       }));
-      if (!planes.length) return;
+      if (!planes.length) return false;
       const hoy = hoyISO();
-      const cot = { id: uid(), fecha: hoy, origen: "cotizador", tipo: msg.tipo, capitas: d.capitas || null, titulares: d.titulares || null, condicion: d.condicion || "", grupo: d.grupo || null, planes };
+      const fechaCot = msg.fecha ? isoLocal(new Date(msg.fecha)) : hoy;
+      const cid = d.cid || null;
+      const ya = (lista) => cid && (lista || []).some((q) => q.cid === cid || q.id === cid);
+      const cot = { id: cid || uid(), cid, fecha: fechaCot, origen: "cotizador", tipo: msg.tipo, provincia: d.provincia || "", capitas: d.capitas || null, titulares: d.titulares || null, condicion: d.condicion || "", grupo: d.grupo || null, planes };
       const resumen = planes.map((p) => `${p.plan.replace("Plan ", "")} ${money(p.aPagar)}`).join(" · ");
-      const texto = `Cotización ${planes.length > 1 ? "comparativa" : "PDF"}${d.capitas ? ` (${d.capitas} cápitas)` : ""}: ${resumen}`;
+      const texto = `Cotización ${planes.length > 1 ? "comparativa" : "PDF"}${d.capitas ? ` (${d.capitas} cápitas)` : ""}${d.provincia && d.provincia !== "Mendoza" ? ` · ${d.provincia}` : ""}: ${resumen}`;
+      const seguimiento = [addDaysISO(2, parseISO(fechaCot) || new Date()), hoy].sort().pop();
       if (ref.tipo === "empresa") {
         setCompanies((prev) =>
           prev.map((c) => {
-            if (c.id !== ref.id) return c;
+            if (c.id !== ref.id || ya(c.cotizaciones)) return c;
             const p0 = planes[0];
             return {
               ...c,
               cotizaciones: [cot, ...(c.cotizaciones || [])],
               ...(planes.length === 1 ? { planCotizado: p0.plan.replace("Plan ", ""), montoMensual: p0.bonificado } : {}),
               ...(d.capitas ? { capitas: String(d.capitas) } : {}),
-              historial: [{ fecha: hoy, tipo: "propuesta", texto }, ...(c.historial || [])],
+              ...(!c.proximaAccion && isOpen(c) ? { proximaAccion: "Seguimiento de cotización", fechaProximaAccion: seguimiento } : {}),
+              historial: [{ fecha: fechaCot, tipo: "propuesta", texto }, ...(c.historial || [])],
             };
           })
         );
         if (moverEtapa) {
-          const c = companies.find((x) => x.id === ref.id);
+          const c = companiesRef.current.find((x) => x.id === ref.id);
           if (c && ["prospeccion", "contacto", "reunion"].includes(c.stage)) updateCompany(ref.id, { stage: "propuesta" });
         }
       } else {
         setPersonas((prev) =>
           prev.map((p) =>
-            p.id !== ref.id
+            p.id !== ref.id || ya(p.cotizaciones)
               ? p
               : {
                   ...p,
                   cotizaciones: [cot, ...(p.cotizaciones || [])],
                   contactado: true,
                   status: ["nuevo", "contactado"].includes(p.status) ? "interesado" : p.status,
-                  seguimiento: p.seguimiento && p.seguimiento > hoy ? p.seguimiento : addDaysISO(2),
-                  historial: [{ fecha: hoy, tipo: "propuesta", texto }, ...(p.historial || [])],
+                  seguimiento: p.seguimiento && p.seguimiento > hoy ? p.seguimiento : seguimiento,
+                  historial: [{ fecha: fechaCot, tipo: "propuesta", texto }, ...(p.historial || [])],
                 }
           )
         );
       }
-      showToast(`✓ Cotización guardada en ${ref.label}`);
+      if (!silencioso) showToast(`✓ Cotización guardada en ${ref.label}`);
+      return true;
     },
-    [companies, updateCompany, showToast]
+    [updateCompany, showToast]
   );
+
+  // ---------------------------------- Sincronización con el Cotizador Omint
+  // Trae las cotizaciones que hiciste con tu usuario en el cotizador (también
+  // las hechas fuera del CRM): las que coinciden con una sola ficha se guardan
+  // solas; el resto queda "por vincular".
+  const [cotSync, setCotSync] = useState({ estado: HOSTED ? "inicial" : "no-disponible", pendientes: [], ultima: null, error: "" });
+  const registrarRef = useRef(registrarCotizacion);
+  registrarRef.current = registrarCotizacion;
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+  const sincronizandoRef = useRef(false);
+
+  const urlCotizador = (accion) => new URL(`api.php?action=${accion}`, new URL(settingsRef.current.cotizadorUrl || "../cotizador/", window.location.href)).toString();
+  const tokenCot = () => {
+    try {
+      return localStorage.getItem("cot_omint_token") || "";
+    } catch (e) {
+      return "";
+    }
+  };
+
+  const sincronizarCotizador = useCallback(
+    async (manual) => {
+      if (!HOSTED || sincronizandoRef.current) return;
+      const token = tokenCot();
+      if (!token) {
+        setCotSync((s) => ({ ...s, estado: "desconectado" }));
+        return;
+      }
+      sincronizandoRef.current = true;
+      setCotSync((s) => ({ ...s, estado: "sincronizando" }));
+      try {
+        const r = await fetch(urlCotizador("cotizaciones"), { method: "POST", headers: { "Content-Type": "application/json", "X-Cot-Token": token }, body: JSON.stringify({ meses: 6 }), cache: "no-store" });
+        if (r.status === 401) {
+          setCotSync((s) => ({ ...s, estado: "desconectado" }));
+          return;
+        }
+        const data = await r.json();
+        if (!data.ok) throw new Error(data.error || "Error del cotizador");
+        // Ya registradas: por id, o por fecha + planes + montos (las anteriores a este cambio no tenían id compartido).
+        const firma = (fecha, planes) => `${fecha}|${planes.map((p) => `${String(p.plan || p.nombre).replace("Plan ", "")}:${Math.round(p.aPagar)}`).join(",")}`;
+        const conocidas = new Set(settingsRef.current.cotIgnoradas || []);
+        const firmas = new Set();
+        const anotar = (q) => {
+          conocidas.add(q.cid || q.id);
+          firmas.add(firma(q.fecha, q.planes || []));
+        };
+        companiesRef.current.forEach((c) => (c.cotizaciones || []).forEach(anotar));
+        personasRef.current.forEach((p) => (p.cotizaciones || []).forEach(anotar));
+        const nuevas = (data.cotizaciones || []).filter((q) => q.id && (q.planes || []).length && !conocidas.has(q.id) && !firmas.has(firma(isoLocal(new Date(q.fecha)), q.planes)));
+        const pendientes = [];
+        let auto = 0;
+        // De la más vieja a la más nueva, para que el historial quede en orden.
+        [...nuevas].reverse().forEach((q) => {
+          const m = coincidenciasCotizacion(q, companiesRef.current, personasRef.current);
+          if (m.length === 1) {
+            registrarRef.current(m[0], cotizacionAMensaje(q), true, true);
+            auto++;
+          } else pendientes.push({ ...q, sugeridas: m });
+        });
+        pendientes.reverse();
+        setCotSync({ estado: "ok", pendientes, ultima: new Date(), error: "" });
+        if (auto) showToast(`✓ ${auto} cotización${auto > 1 ? "es" : ""} del cotizador ${auto > 1 ? "quedaron" : "quedó"} en sus fichas`);
+        else if (manual) showToast(pendientes.length ? `${pendientes.length} cotización${pendientes.length > 1 ? "es" : ""} por vincular` : "✓ Todo al día con el cotizador");
+      } catch (e) {
+        setCotSync((s) => ({ ...s, estado: "error", error: e.message || "No se pudo conectar con el cotizador" }));
+      } finally {
+        sincronizandoRef.current = false;
+      }
+    },
+    [showToast]
+  );
+
+  const conectarCotizador = useCallback(
+    async (usuario, clave) => {
+      const r = await fetch(urlCotizador("login"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario, clave }) });
+      const d = await r.json().catch(() => null);
+      if (!d || !d.ok) throw new Error((d && d.error) || "No se pudo conectar con el cotizador");
+      try {
+        localStorage.setItem("cot_omint_token", d.token);
+      } catch (e) {
+        // sin localStorage no se puede recordar la conexión
+      }
+      await sincronizarCotizador(true);
+    },
+    [sincronizarCotizador]
+  );
+
+  const quitarPendiente = (id) => setCotSync((s) => ({ ...s, pendientes: s.pendientes.filter((q) => q.id !== id) }));
+
+  const vincularCotizacion = useCallback((q, ref) => {
+    registrarRef.current(ref, cotizacionAMensaje(q), true);
+    quitarPendiente(q.id);
+  }, []);
+
+  const crearDesdeCotizacion = useCallback((q) => {
+    const id = uid();
+    const hoy = hoyISO();
+    if (q.tipo === "empresa") {
+      const empresa = q.cliente || "Empresa sin nombre";
+      setCompanies((prev) => [...prev, { id, empresa, cuit: q.cuit || "", telefono: q.telefono || "", contacto: "", mail: "", tier: "caliente", nota: "Alta desde el Cotizador Omint", stage: "contacto", stageDates: { contacto: hoy }, capitas: "", proximaAccion: "", fechaProximaAccion: "", historial: [], fechaAlta: hoy }]);
+      registrarRef.current({ tipo: "empresa", id, label: empresa }, cotizacionAMensaje(q), true);
+    } else {
+      const nombre = q.cliente || "Paciente sin nombre";
+      setPersonas((prev) => [{ id, nombre, telefono: q.telefono || "", mail: "", obraSocial: "", fechaNacimiento: "", status: "interesado", nota: "Alta desde el Cotizador Omint", historial: [] }, ...prev]);
+      registrarRef.current({ tipo: "persona", id, label: nombre }, cotizacionAMensaje(q), true);
+    }
+    quitarPendiente(q.id);
+  }, []);
+
+  const ignorarCotizacion = useCallback((q) => {
+    setSettings((s) => ({ ...s, cotIgnoradas: [q.id, ...(s.cotIgnoradas || [])].slice(0, 500) }));
+    quitarPendiente(q.id);
+  }, []);
 
   // ----------------------------------------------------- Acciones: personas
   const addPersona = useCallback((data) => setPersonas((prev) => [{ id: uid(), status: "nuevo", nota: "", historial: [], ...data }, ...prev]), []);
@@ -1843,6 +2021,22 @@ export default function App() {
     [showToast]
   );
 
+  useEffect(() => {
+    if (!loaded || !HOSTED) return;
+    sincronizarCotizador();
+    const i = setInterval(() => sincronizarCotizador(), 5 * 60 * 1000);
+    const f = () => document.visibilityState === "visible" && sincronizarCotizador();
+    // Si iniciás sesión en el cotizador en otra pestaña, el CRM se entera al instante.
+    const st = (e) => e.key === "cot_omint_token" && e.newValue && sincronizarCotizador();
+    document.addEventListener("visibilitychange", f);
+    window.addEventListener("storage", st);
+    return () => {
+      clearInterval(i);
+      document.removeEventListener("visibilitychange", f);
+      window.removeEventListener("storage", st);
+    };
+  }, [loaded, sincronizarCotizador]);
+
   // ------------------------------------------------------- Atajos de teclado
   useEffect(() => {
     const h = (e) => {
@@ -1881,6 +2075,7 @@ export default function App() {
   }, []);
   const abrirCotizador = useCallback((ref) => {
     setCotizarPara(ref || null);
+    setCotVista(HOSTED ? "oficial" : "rapido");
     setSelectedPersonaId(null);
     setSelectedId(null);
     setView("cotizador");
@@ -1888,6 +2083,7 @@ export default function App() {
 
   const selected = companies.find((c) => c.id === selectedId);
   const badges = {
+    cotizador: cotSync.pendientes.length,
     hoy: pendientes.totalUrgente,
     campana: pendientes.waDue.length,
     agenda: agenda.hoy.length,
@@ -2042,6 +2238,8 @@ export default function App() {
                 setShowNewCompany={setShowNewCompany}
                 setSelectedPersonaId={setSelectedPersonaId}
                 setShowPersonaWhatsApp={setShowPersonaWhatsApp}
+                cotPendientes={cotSync.pendientes}
+                abrirPorVincular={() => { setCotVista("pendientes"); go("cotizador"); }}
               />
             )}
             {view === "tablero" && <Tablero {...common} settings={settings} metrics={metrics} actividad={actividad} meetings={meetings} />}
@@ -2064,7 +2262,26 @@ export default function App() {
             )}
             {view === "campana" && <Campaign {...common} waLog={waLog} />}
             {view === "cotizador" && (
-              <CotizadorView companies={companies} personas={personas} settings={settings} preset={cotizarPara} guardarCotizacion={guardarCotizacion} registrarCotizacion={registrarCotizacion} showToast={showToast} vars={vars} />
+              <CotizadorView
+                companies={companies}
+                personas={personas}
+                settings={settings}
+                preset={cotizarPara}
+                guardarCotizacion={guardarCotizacion}
+                registrarCotizacion={registrarCotizacion}
+                showToast={showToast}
+                vars={vars}
+                vista={cotVista}
+                setVista={setCotVista}
+                cotSync={cotSync}
+                sincronizarCotizador={sincronizarCotizador}
+                conectarCotizador={conectarCotizador}
+                vincularCotizacion={vincularCotizacion}
+                crearDesdeCotizacion={crearDesdeCotizacion}
+                ignorarCotizacion={ignorarCotizacion}
+                setSelectedId={setSelectedId}
+                setSelectedPersonaId={setSelectedPersonaId}
+              />
             )}
             {view === "b2c" && <DashboardB2C personas={personas} waLog={waLog} go={go} setShowNewPersona={setShowNewPersona} />}
             {view === "personas" && (
@@ -2357,7 +2574,7 @@ function calcularPendientes(companies, personas, meetings) {
 
 // ================================================================ Mi día ===
 
-function MiDia({ companies, settings, metrics, pendientes, agenda, actividad, personas, setSelectedId, setShowWhatsApp, go, setLogFor, setShowNewMeeting, setShowNewCompany, setSelectedPersonaId, setShowPersonaWhatsApp }) {
+function MiDia({ companies, settings, metrics, pendientes, agenda, actividad, personas, setSelectedId, setShowWhatsApp, go, setLogFor, setShowNewMeeting, setShowNewCompany, setSelectedPersonaId, setShowPersonaWhatsApp, cotPendientes = [], abrirPorVincular }) {
   const hoy = hoyISO();
   const act = actividad.get(hoy) || { llamada: 0, whatsapp: 0, mail: 0, reunion: 0, propuesta: 0 };
   const obj = settings.objetivos;
@@ -2454,6 +2671,15 @@ function MiDia({ companies, settings, metrics, pendientes, agenda, actividad, pe
           </div>
         </Card>
       </div>
+
+      {cotPendientes.length > 0 && (
+        <div className="note t-warn row between wrap" style={{ gap: 10 }}>
+          <span>
+            <strong>{cotPendientes.length} cotización{cotPendientes.length > 1 ? "es" : ""} del cotizador</strong> sin ficha en el CRM ({cotPendientes.slice(0, 3).map((q) => q.cliente || "sin nombre").join(", ")}{cotPendientes.length > 3 ? "…" : ""}). Vinculalas para hacerles seguimiento.
+          </span>
+          <Btn size="sm" variant="primary" onClick={abrirPorVincular}>Vincular ahora</Btn>
+        </div>
+      )}
 
       <div className="grid g3">
         <Card title="Reuniones de hoy" icon={CalIcon} action={<LinkBtn onClick={() => go("agenda")}>Agenda</LinkBtn>}>
@@ -4282,16 +4508,154 @@ function nombreLegible(n) {
 }
 
 function CotizadorView(props) {
-  const [modo, setModo] = useState(HOSTED ? "oficial" : "rapido");
+  const modo = props.vista || (HOSTED ? "oficial" : "rapido");
+  const setModo = props.setVista || (() => {});
   const presetCompanyId = props.preset && props.preset.tipo === "empresa" ? props.preset.id : null;
   if (!HOSTED) return <Cotizador {...props} presetCompanyId={presetCompanyId} />;
+  const n = props.cotSync ? props.cotSync.pendientes.length : 0;
   return (
     <div className="stack">
       <div className="seg">
         <button className={modo === "oficial" ? "on" : ""} onClick={() => setModo("oficial")}>Cotizador Omint</button>
+        <button className={modo === "pendientes" ? "on" : ""} onClick={() => setModo("pendientes")}>
+          Por vincular{n ? ` (${n})` : ""}
+        </button>
         <button className={modo === "rapido" ? "on" : ""} onClick={() => setModo("rapido")}>Cálculo rápido PYME</button>
       </div>
-      {modo === "oficial" ? <CotizadorOficial {...props} /> : <Cotizador {...props} presetCompanyId={presetCompanyId} />}
+      {modo === "oficial" && <CotizadorOficial {...props} />}
+      {modo === "pendientes" && <CotizacionesPorVincular {...props} />}
+      {modo === "rapido" && <Cotizador {...props} presetCompanyId={presetCompanyId} />}
+    </div>
+  );
+}
+
+// Cotizaciones hechas con tu usuario en el Cotizador Omint que todavía no están
+// en ninguna ficha. Las que coinciden con una sola ficha se guardan solas.
+function CotizacionesPorVincular({ cotSync, sincronizarCotizador, conectarCotizador, vincularCotizacion, crearDesdeCotizacion, ignorarCotizacion, companies, personas }) {
+  const [u, setU] = useState("");
+  const [c, setC] = useState("");
+  const [err, setErr] = useState("");
+  const [conectando, setConectando] = useState(false);
+  const [buscando, setBuscando] = useState(null); // id de la cotización en la que se busca ficha
+  const [q, setQ] = useState("");
+  const est = cotSync.estado;
+  // Al abrir la bandeja: si ya hay sesión del cotizador en este navegador, sincroniza.
+  useEffect(() => {
+    let hay = false;
+    try {
+      hay = !!localStorage.getItem("cot_omint_token");
+    } catch (e) {
+      hay = false;
+    }
+    if (hay && (est === "desconectado" || est === "inicial")) sincronizarCotizador();
+  }, []);
+
+  const resultados = useMemo(() => {
+    const t = stripAccents(q.trim().toLowerCase());
+    if (t.length < 2 || !buscando) return [];
+    const m = (s) => stripAccents((s || "").toLowerCase()).includes(t);
+    const cot = cotSync.pendientes.find((x) => x.id === buscando);
+    const empresas = companies.filter((x) => m(x.empresa) || m(x.nombreFantasia) || (x.cuit || "").includes(t)).slice(0, 6).map((x) => ({ tipo: "empresa", id: x.id, label: x.empresa, hint: STAGE_BY_KEY[x.stage]?.label }));
+    const pers = personas.filter((x) => m(x.nombre) || (x.telefono || "").includes(t)).slice(0, 6).map((x) => ({ tipo: "persona", id: x.id, label: x.nombre, hint: x.obraSocial || "Paciente" }));
+    return cot && cot.tipo === "empresa" ? [...empresas, ...pers] : [...pers, ...empresas];
+  }, [q, buscando, companies, personas, cotSync.pendientes]);
+
+  if (est === "desconectado" || est === "inicial") {
+    return (
+      <Card title="Conectar con el Cotizador Omint" icon={Link2}>
+        <div className="stack" style={{ maxWidth: 460 }}>
+          <div className="muted">
+            Conectá tu usuario del cotizador una sola vez: el CRM trae solas las cotizaciones que hagas (también desde el celular o fuera del CRM) y las guarda en la ficha de cada cliente para que le hagas seguimiento.
+          </div>
+          <form
+            className="stack"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setConectando(true);
+              setErr("");
+              try {
+                await conectarCotizador(u, c);
+              } catch (ex) {
+                setErr(ex.message);
+              }
+              setConectando(false);
+            }}
+          >
+            <div className="grid g2" style={{ gap: 10 }}>
+              <Field label="Usuario del cotizador"><input className="input" value={u} onChange={(e) => setU(e.target.value)} autoComplete="username" /></Field>
+              <Field label="Contraseña"><input className="input" type="password" value={c} onChange={(e) => setC(e.target.value)} autoComplete="current-password" /></Field>
+            </div>
+            {err && <div className="note t-bad">{err}</div>}
+            <Btn variant="primary" icon={Link2} type="submit" disabled={!u || !c || conectando}>{conectando ? "Conectando…" : "Conectar"}</Btn>
+          </form>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="stack">
+      <div className="row between wrap">
+        <div>
+          <h1>Cotizaciones por vincular</h1>
+          <div className="sub">
+            Hechas con tu usuario en el Cotizador Omint y sin ficha en el CRM. Las que coinciden con una sola empresa o paciente se guardan solas.
+            {cotSync.ultima && ` · Revisado ${cotSync.ultima.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}`}
+          </div>
+        </div>
+        <Btn icon={RefreshCw} onClick={() => sincronizarCotizador(true)} disabled={est === "sincronizando"}>{est === "sincronizando" ? "Revisando…" : "Revisar ahora"}</Btn>
+      </div>
+      {est === "error" && <div className="note t-bad">No se pudo conectar con el cotizador: {cotSync.error}</div>}
+      {cotSync.pendientes.length === 0 ? (
+        <Card><EmptyNote>✓ No hay cotizaciones pendientes. Todo lo que cotizás queda en las fichas.</EmptyNote></Card>
+      ) : (
+        <div className="stack-sm">
+          {cotSync.pendientes.map((x) => {
+            const min = Math.min(...x.planes.map((p) => p.aPagar));
+            return (
+              <div key={x.id} className="card" style={{ padding: 14 }}>
+                <div className="row between wrap" style={{ alignItems: "flex-start", gap: 10 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div className="row wrap" style={{ gap: 6 }}>
+                      <span style={{ fontWeight: 800, fontSize: 15 }}>{x.cliente || "Sin nombre"}</span>
+                      <Chip tone={x.tipo === "empresa" ? "info" : "accent"}>{x.tipo === "empresa" ? `Empresa · ${x.capitas} cápitas` : "Particular"}</Chip>
+                      {x.via === "whatsapp" && <Chip tone="good">Enviada por WhatsApp</Chip>}
+                    </div>
+                    <div className="muted" style={{ fontSize: 12.5, marginTop: 3 }}>
+                      {fmtFecha(isoLocal(new Date(x.fecha)), { day: "2-digit", month: "short" })} · {x.provincia}
+                      {x.telefono ? ` · ${x.telefono}` : ""} · {x.planes.map((p) => p.nombre.replace("Plan ", "")).join(", ")} · desde {money(min)}/mes
+                    </div>
+                    {x.sugeridas && x.sugeridas.length > 1 && <div style={{ fontSize: 12.5, marginTop: 4 }}>Coincide con {x.sugeridas.length} fichas: elegí cuál.</div>}
+                  </div>
+                  <div className="row wrap" style={{ gap: 6 }}>
+                    {(x.sugeridas || []).slice(0, 3).map((s) => (
+                      <Btn key={s.id} size="sm" variant="soft" icon={Check} onClick={() => vincularCotizacion(x, s)}>{s.label.length > 28 ? s.label.slice(0, 28) + "…" : s.label}</Btn>
+                    ))}
+                    <Btn size="sm" variant="primary" icon={Plus} onClick={() => crearDesdeCotizacion(x)}>{x.tipo === "empresa" ? "Crear empresa" : "Crear paciente"}</Btn>
+                    <Btn size="sm" icon={Search} onClick={() => { setBuscando(buscando === x.id ? null : x.id); setQ(""); }}>Buscar ficha</Btn>
+                    <Btn size="sm" variant="ghost" onClick={() => ignorarCotizacion(x)}>Ignorar</Btn>
+                  </div>
+                </div>
+                {buscando === x.id && (
+                  <div style={{ marginTop: 10 }}>
+                    <SearchBox value={q} onChange={setQ} placeholder="Empresa, paciente, CUIT o teléfono…" />
+                    <div className="stack-sm" style={{ marginTop: 6 }}>
+                      {resultados.map((r) => (
+                        <button key={r.tipo + r.id} className="item" onClick={() => { vincularCotizacion(x, r); setBuscando(null); }}>
+                          {r.tipo === "empresa" ? <Building2 size={14} /> : <Users size={14} />}
+                          <span style={{ fontWeight: 600 }}>{r.label}</span>
+                          <span className="muted" style={{ fontSize: 12 }}>{r.hint}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      <div className="muted" style={{ fontSize: 12 }}>Al vincular o crear, la cotización queda en la ficha y en su historial, la empresa pasa a “Propuesta Enviada” y se agenda “Seguimiento de cotización” a 2 días (si no tenía otra próxima acción).</div>
     </div>
   );
 }

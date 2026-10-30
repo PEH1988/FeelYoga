@@ -279,7 +279,8 @@ switch ($action) {
         if (!$c) fail(400, 'cotizacion');
         $json = json_encode($c, JSON_UNESCAPED_UNICODE);
         if (strlen($json) > 400000) fail(400, 'La cotización es demasiado grande.');
-        $c['id'] = bin2hex(random_bytes(8));
+        // El id lo genera el navegador (cid) para que el CRM reconozca la misma cotización.
+        $c['id'] = (isset($c['cid']) && is_string($c['cid']) && preg_match('/^[a-z0-9-]{6,40}$/', $c['cid'])) ? $c['cid'] : bin2hex(random_bytes(8));
         $c['fecha'] = date('c', $now);
         $c['usuario'] = $yo['usuario'];
         $c['ejecutivo'] = $yo['nombre'];

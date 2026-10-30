@@ -434,8 +434,14 @@ function Resultados({ ctx, r, listo, tipo, p, e, nomina, datos }) {
   const nombreCliente = tipo === "empresa" ? e.empresa : p.cliente;
   const telefono = tipo === "empresa" ? e.telefono : p.telefono;
 
-  const registro = (planes) => ({
+  // Identificador de cada cotización, compartido con el CRM para no duplicarla.
+  const nuevoCid = () => Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+
+  const registro = (planes, cid) => ({
+    cid,
     tipo,
+    telefono: telefono || "",
+    cuit: tipo === "empresa" ? e.cuit || "" : "",
     cliente: nombreCliente || "",
     provincia,
     vigencia: lista.vigencia,
@@ -445,10 +451,12 @@ function Resultados({ ctx, r, listo, tipo, p, e, nomina, datos }) {
     planes: planes.map((x) => ({ codigo: x.codigo, nombre: x.nombre, familia: x.familia, lista: Math.round(x.lista), bonificado: Math.round(x.bonificado), aporte: Math.round(x.aporte || 0), aPagar: Math.round(x.aPagar) })),
   });
 
-  const mensajeCRM = (planes) => ({
+  const mensajeCRM = (planes, cid) => ({
     fuente: "cotizador-omint",
     tipo: tipo === "empresa" ? "empresa" : "individual",
     datos: {
+      cid,
+      telefono: telefono || "",
       nombre: nombreCliente || "",
       provincia,
       capitas: tipo === "empresa" ? r.capitas : null,
@@ -486,8 +494,9 @@ function Resultados({ ctx, r, listo, tipo, p, e, nomina, datos }) {
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 4000);
       }
-      api("guardarCotizacion", { cotizacion: registro(planes) }).catch(() => toast("El PDF se generó, pero no se pudo guardar en el historial."));
-      if (embed) avisarCRM(mensajeCRM(planes));
+      const cid = nuevoCid();
+      api("guardarCotizacion", { cotizacion: registro(planes, cid) }).catch(() => toast("El PDF se generó, pero no se pudo guardar en el historial."));
+      if (embed) avisarCRM(mensajeCRM(planes, cid));
       toast(embed ? "✓ PDF generado y guardado en la ficha del CRM" : "✓ PDF generado y guardado en tu historial");
     } catch (err) {
       console.error(err);
@@ -517,8 +526,9 @@ ${yo.nombre}${yo.cargo ? " · " + yo.cargo : ""} · Omint`;
     const d = String(telefono || "").replace(/\D/g, "");
     const n = d ? (d.startsWith("54") ? d : "549" + d.replace(/^0/, "").replace(/^15/, "")) : "";
     window.open(n ? `https://wa.me/${n}?text=${t}` : `https://wa.me/?text=${t}`, "_blank");
-    api("guardarCotizacion", { cotizacion: { ...registro(elegidos(codigos)), via: "whatsapp" } }).catch(() => {});
-    if (embed) avisarCRM(mensajeCRM(elegidos(codigos)));
+    const cid = nuevoCid();
+    api("guardarCotizacion", { cotizacion: { ...registro(elegidos(codigos), cid), via: "whatsapp" } }).catch(() => {});
+    if (embed) avisarCRM(mensajeCRM(elegidos(codigos), cid));
   }
 
   if (!listo) {
@@ -645,7 +655,7 @@ ${yo.nombre}${yo.cargo ? " · " + yo.cargo : ""} · Omint`;
           {navigator.share && <Btn v="outline" icon={Ico.share} disabled={trabajando || (!sel.length && !mejor)} onClick={() => generar(sel.length ? sel : [mejor.codigo], true)}>Compartir</Btn>}
           <Btn v="wa" icon={Ico.wa} disabled={!sel.length && !mejor} onClick={() => whatsapp(sel.length ? sel : [mejor.codigo])}>WhatsApp</Btn>
           {embed && (
-            <Btn v="outline" icon={Ico.crm} disabled={!sel.length && !mejor} onClick={() => { avisarCRM(mensajeCRM(elegidos(sel.length ? sel : [mejor.codigo]))); api("guardarCotizacion", { cotizacion: { ...registro(elegidos(sel.length ? sel : [mejor.codigo])), via: "crm" } }).catch(() => {}); toast("✓ Guardada en la ficha del CRM"); }}>
+            <Btn v="outline" icon={Ico.crm} disabled={!sel.length && !mejor} onClick={() => { const cid = nuevoCid(); const pl = elegidos(sel.length ? sel : [mejor.codigo]); avisarCRM(mensajeCRM(pl, cid)); api("guardarCotizacion", { cotizacion: { ...registro(pl, cid), via: "crm" } }).catch(() => {}); toast("✓ Guardada en la ficha del CRM"); }}>
               Guardar en CRM
             </Btn>
           )}
