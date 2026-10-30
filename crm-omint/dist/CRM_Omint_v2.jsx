@@ -4606,8 +4606,8 @@ function CotizacionesPorVincular({ cotSync, sincronizarCotizador, conectarCotiza
     } catch (e) {
       hay = false;
     }
-    if (hay && (est === "desconectado" || est === "inicial")) sincronizarCotizador();
-  }, []);
+    if (est === "no-encontrado" || (hay && (est === "desconectado" || est === "inicial"))) sincronizarCotizador();
+  }, [cotBase && cotBase.estado]);
 
   const resultados = useMemo(() => {
     const t = stripAccents(q.trim().toLowerCase());
@@ -4619,7 +4619,7 @@ function CotizacionesPorVincular({ cotSync, sincronizarCotizador, conectarCotiza
     return cot && cot.tipo === "empresa" ? [...empresas, ...pers] : [...pers, ...empresas];
   }, [q, buscando, companies, personas, cotSync.pendientes]);
 
-  if (est === "no-encontrado" || (cotBase && cotBase.estado === "no")) {
+  if (cotBase && cotBase.estado !== "ok") {
     return (
       <CotizadorNoEncontrado
         cotBase={cotBase}
@@ -4770,7 +4770,7 @@ function CotizadorOficial({ companies, personas, preset, registrarCotizacion, sh
     };
     window.addEventListener("message", h);
     return () => window.removeEventListener("message", h);
-  }, [registrarCotizacion, showToast]);
+  }, [registrarCotizacion, showToast, origenCotizador]);
 
   const ent = link ? (link.tipo === "empresa" ? companies.find((c) => c.id === link.id) : personas.find((p) => p.id === link.id)) : null;
   const src = useMemo(() => {

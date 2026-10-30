@@ -9,7 +9,7 @@ AddDefaultCharset UTF-8
   Header set Referrer-Policy "same-origin"
 </IfModule>
 # La carpeta de instalación solo la lee api.php
-RedirectMatch 404 ^.*/(instalacion|datos)/.*$
+RedirectMatch 404 ^.*/(instalacion|datos|datos-cotizador)/.*$
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteCond %{HTTPS} off
