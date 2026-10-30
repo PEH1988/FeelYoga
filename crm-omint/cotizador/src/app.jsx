@@ -253,7 +253,6 @@ function App() {
         <div className="top-in">
           <div className="brand">
             <span>Omint</span>
-            {!EMBED && <span className="hide-sm" style={{ fontFamily: "Inter", fontWeight: 600, fontSize: 13, color: "#A9B6E0" }}>Cotizador</span>}
           </div>
           <nav className="tabs" aria-label="Secciones">
             {tabs.map(([k, l]) => (

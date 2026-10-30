@@ -179,16 +179,36 @@ function Particular({ ctx, p, setP }) {
   );
 }
 
+// Monto con separador de miles mientras se escribe ($ 350.000): se lee completo y sin confusión.
 function AporteInput({ modo, valor, onModo, onValor, reglas, label = "Aporte de obra social" }) {
   const real = modo === "bruto" ? numOr(valor) * reglas.factorAporte : (numOr(valor) / 0.03) * reglas.factorAporte;
+  const mostrado = valor === "" || valor == null ? "" : Number(valor).toLocaleString("es-AR");
   return (
-    <Field label={label} hint={numOr(valor) ? `Aporte real a salud: ${money(real)} por mes` : modo === "bruto" ? "Sueldo bruto mensual" : "Aporte de obra social del recibo (3%)"}>
+    <Field
+      label={label}
+      style={{ gridColumn: "1 / -1" }}
+      hint={numOr(valor) ? `${modo === "bruto" ? "Sueldo bruto" : "Aporte del recibo (3%)"}: ${money(valor)} · aporte real a salud: ${money(real)} por mes` : modo === "bruto" ? "Sueldo bruto mensual del recibo" : "Monto de \"Obra social 3%\" del recibo de sueldo"}
+    >
       <div className="row" style={{ gap: 6 }}>
-        <select className="select" style={{ width: 120, flexShrink: 0 }} value={modo} onChange={(ev) => onModo(ev.target.value)} aria-label="Tipo de dato">
+        <select className="select" style={{ width: 136, flexShrink: 0 }} value={modo} onChange={(ev) => onModo(ev.target.value)} aria-label="Tipo de dato">
           <option value="aporte3">Aporte 3%</option>
           <option value="bruto">Sueldo bruto</option>
         </select>
-        <input className="input tnum" type="number" min="0" inputMode="numeric" value={valor} onChange={(ev) => onValor(ev.target.value)} placeholder="$" />
+        <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
+          <span className="muted" style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", fontWeight: 600 }}>$</span>
+          <input
+            className="input tnum"
+            style={{ paddingLeft: 24, fontSize: 15, fontWeight: 600 }}
+            inputMode="numeric"
+            value={mostrado}
+            onChange={(ev) => {
+              const d = ev.target.value.replace(/\D/g, "").slice(0, 12);
+              onValor(d === "" ? "" : String(Number(d)));
+            }}
+            placeholder={modo === "bruto" ? "1.500.000" : "45.000"}
+            aria-label={modo === "bruto" ? "Sueldo bruto" : "Aporte del 3%"}
+          />
+        </div>
       </div>
     </Field>
   );

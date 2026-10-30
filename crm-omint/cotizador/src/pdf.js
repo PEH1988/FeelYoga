@@ -83,8 +83,19 @@ function chipCampana(doc, y, reglas) {
   return y + 17;
 }
 
-async function tarjetaEjecutivo(doc, y, ej) {
-  if (!ej) return y;
+// Usuario de prueba: la tarjeta muestra un ejemplo que explica qué va en cada lugar.
+const EJECUTIVO_EJEMPLO = {
+  nombre: "Nombre y apellido del ejecutivo",
+  cargo: "Cargo (ej.: Asesor Comercial)",
+  tel: "261 000 0000",
+  mail: "tu.mail@omint.com.ar",
+  wa: "https://wa.me/5492610000000",
+};
+
+async function tarjetaEjecutivo(doc, y, ej0) {
+  if (!ej0) return y;
+  const demo = ej0.usuario === "demo" || ej0.demo;
+  const ej = demo ? EJECUTIVO_EJEMPLO : ej0;
   const link = ej.wa ? (ej.wa.startsWith("http") ? ej.wa : waLink(ej.wa)) : waLink(ej.tel);
   const h = 30;
   if (y + h > 287) {
@@ -107,13 +118,22 @@ async function tarjetaEjecutivo(doc, y, ej) {
   doc.text(datos, M + 6, y + 20.5);
   if (link) {
     doc.setTextColor(...LILAC);
-    doc.textWithLink("Escaneá el QR o tocá acá para escribirme por WhatsApp", M + 6, y + 26, { url: link });
+    if (demo) doc.text("Ejemplo: el cliente escanea tu QR o toca este texto y te escribe por WhatsApp", M + 6, y + 26);
+    else doc.textWithLink("Escaneá el QR o tocá acá para escribirme por WhatsApp", M + 6, y + 26, { url: link });
     try {
-      const qr = await QRCode.toDataURL(link, { margin: 0, width: 300, color: { dark: "#0F1E52", light: "#FFFFFF" } });
+      const qr = await QRCode.toDataURL(link, { margin: 0, width: 300, color: { dark: demo ? "#9A9EB3" : "#0F1E52", light: "#FFFFFF" } });
       doc.setFillColor(255, 255, 255);
       doc.roundedRect(W - M - 27, y + 3, 24, 24, 2, 2, "F");
       doc.addImage(qr, "PNG", W - M - 25.5, y + 4.5, 21, 21);
-      doc.link(W - M - 27, y + 3, 24, 24, { url: link });
+      if (demo) {
+        // Sello "EJEMPLO" sobre el QR para que no se confunda con uno real.
+        doc.setFillColor(...NAVY);
+        doc.roundedRect(W - M - 26.5, y + 12, 23, 6, 1.5, 1.5, "F");
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(6.8);
+        doc.text("QR DE EJEMPLO", W - M - 15, y + 16.1, { align: "center" });
+      } else doc.link(W - M - 27, y + 3, 24, 24, { url: link });
     } catch (e) {
       // sin QR: queda el link
     }
@@ -236,8 +256,11 @@ export async function pdfParticular(d) {
   y = notas(doc, y, [
     ...BENEFICIOS_COMUNES,
     cart ? `Cartilla de prestadores en ${d.provincia}: ${cart}.` : null,
-    r.conIva ? `Los valores incluyen el ${String(d.reglas.iva).replace(".", ",")}% de IVA.` : "Los valores no incluyen IVA.",
-    r.aporte > 0 ? "El aporte de obra social se calcula como aporte del recibo (3%) ÷ 3% × 7,65%, o sueldo bruto × 7,65%." : null,
+    r.conIva
+      ? `Los valores incluyen el ${String(d.reglas.iva).replace(".", ",")}% de IVA.`
+      : r.condicion.key === "empleado_monotributista"
+      ? "Los valores son finales."
+      : "Los valores no incluyen IVA.",
   ]);
   await tarjetaEjecutivo(doc, y + 2, d.ejecutivo);
   pie(doc, d.vigencia, d.provincia);
@@ -283,7 +306,7 @@ export async function pdfEmpresa(d) {
   });
   y = doc.lastAutoTable.finalY + 5;
   y = notas(doc, y, [
-    "Total mensual empresa: valor con descuento menos los aportes de obra social de cada titular (aporte del recibo ÷ 3% × 7,65%, o sueldo bruto × 7,65%).",
+    "Total mensual empresa: valor con descuento menos los aportes de obra social de cada titular.",
     !d.reglas.compensarAportes && d.planes.some((p) => p.excedente > 0) ? "Si el aporte de un titular supera el valor de su grupo familiar, el excedente no se descuenta del resto de la nómina." : null,
     "Los valores no incluyen IVA.",
   ]);
