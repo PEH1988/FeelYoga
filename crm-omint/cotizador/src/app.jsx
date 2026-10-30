@@ -8,6 +8,17 @@ import { CSS, Btn, Field, Modal, Ico } from "./ui.jsx";
 const TOKEN_LS = "cot_omint_token";
 const params = new URLSearchParams(window.location.search);
 const EMBED = params.get("embed") === "crm";
+// Origen del CRM que abrió el cotizador (para avisarle aunque esté en otra dirección).
+const ORIGEN_CRM = (() => {
+  const o = params.get("origen") || "";
+  try {
+    const ref = document.referrer ? new URL(document.referrer).origin : "";
+    if (o && (!ref || ref === o)) return o;
+    return ref || window.location.origin;
+  } catch (e) {
+    return window.location.origin;
+  }
+})();
 const PREFILL = { modo: params.get("modo") === "empresas" || params.get("modo") === "empresa" ? "empresa" : "particular", nombre: params.get("nombre") || "", telefono: params.get("tel") || "", provincia: params.get("provincia") || "" };
 
 let token = "";
@@ -196,7 +207,7 @@ function App() {
       recargar: cargar,
       avisarCRM: (msg) => {
         try {
-          if (window.parent && window.parent !== window) window.parent.postMessage({ ...msg, fecha: new Date().toISOString() }, window.location.origin);
+          if (window.parent && window.parent !== window) window.parent.postMessage({ ...msg, fecha: new Date().toISOString() }, ORIGEN_CRM);
         } catch (e) {
           // fuera del CRM no hace nada
         }

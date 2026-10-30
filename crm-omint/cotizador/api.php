@@ -22,6 +22,35 @@ function out($code, $data) {
 }
 function fail($code, $msg) { out($code, ['ok' => false, 'error' => $msg]); }
 
+// CORS: el CRM puede estar en otra dirección del mismo dominio (ej. crm.midominio.com
+// y cotizador.midominio.com). Se aceptan orígenes del mismo dominio base o los
+// listados en COT_CORS_ORIGINS (config.php).
+function baseDominio($host) {
+    $host = strtolower(preg_replace('/:\d+$/', '', (string) $host));
+    $p = explode('.', $host);
+    $n = count($p);
+    if ($n <= 2) return $host;
+    // dominios tipo .com.ar / .gob.ar: base de 3 partes
+    $sld = $p[$n - 2];
+    $k = (strlen($p[$n - 1]) === 2 && in_array($sld, ['com', 'net', 'org', 'gob', 'edu', 'gov', 'co'], true)) ? 3 : 2;
+    return implode('.', array_slice($p, -$k));
+}
+$origen = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
+if ($origen !== '') {
+    $hostOrigen = parse_url($origen, PHP_URL_HOST);
+    $permitidos = defined('COT_CORS_ORIGINS') ? COT_CORS_ORIGINS : [];
+    if (in_array($origen, $permitidos, true) || ($hostOrigen && baseDominio($hostOrigen) === baseDominio($_SERVER['HTTP_HOST'] ?? ''))) {
+        header('Access-Control-Allow-Origin: ' . $origen);
+        header('Vary: Origin');
+        header('Access-Control-Allow-Methods: POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, X-Cot-Token');
+        header('Access-Control-Max-Age: 86400');
+    }
+}
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') fail(405, 'method');
 
 $DIR = COT_DATA_DIR;

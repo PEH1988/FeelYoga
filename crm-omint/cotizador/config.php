@@ -10,3 +10,7 @@ define('COT_SESSION_DAYS', 30);
 
 // Nombre que aparece en el sistema.
 define('COT_EMPRESA', 'Omint');
+
+// (Opcional) Direcciones de otros dominios que pueden usar este cotizador
+// desde el CRM. Los subdominios del mismo dominio ya están permitidos.
+// define('COT_CORS_ORIGINS', ['https://otro-dominio.com']);

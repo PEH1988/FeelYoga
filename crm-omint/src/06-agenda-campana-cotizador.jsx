@@ -612,7 +612,7 @@ function CotizadorView(props) {
 
 // Cotizaciones hechas con tu usuario en el Cotizador Omint que todavía no están
 // en ninguna ficha. Las que coinciden con una sola ficha se guardan solas.
-function CotizacionesPorVincular({ cotSync, sincronizarCotizador, conectarCotizador, vincularCotizacion, crearDesdeCotizacion, ignorarCotizacion, companies, personas }) {
+function CotizacionesPorVincular({ cotSync, sincronizarCotizador, conectarCotizador, vincularCotizacion, crearDesdeCotizacion, ignorarCotizacion, companies, personas, cotBase, detectarCotizador }) {
   const [u, setU] = useState("");
   const [c, setC] = useState("");
   const [err, setErr] = useState("");
@@ -640,6 +640,17 @@ function CotizacionesPorVincular({ cotSync, sincronizarCotizador, conectarCotiza
     const pers = personas.filter((x) => m(x.nombre) || (x.telefono || "").includes(t)).slice(0, 6).map((x) => ({ tipo: "persona", id: x.id, label: x.nombre, hint: x.obraSocial || "Paciente" }));
     return cot && cot.tipo === "empresa" ? [...empresas, ...pers] : [...pers, ...empresas];
   }, [q, buscando, companies, personas, cotSync.pendientes]);
+
+  if (est === "no-encontrado" || (cotBase && cotBase.estado === "no")) {
+    return (
+      <CotizadorNoEncontrado
+        cotBase={cotBase}
+        detectarCotizador={async (u) => {
+          if (await detectarCotizador(u)) sincronizarCotizador(true);
+        }}
+      />
+    );
+  }
 
   if (est === "desconectado" || est === "inicial") {
     return (
@@ -741,8 +752,8 @@ function CotizacionesPorVincular({ cotSync, sincronizarCotizador, conectarCotiza
   );
 }
 
-function CotizadorOficial({ companies, personas, preset, registrarCotizacion, showToast, settings }) {
-  const baseUrl = (settings && settings.cotizadorUrl) || "../cotizador/";
+function CotizadorOficial({ companies, personas, preset, registrarCotizacion, showToast, settings, cotBase, detectarCotizador }) {
+  const baseUrl = (cotBase && cotBase.url) || (settings && settings.cotizadorUrl) || "../cotizador/";
   const origenCotizador = (() => {
     try {
       return new URL(baseUrl, window.location.href).origin;
@@ -792,6 +803,7 @@ function CotizadorOficial({ companies, personas, preset, registrarCotizacion, sh
       const ent = link.tipo === "empresa" ? companies.find((c) => c.id === link.id) : personas.find((p) => p.id === link.id);
       if (ent && ent.telefono) q.set("tel", ent.telefono);
     }
+    q.set("origen", window.location.origin);
     return `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}${q.toString()}`;
   }, [link && link.tipo, link && link.id, baseUrl]);
 
@@ -806,6 +818,8 @@ function CotizadorOficial({ companies, personas, preset, registrarCotizacion, sh
   }, [busca, companies, personas]);
 
   const resumenPlanes = (d) => d.datos.planes.map((p) => `${p.plan.replace("Plan ", "")} ${money(p.aPagar)}`).join(" · ");
+
+  if (cotBase && cotBase.estado !== "ok") return <CotizadorNoEncontrado cotBase={cotBase} detectarCotizador={detectarCotizador} />;
 
   return (
     <div className="stack">
@@ -900,5 +914,48 @@ function CotizacionesList({ items }) {
         ))}
       </div>
     </div>
+  );
+}
+
+// Cuando el CRM no encuentra el cotizador: qué probó y cómo resolverlo.
+function CotizadorNoEncontrado({ cotBase, detectarCotizador }) {
+  const [url, setUrl] = useState("");
+  if (cotBase.estado === "buscando") {
+    return (
+      <Card>
+        <EmptyNote>
+          <RefreshCw size={16} className="spin" style={{ verticalAlign: -3, marginRight: 6 }} />
+          Buscando el Cotizador Omint…
+        </EmptyNote>
+      </Card>
+    );
+  }
+  return (
+    <Card title="No encuentro el Cotizador Omint" icon={AlertTriangle}>
+      <div className="stack">
+        <div className="ink2">
+          El CRM abre el cotizador que instalaste en tu hosting (la carpeta <strong>cotizador</strong> del paquete). Probé estas direcciones y en ninguna está:
+        </div>
+        <div className="tile" style={{ fontSize: 12.5 }}>
+          {cotBase.probados.map((p) => (
+            <div key={p.url} className="row between wrap" style={{ padding: "3px 0" }}>
+              <code style={{ wordBreak: "break-all" }}>{p.url}</code>
+              <span className="muted">{p.resultado}</span>
+            </div>
+          ))}
+        </div>
+        <div className="note t-info" style={{ lineHeight: 1.6 }}>
+          <strong>Cómo resolverlo:</strong>
+          <br />1. Abrí en otra pestaña la dirección donde entrás al cotizador nuevo (la pantalla azul de “Cotizador comercial”) y copiala.
+          <br />2. Pegala acá abajo y tocá <strong>Probar</strong>. Queda guardada.
+          <br />Si no lo subiste todavía: en Hostinger, subí el contenido de la carpeta <strong>cotizador</strong> del paquete a <code>public_html/cotizador</code>.
+        </div>
+        <div className="row" style={{ gap: 8 }}>
+          <input className="input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://tu-dominio.com/cotizador/" />
+          <Btn variant="primary" disabled={!url.trim()} onClick={() => detectarCotizador(url.trim())}>Probar</Btn>
+          <Btn icon={RefreshCw} onClick={() => detectarCotizador()}>Buscar de nuevo</Btn>
+        </div>
+      </div>
+    </Card>
   );
 }

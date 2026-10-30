@@ -321,7 +321,34 @@ export default function App() {
   settingsRef.current = settings;
   const sincronizandoRef = useRef(false);
 
-  const urlCotizador = (accion) => new URL(`api.php?action=${accion}`, new URL(settingsRef.current.cotizadorUrl || "../cotizador/", window.location.href)).toString();
+  // Dónde está instalado el cotizador: se prueba la dirección de Ajustes y las
+  // ubicaciones habituales (carpeta hermana, raíz del sitio, subdominio).
+  const [cotBase, setCotBase] = useState({ estado: HOSTED ? "buscando" : "no-disponible", url: null, probados: [] });
+  const cotBaseRef = useRef(cotBase);
+  cotBaseRef.current = cotBase;
+  const detectarCotizador = useCallback(async (urlManual) => {
+    setCotBase((s) => ({ ...s, estado: "buscando" }));
+    const probados = [];
+    for (const c of candidatosCotizador(urlManual || settingsRef.current.cotizadorUrl)) {
+      try {
+        const r = await fetch(new URL("api.php?action=estado", c).toString(), { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", cache: "no-store" });
+        const d = await r.json().catch(() => null);
+        if (d && d.ok && "instalado" in d) {
+          setCotBase({ estado: "ok", url: c, probados });
+          cotBaseRef.current = { estado: "ok", url: c, probados };
+          if (c !== settingsRef.current.cotizadorUrl) setSettings((s) => ({ ...s, cotizadorUrl: c }));
+          return c;
+        }
+        probados.push({ url: c, resultado: r.status === 404 ? "no existe (404)" : r.status === 401 ? "pide usuario (es el cotizador anterior)" : `respondió algo que no es el cotizador (HTTP ${r.status})` });
+      } catch (e) {
+        probados.push({ url: c, resultado: "no responde o bloquea la conexión" });
+      }
+    }
+    setCotBase({ estado: "no", url: null, probados });
+    cotBaseRef.current = { estado: "no", url: null, probados };
+    return null;
+  }, []);
+  const urlCotizador = (accion) => new URL(`api.php?action=${accion}`, cotBaseRef.current.url || new URL(settingsRef.current.cotizadorUrl || "../cotizador/", window.location.href)).toString();
   const tokenCot = () => {
     try {
       return localStorage.getItem("cot_omint_token") || "";
@@ -333,6 +360,10 @@ export default function App() {
   const sincronizarCotizador = useCallback(
     async (manual) => {
       if (!HOSTED || sincronizandoRef.current) return;
+      if (!cotBaseRef.current.url && !(await detectarCotizador())) {
+        setCotSync((s) => ({ ...s, estado: "no-encontrado" }));
+        return;
+      }
       const token = tokenCot();
       if (!token) {
         setCotSync((s) => ({ ...s, estado: "desconectado" }));
@@ -836,6 +867,8 @@ export default function App() {
                 ignorarCotizacion={ignorarCotizacion}
                 setSelectedId={setSelectedId}
                 setSelectedPersonaId={setSelectedPersonaId}
+                cotBase={cotBase}
+                detectarCotizador={detectarCotizador}
               />
             )}
             {view === "b2c" && <DashboardB2C personas={personas} waLog={waLog} go={go} setShowNewPersona={setShowNewPersona} />}

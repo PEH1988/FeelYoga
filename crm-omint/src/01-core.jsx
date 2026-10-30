@@ -991,6 +991,32 @@ const telClave = (t) => {
   return d.length >= 8 ? d.slice(-10) : "";
 };
 
+// Direcciones donde puede estar instalado el cotizador (absolutas, sin repetir).
+function candidatosCotizador(preferida) {
+  const loc = window.location;
+  const out = [];
+  const add = (u) => {
+    try {
+      let x = new URL(u, loc.href).toString();
+      if (!x.endsWith("/")) x += "/";
+      if (!out.includes(x)) out.push(x);
+    } catch (e) {
+      // dirección inválida: se ignora
+    }
+  };
+  if (preferida) add(preferida);
+  add("../cotizador/");
+  add("/cotizador/");
+  add("./cotizador/");
+  const partes = loc.hostname.split(".");
+  if (partes.length >= 2 && !/^\d+$/.test(partes[partes.length - 1])) {
+    const base = /^(crm|www|app)$/i.test(partes[0]) && partes.length > 2 ? partes.slice(1).join(".") : loc.hostname;
+    add(`${loc.protocol}//cotizador.${base}/`);
+    add(`${loc.protocol}//${base}/cotizador/`);
+  }
+  return out;
+}
+
 // Convierte una cotización guardada en el cotizador al formato que registra el CRM.
 function cotizacionAMensaje(q) {
   return {
