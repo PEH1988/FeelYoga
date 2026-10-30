@@ -70,6 +70,7 @@ const html = `<!doctype html>
 const GUARD = "<?php http_response_code(404); exit; ?>\n";
 fs.mkdirSync(path.join(out, "instalacion"), { recursive: true });
 fs.writeFileSync(path.join(out, "index.html"), html);
+fs.writeFileSync(path.join(out, "robots.txt"), "User-agent: *\nDisallow: /\n");
 // index.php: reemplaza al index.php del cotizador anterior (si se sube en la misma carpeta).
 fs.writeFileSync(path.join(out, "index.php"), "<?php\nheader('Content-Type: text/html; charset=utf-8');\nheader('Cache-Control: no-cache');\nreadfile(__DIR__ . '/index.html');\n");
 fs.copyFileSync(path.join(dir, "cotizador", "api.php"), path.join(out, "api.php"));

@@ -5,6 +5,7 @@ AddDefaultCharset UTF-8
   Require all denied
 </FilesMatch>
 <IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow"
   Header set X-Content-Type-Options "nosniff"
   Header set Referrer-Policy "same-origin"
 </IfModule>

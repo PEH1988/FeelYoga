@@ -58,6 +58,7 @@ const html = `<!doctype html>
 
 fs.mkdirSync(out, { recursive: true });
 fs.writeFileSync(path.join(out, "index.html"), html);
+fs.writeFileSync(path.join(out, "robots.txt"), "User-agent: *\nDisallow: /\n");
 fs.copyFileSync(path.join(dir, "web", "api.php"), path.join(out, "api.php"));
 if (!fs.existsSync(path.join(out, "config.php"))) fs.copyFileSync(path.join(dir, "web", "config.php"), path.join(out, "config.php"));
 fs.copyFileSync(path.join(dir, "web", "htaccess.txt"), path.join(out, ".htaccess"));
