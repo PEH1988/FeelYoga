@@ -19,15 +19,15 @@ HUBSPOT_URL = "https://app.hubspot.com/academy/achievements/zlnygxxg/es/1/pablo-
 CV = {
   "es": {
     "lang": "es",
-    "title": "Project Coordinator | BI Analyst | Account Manager",
+    "title": "Operations Analyst | Data Analyst | Account Manager",
     "loc": "Mendoza, Argentina",
     "web_label": "Web / Portfolio", "web_ph": "[agregar link de la web]",
     "h_profile": "Perfil profesional", "h_comp": "Competencias clave", "h_exp": "Experiencia laboral",
     "h_projects": "Proyectos", "h_edu": "Formación y certificaciones", "h_tools": "Herramientas", "h_lang": "Idiomas",
     "profile": "",
     "comp": [
-      ("Coordinación de proyectos", "Agile, Scrum, Kanban y Waterfall; planificación, seguimiento, cierre y gestión de stakeholders."),
-      ("Business Intelligence", "dashboards de KPIs en Power BI, Qlik Sense y Oracle BI; SQL y modelado de datos."),
+      ("Operaciones y procesos", "relevamiento, implementación y QA de herramientas internas; automatización con IA; Agile y Scrum."),
+      ("Análisis de datos", "SQL, validación y calidad de datos; dashboards de KPIs en Power BI, Qlik Sense y Oracle BI."),
       ("Gestión de cuentas", "grandes cuentas corporativas, retención, upselling y cross-selling."),
       ("Liderazgo", "equipo comercial regional y coordinación entre áreas."),
     ],
@@ -53,20 +53,20 @@ CV = {
             ("Certificación del software de Ventas de HubSpot", "HubSpot Academy", "2026", HUBSPOT_URL),
             ("Analista de Datos", "Jupi Digital", "2024 – 2025", JUPI_URL),
             ("Tecnicatura en Comercialización", "Universidad Siglo 21", "2016 – 2020", "")],
-    "tools": "Power BI, Qlik Sense, Oracle BI, SQL, Snowflake, Excel avanzado, Dynamics 365, HubSpot, Salesforce, Asana, Google Workspace",
+    "tools": "SQL, Excel avanzado, Power BI, Qlik Sense, Oracle BI, Snowflake, Claude e IA generativa, Dynamics 365, HubSpot, Salesforce, Asana, Google Workspace",
     "langs": "Español (nativo) · Inglés (intermedio avanzado, B2)",
   },
   "en": {
     "lang": "en",
-    "title": "Project Coordinator | BI Analyst | Account Manager",
+    "title": "Operations Analyst | Data Analyst | Account Manager",
     "loc": "Mendoza, Argentina",
     "web_label": "Website / Portfolio", "web_ph": "[add website link]",
     "h_profile": "Professional summary", "h_comp": "Core competencies", "h_exp": "Work experience",
     "h_projects": "Projects", "h_edu": "Education & certifications", "h_tools": "Tools", "h_lang": "Languages",
     "profile": "",
     "comp": [
-      ("Project coordination", "Agile, Scrum, Kanban and Waterfall; planning, tracking, closure and stakeholder management."),
-      ("Business Intelligence", "KPI dashboards in Power BI, Qlik Sense and Oracle BI; SQL and data modelling."),
+      ("Operations & processes", "requirements, implementation and QA of internal tools; AI-assisted automation; Agile and Scrum."),
+      ("Data analysis", "SQL, data validation and quality; KPI dashboards in Power BI, Qlik Sense and Oracle BI."),
       ("Account management", "key corporate accounts, client retention, upselling and cross-selling."),
       ("Leadership", "regional sales team and cross-functional coordination."),
     ],
@@ -92,7 +92,7 @@ CV = {
             ("HubSpot Sales Software Certification", "HubSpot Academy", "2026", HUBSPOT_URL),
             ("Data Analyst", "Jupi Digital", "2024 – 2025", JUPI_URL),
             ("Associate Degree in Marketing & Sales", "Universidad Siglo 21", "2016 – 2020", "")],
-    "tools": "Power BI, Qlik Sense, Oracle BI, SQL, Snowflake, advanced Excel, Dynamics 365, HubSpot, Salesforce, Asana, Google Workspace",
+    "tools": "SQL, advanced Excel, Power BI, Qlik Sense, Oracle BI, Snowflake, Claude & generative AI, Dynamics 365, HubSpot, Salesforce, Asana, Google Workspace",
     "langs": "Spanish (native) · English (upper-intermediate, B2)",
   },
 }
@@ -231,6 +231,36 @@ _b["projects"] = [
 ]
 _b["tools"] = "SQL, MySQL, Snowflake, Power BI (DAX, Power Query), Qlik Sense, Oracle BI, Excel avanzado, Dynamics 365, React, Asana, Google Workspace"
 CV["es-bi"] = _b
+
+# Tailored version for Pasito (Operations Analyst, employee benefits / AI workspace).
+# Only confirmed experience: no HRIS, SSO, API or webhook work is claimed. Not published.
+_ps = copy.deepcopy(CV["en"])
+_ps["title"] = "Operations Analyst | Data Analyst | Account Manager"
+_ps["comp"] = [
+  ("Implementation & QA", "requirements gathering, setup, testing and rollout of internal tools; every configuration checked before going live."),
+  ("Data validation", "QA of AI model outputs against rubrics; employee census (payroll roster) templates for group health quotes; SQL, Excel, Power Query."),
+  ("AI-assisted workflows", "daily use of Claude and generative AI; prompt engineering and LLM evaluation; a CRM that uses Claude with an MCP connector."),
+  ("Automation", "quoting tool that builds each proposal in 1 to 2 minutes and saves it to the client record; form, email and WhatsApp integrations."),
+  ("Employee benefits", "10+ years in group health and workers' compensation insurance: employer accounts, brokers, renewals and claims."),
+  ("Bridge between teams", "connected account managers, clients and operations teams (Collections, Claims, Prevention)."),
+]
+_ps["jobs"] = [
+  {"t": "SMB B2B Account Executive", "org": "Grupo Omint", "ind": "Group health plans", "d": "June 2026 – Present",
+   "b": ["Group health plans for SMB employers: quotes built from employee census files, proposals, negotiation and renewals.",
+         "Built and rolled out a custom CRM and quoting tool end to end: every proposal is saved automatically to the client record."]},
+  {"t": "Account Manager", "org": "Grupo América", "ind": "Media", "d": "May 2025 – June 2026",
+   "b": ["Main point of contact for a corporate account portfolio; KPI tracking and reporting."]},
+  {"t": "Data Analyst / AI Trainer", "org": "Outlier", "ind": "Technology – AI", "d": "July 2024 – April 2025",
+   "b": ["Reviewed and rated LLM outputs for accuracy, consistency and language quality; flagged data errors and inconsistencies using evaluation rubrics."]},
+  {"t": "Workers' Compensation (ART) Manager", "org": "Federación Patronal Seguros", "ind": "Insurance", "d": "April 2016 – January 2023",
+   "b": ["Led the regional workers' compensation unit (team of 6) as the bridge between employer clients, brokers and the Collections, Claims and Prevention teams.",
+         "Coordinated tenders, renewals and claims for employer accounts; applied internal controls and kept account records in Dynamics 365.",
+         "Built management reports and dashboards in Oracle BI on portfolio, retention and collections."]},
+  {"t": "Commercial Analyst", "org": "Federación Patronal Seguros", "ind": "", "d": "November 2015 – April 2016",
+   "b": ["Client data analysis for risk assessment and KPI reporting."]},
+]
+_ps["tools"] = "SQL, advanced Excel, Power Query, Power BI, Claude & generative AI, Asana, Planner, Microsoft Teams, SharePoint, Dynamics 365, HubSpot, Google Workspace"
+CV["en-pasito"] = _ps
 
 def e(s): return html.escape(s)
 

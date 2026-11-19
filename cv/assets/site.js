@@ -17,7 +17,7 @@
   /* English copy. Keys match data-i18n attributes in the pages. */
   var EN = {
     /* home */
-    'home.sub': 'Project Coordinator | BI Analyst | Account Manager',
+    'home.sub': 'Operations Analyst | Data Analyst | Account Manager',
     'home.tag': 'Remote · Argentina · <em>GMT-3</em>',
     'home.cue': 'Scroll down, or tap Menu to get to know me',
 
@@ -63,7 +63,7 @@
     'sk.k': 'Skills',
     'sk.h': 'I plan, analyse and <em>grow accounts.</em>',
     'sk.lead': 'I break work into clear stages, measure how each initiative performs and look after the client relationship.',
-    'sk.p1': 'Needs & requirements gathering', 'sk.p2': 'Scoping & planning', 'sk.p3': 'Progress tracking & rollout', 'sk.p4': 'Stakeholder management', 'sk.p5': 'Cross-functional coordination',
+    'sk.p1': 'Needs & requirements gathering', 'sk.p2': 'Scoping & planning', 'sk.p3': 'Progress tracking & rollout', 'sk.p4': 'Stakeholder management', 'sk.p5': 'Cross-functional coordination', 'sk.p6': 'Implementation & QA before every launch', 'sk.p7': 'AI-powered process automation', 'sk.b8': 'Data validation & quality',
     'sk.a1': 'Portfolio & key account management', 'sk.a2': 'Long-term relationships & retention',
     'sk.a3': 'Upselling & cross-selling', 'sk.a7': 'Debt recovery & payment plans', 'sk.a4': 'Proposals, negotiation & closing',
     'sk.a5': 'B2B prospecting (hunter)', 'sk.a6': 'Pipeline & CRM', 'sk.a6s': 'Learning',
@@ -91,11 +91,11 @@
     'pf.k': 'Portfolio',
     'pf.lead': 'Three perspectives, one goal: getting things done. I take projects from idea to rollout, use data to decide and look after the client relationship.',
     'pf.pm.w': 'tools taken from idea to production',
-    'pf.pm.t': 'CRM, web quoting tool and lead-generation landing page: I coordinated requirements gathering, scoping, design, testing and rollout for each one. Google Project Management Certificate.',
+    'pf.pm.t': 'CRM, web quoting tool and lead-generation landing page: they automate manual work for the sales team. I gathered requirements, tested every setup before launch and rolled them out with the help of AI.',
     'pf.am.w': 'years managing B2B accounts',
     'pf.am.t': 'Corporate and strategic accounts, brokers and commercial partners in insurance, healthcare and media. Long-term relationships, retention, debt recovery, upselling and cross-selling.',
     'pf.ba.w': 'records analysed in a single dashboard',
-    'pf.ba.t': 'Business Intelligence: KPI dashboards in Power BI (DAX, Power Query), Qlik Sense and SQL. I turn complex numbers into clear recommendations.',
+    'pf.ba.t': 'Data analysis and validation: KPI dashboards in Power BI (DAX, Power Query), Qlik Sense and SQL. I turn complex numbers into clear recommendations.',
     'pf.p1.w': 'IT support tickets analysed',
     'pf.p1.1': 'The IT team wanted to know where to improve its service. I built an interactive report with operational KPIs in DAX (satisfaction, days open, tickets per agent), a star schema and filters by year, month and agent.',
     'pf.live': 'View live dashboard →',
@@ -128,7 +128,7 @@
 
   var ES_UI = { more: 'Ver más', less: 'Ver menos', next: 'Siguiente', menu: 'Menú', close: 'Cerrar', scroll: 'Scroll', invert: 'Invertir colores', normal: 'Colores originales' };
   // bump when the CV PDFs are regenerated, so browsers and the host never serve an old copy
-  var CV_VERSION = '20261021b';
+  var CV_VERSION = '20261119a';
   var MODE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 2.5a9.5 9.5 0 0 1 0 19z" fill="currentColor"/></svg>';
   var GLOBE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c3 3.2 3 15.8 0 19M12 2.5c-3 3.2-3 15.8 0 19"/></svg>';
 
