@@ -232,38 +232,6 @@ _b["projects"] = [
 _b["tools"] = "SQL, MySQL, Snowflake, Power BI (DAX, Power Query), Qlik Sense, Oracle BI, Excel avanzado, Dynamics 365, React, Asana, Google Workspace"
 CV["es-bi"] = _b
 
-# Tailored version for "Analista de Planeamiento, Control y Gestión Comercial" (Idílica
-# Deco / Fashion Lab). Pablo confirmed forecasts, budget/goals with deviation analysis
-# and cash flow; no paid-media experience is claimed. Not published on the site.
-_pl = copy.deepcopy(CV["es"])
-_pl["title"] = "Planeamiento y Control de Gestión | Análisis Comercial | Liderazgo de Equipos"
-_pl["comp"] = [
-  ("Planeamiento y control de gestión", "presupuestos y metas comerciales, forecasts, análisis de cash flow, seguimiento real vs. objetivo y desvíos."),
-  ("Reportes y KPIs", "reportes de gestión y KPIs comerciales en Excel y Google Sheets avanzado, Power BI, Qlik Sense y Oracle BI."),
-  ("Liderazgo comercial", "equipo regional de 6 personas con foco en resultados; trabajo transversal con Cobranzas, Siniestros y Prevención."),
-  ("Automatización de procesos", "CRM propio con forecast del pipeline, cotizador automatizado e integración de formularios con email y WhatsApp."),
-  ("Visión de negocio", "más de 10 años en seguros, salud y medios, con cartera de clientes PyME."),
-]
-_pl["jobs"] = [
-  {"t": "Ejecutivo Comercial B2B PyME", "org": "Grupo Omint", "ind": "Medicina prepaga", "d": "Junio 2026 – Actualidad",
-   "b": ["Cartera de clientes PyME: propuestas comerciales, negociación y renovaciones.",
-         "Desarrollé un CRM propio con forecast ponderado del pipeline y un cotizador que genera cada propuesta en 1 a 2 minutos."]},
-  {"t": "Account Manager", "org": "Grupo América", "ind": "Medios", "d": "Mayo 2025 – Junio 2026",
-   "b": ["Reportes de resultados y seguimiento de KPIs comerciales de una cartera de cuentas corporativas."]},
-  {"t": "Analista de Datos / IA Trainer", "org": "Outlier", "ind": "Tecnología – IA", "d": "Julio 2024 – Abril 2025",
-   "b": ["Análisis y control de calidad de datos con criterios de evaluación y métricas de desempeño."]},
-  {"t": "Jefe de ART", "org": "Federación Patronal Seguros", "ind": "Sector seguros", "d": "Abril 2016 – Enero 2023",
-   "b": ["Lideré la unidad ART regional con un equipo de 6 personas, con foco en metas comerciales y retención de cartera.",
-         "Seguimiento de presupuesto y metas: real vs. objetivo, forecasts y análisis de desvíos.",
-         "Análisis de cobranzas y cash flow; recupero de deuda y planes de pago.",
-         "Reportes de gestión y KPIs de cartera, siniestralidad y retención en Oracle BI."]},
-  {"t": "Analista Comercial", "org": "Federación Patronal Seguros", "ind": "", "d": "Noviembre 2015 – Abril 2016",
-   "b": ["Análisis de clientes para evaluación de riesgos y reporting de KPIs."]},
-]
-_pl["edu"] = [CV["es"]["edu"][3]] + CV["es"]["edu"][:3]   # the Comercialización degree first
-_pl["tools"] = "Excel avanzado, Google Sheets, Power BI, Qlik Sense, Oracle BI, SQL, Microsoft Dynamics 365, HubSpot, Google Workspace"
-CV["es-planeamiento"] = _pl
-
 def e(s): return html.escape(s)
 
 def render(d):

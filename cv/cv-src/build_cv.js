@@ -8,8 +8,7 @@ const { execFileSync } = require('child_process');
   for (const [code, out] of [['es', 'Pablo-Hidalgo-CV-ES.pdf'], ['en', 'Pablo-Hidalgo-CV-EN.pdf'],
                             ['es-contratos', 'cv-src/aplicaciones/Pablo-Hidalgo-CV-Analista-de-Contratos.pdf'],
                             ['en-ey', 'cv-src/aplicaciones/Pablo-Hidalgo-CV-EY-Reporting-Analyst.pdf'],
-                            ['es-bi', 'cv-src/aplicaciones/Pablo-Hidalgo-CV-Analista-Datos-BI.pdf'],
-                            ['es-planeamiento', 'cv-src/aplicaciones/Pablo-Hidalgo-CV-Planeamiento-Control-Gestion.pdf']]) {
+                            ['es-bi', 'cv-src/aplicaciones/Pablo-Hidalgo-CV-Analista-Datos-BI.pdf']]) {
     const p = await b.newPage();
     // fetch Google Fonts with curl so it works behind a proxy too
     await p.route(/fonts\.(googleapis|gstatic)\.com/, r => {
