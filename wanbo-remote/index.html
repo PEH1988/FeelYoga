@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wanbo Remote</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0b0f; --panel:#14141b; --panel-2:#1c1c26; --line:#2a2a37;
+  --text:#ecebf3; --muted:#8c8aa0; --accent:#ffb547; --accent-2:#ff7a45;
+  --ok:#4ade80; --bad:#f87171; --radius:22px;
+  --beam:radial-gradient(1200px 500px at 15% -10%, rgba(255,181,71,.13), transparent 60%);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:"Space Grotesk",system-ui,sans-serif}
+body{min-height:100vh;background-image:var(--beam);background-attachment:fixed}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input{font:inherit;color:var(--text)}
+.wrap{max-width:1280px;margin:0 auto;padding:20px 16px 40px}
+
+/* Header */
+header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:12px;margin-right:auto}
+.logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;box-shadow:0 8px 30px rgba(255,140,60,.35)}
+.brand h1{font-size:20px;margin:0;letter-spacing:-.02em}
+.brand small{display:block;color:var(--muted);font-size:12px;font-weight:400}
+.conn{display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);
+  border-radius:999px;padding:6px 6px 6px 14px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--bad);box-shadow:0 0 0 4px rgba(248,113,113,.15)}
+.dot.on{background:var(--ok);box-shadow:0 0 0 4px rgba(74,222,128,.15)}
+.conn input{background:transparent;border:0;outline:0;width:150px;min-width:0}
+@media (max-width:520px){.conn{flex:1;min-width:0}.conn input{flex:1;width:auto}}
+.pill{padding:8px 14px;border-radius:999px;background:var(--panel-2);font-size:14px;font-weight:500;transition:.15s}
+.pill:hover{background:#262633}
+.pill.primary{background:var(--accent);color:#1a1205}
+.pill.primary:hover{filter:brightness(1.08)}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:1fr 360px;gap:20px}
+@media (max-width:960px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 14px;font-weight:500;
+  display:flex;align-items:center;gap:8px}
+.card h2 .sp{margin-left:auto}
+
+/* Screen */
+.screen{position:relative;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#050507;border:1px solid var(--line);
+  cursor:crosshair;user-select:none}
+.screen img{width:100%;height:100%;object-fit:contain;display:block;opacity:0;transition:opacity .3s}
+.screen img.ready{opacity:1}
+.screen .empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);padding:20px}
+.screen .empty b{color:var(--text);display:block;font-size:18px;margin-bottom:6px}
+.ripple{position:absolute;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:2px solid var(--accent);
+  animation:rip .5s ease-out forwards;pointer-events:none}
+@keyframes rip{from{transform:scale(.3);opacity:1}to{transform:scale(1.6);opacity:0}}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);text-transform:none;letter-spacing:0}
+.switch{width:38px;height:22px;border-radius:999px;background:var(--panel-2);position:relative;transition:.2s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--muted);transition:.2s}
+.switch.on{background:rgba(255,181,71,.3)}.switch.on::after{left:19px;background:var(--accent)}
+.meta{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:var(--muted)}
+.meta span b{color:var(--text);font-weight:500}
+
+/* Send bar */
+.send{display:flex;gap:8px;margin-top:14px}
+.send input{flex:1;min-width:0;background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;outline:0}
+.send input:focus{border-color:var(--accent)}
+
+/* Remote */
+.remote{display:flex;flex-direction:column;gap:18px;align-items:center}
+.toprow{display:flex;justify-content:space-between;width:100%}
+.round{width:52px;height:52px;border-radius:50%;background:var(--panel-2);display:grid;place-items:center;transition:.12s;border:1px solid var(--line)}
+.round:hover{background:#262633}.round:active{transform:scale(.92)}
+.round.power{color:var(--bad)}
+.dpad{position:relative;width:240px;height:240px;border-radius:50%;
+  background:radial-gradient(circle at 50% 40%,#22222d,#16161d);border:1px solid var(--line);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.04),0 20px 50px rgba(0,0,0,.45)}
+.dpad button{position:absolute;display:grid;place-items:center;color:var(--muted);transition:.12s}
+.dpad button:hover{color:var(--text)}
+.dpad button:active,.dpad button.hit{color:var(--accent)}
+.dpad .u{top:0;left:30%;width:40%;height:30%}.dpad .d{bottom:0;left:30%;width:40%;height:30%}
+.dpad .l{left:0;top:30%;width:30%;height:40%}.dpad .r{right:0;top:30%;width:30%;height:40%}
+.dpad .ok{top:30%;left:30%;width:40%;height:40%;border-radius:50%;background:linear-gradient(145deg,#2b2b38,#1d1d27);
+  color:var(--text);font-weight:600;border:1px solid var(--line);box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.dpad .ok:active,.dpad .ok.hit{background:linear-gradient(145deg,var(--accent),var(--accent-2));color:#1a1205}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
+.key{height:48px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line);display:flex;align-items:center;
+  justify-content:center;gap:8px;font-size:14px;transition:.12s}
+.key:hover{background:#262633}.key:active,.key.hit{transform:scale(.96);border-color:var(--accent)}
+.vol{width:100%;display:flex;align-items:center;gap:10px}
+.vol input[type=range]{flex:1;accent-color:var(--accent)}
+.vol .n{width:28px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
+.hint{font-size:12px;color:var(--muted);text-align:center;line-height:1.6}
+kbd{background:var(--panel-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 6px;font-size:11px;font-family:inherit}
+
+/* Apps */
+.apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.app{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:14px;border-radius:16px;background:var(--panel-2);
+  border:1px solid var(--line);text-align:left;transition:.15s;min-width:0}
+.app:hover{transform:translateY(-2px);border-color:#3a3a4a}
+.app .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:700;font-size:17px;color:#fff}
+.app .nm{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.app .pk{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.app.fav{outline:1px solid rgba(255,181,71,.4)}
+.search{background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;outline:0;font-size:13px;width:160px;
+  text-transform:none;letter-spacing:0}
+.full{grid-column:1/-1}
+
+/* Toast & modal */
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#22222d;border:1px solid var(--line);
+  padding:12px 18px;border-radius:14px;opacity:0;transition:.25s;pointer-events:none;font-size:14px;max-width:90vw;z-index:20}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.toast.err{border-color:var(--bad)}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:var(--radius);padding:24px;max-width:520px;width:calc(100% - 32px)}
+dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
+dialog h3{margin:0 0 6px}
+dialog ol{padding-left:20px;color:var(--muted);line-height:1.7;font-size:14px}
+dialog ol b{color:var(--text)}
+.found{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.found button{text-align:left;padding:12px 14px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line)}
+.found button:hover{border-color:var(--accent)}
+svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo"><svg viewBox="0 0 24 24" style="color:#1a1205"><rect x="2" y="7" width="15" height="10" rx="2"/><circle cx="9.5" cy="12" r="2.5"/><path d="M17 10l5-3v10l-5-3"/></svg></div>
+      <div><h1>Wanbo Remote</h1><small id="subtitle">T2 Ultra · sin conectar</small></div>
+    </div>
+    <div class="conn">
+      <span class="dot" id="dot"></span>
+      <input id="host" placeholder="192.168.1.50" autocomplete="off" spellcheck="false">
+      <button class="pill" id="scan">Buscar</button>
+      <button class="pill primary" id="connect">Conectar</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Pantalla
+        <span class="sp toggle">En vivo <span class="switch" id="live"></span></span>
+      </h2>
+      <div class="screen" id="screen">
+        <img id="shot" alt="">
+        <div class="empty" id="empty"><div><b>Vista previa del proyector</b>Activa «En vivo» para ver la pantalla.<br>Haz clic para tocar · arrastra para deslizar.</div></div>
+      </div>
+      <div class="meta" id="meta"></div>
+      <form class="send" id="sendForm">
+        <input id="sendInput" placeholder="Escribe texto o pega un enlace (YouTube, web…) y pulsa Enter" autocomplete="off">
+        <button class="pill primary" type="submit">Enviar</button>
+      </form>
+    </section>
+
+    <aside class="card remote">
+      <div class="toprow">
+        <button class="round power" data-key="power" title="Encender / apagar"><svg viewBox="0 0 24 24"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/></svg></button>
+        <button class="round" data-key="settings" title="Ajustes"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+        <button class="round" data-key="mute" title="Silenciar"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></svg></button>
+      </div>
+
+      <div class="dpad" id="dpad">
+        <button class="u" data-key="up"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button>
+        <button class="l" data-key="left"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <button class="ok" data-key="ok">OK</button>
+        <button class="r" data-key="right"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button class="d" data-key="down"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+
+      <div class="row">
+        <button class="key" data-key="back"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>Atrás</button>
+        <button class="key" data-key="home"><svg viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</button>
+        <button class="key" data-key="menu"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Menú</button>
+      </div>
+      <div class="row">
+        <button class="key" data-key="rewind"><svg viewBox="0 0 24 24"><path d="M11 19l-9-7 9-7zM22 19l-9-7 9-7z"/></svg></button>
+        <button class="key" data-key="play_pause"><svg viewBox="0 0 24 24"><path d="M6 4l10 8-10 8z"/><path d="M19 5v14"/></svg></button>
+        <button class="key" data-key="ffwd"><svg viewBox="0 0 24 24"><path d="M13 19l9-7-9-7zM2 19l9-7-9-7z"/></svg></button>
+      </div>
+
+      <div class="vol">
+        <button class="round" data-key="vol_down" style="width:40px;height:40px"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+        <input type="range" id="volume" min="0" max="15" value="0">
+        <button class="round" data-key="vol_up" style="width:40px;height:40px"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+        <span class="n" id="volN">–</span>
+      </div>
+
+      <div class="hint">Teclado: <kbd>←↑→↓</kbd> navegar · <kbd>Enter</kbd> OK · <kbd>Esc</kbd> atrás · <kbd>H</kbd> inicio · <kbd>Espacio</kbd> play · <kbd>+</kbd>/<kbd>−</kbd> volumen · <kbd>T</kbd> escribir</div>
+    </aside>
+
+    <section class="card full">
+      <h2>Apps <span class="sp"></span><input class="search" id="filter" placeholder="Filtrar…"><button class="pill" id="reloadApps">Actualizar</button></h2>
+      <div class="apps" id="apps"><div class="hint" style="text-align:left">Conecta el proyector para ver sus apps.</div></div>
+    </section>
+  </div>
+</div>
+
+<dialog id="help">
+  <h3>Conectar tu Wanbo T2 Ultra</h3>
+  <p style="color:var(--muted);margin:0 0 8px;font-size:14px">Se controla por <b style="color:var(--text)">ADB en red</b>. Solo hace falta activarlo una vez:</p>
+  <ol>
+    <li>En el proyector: <b>Ajustes → Acerca de</b> y pulsa 7 veces sobre <b>Número de compilación</b>.</li>
+    <li>Vuelve a Ajustes → <b>Opciones de desarrollador</b> y activa <b>Depuración USB / ADB en red</b>.</li>
+    <li>Busca la IP del proyector en <b>Ajustes → Red</b> (o pulsa «Buscar» aquí).</li>
+    <li>Al conectar por primera vez, acepta <b>«Permitir depuración»</b> en la pantalla del proyector.</li>
+  </ol>
+  <div class="found" id="found"></div>
+  <div style="display:flex;justify-content:flex-end;gap:8px"><button class="pill" onclick="help.close()">Cerrar</button></div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const state = { connected:false, live:false, apps:[], favs: load('favs', []), size:null };
+function load(k, d){ try { return JSON.parse(localStorage.getItem('wr_'+k)) ?? d } catch { return d } }
+function store(k, v){ try { localStorage.setItem('wr_'+k, JSON.stringify(v)) } catch {} }
+
+async function api(path, body){
+  const r = await fetch('/api/'+path, body===undefined ? {} : {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  const ct = r.headers.get('content-type')||'';
+  const data = ct.includes('json') ? await r.json() : await r.blob();
+  if(!r.ok) throw new Error(data.error || data.message || ('Error '+r.status));
+  return data;
+}
+let tt; function toast(msg, err){ const t=$('#toast'); t.textContent=msg; t.className='toast show'+(err?' err':''); clearTimeout(tt); tt=setTimeout(()=>t.className='toast',2600) }
+
+/* ---------- conexión ---------- */
+$('#host').value = load('host','');
+async function connect(host){
+  host = (host||$('#host').value).trim(); if(!host) return help.showModal();
+  $('#host').value = host; store('host', host);
+  toast('Conectando a '+host+'… acepta el aviso en el proyector si aparece');
+  try { await api('connect', {host}); toast('Conectado ✓'); await refresh(); loadApps(); }
+  catch(e){ toast(e.message, true); setTimeout(refresh, 3000) }
+}
+$('#connect').onclick = () => connect();
+$('#host').onkeydown = e => { if(e.key==='Enter') connect() };
+$('#scan').onclick = async () => {
+  help.showModal(); const f=$('#found'); f.innerHTML='<div class="hint">Buscando dispositivos con ADB en tu red…</div>';
+  try{
+    const r = await api('discover');
+    f.innerHTML = r.found.length ? '' : `<div class="hint">No encontré nada en ${r.subnet}. Revisa que el ADB en red esté activado.</div>`;
+    r.found.forEach(ip => { const b=document.createElement('button'); b.innerHTML=`<b>${ip}</b> <span style="color:var(--muted)">· puerto 5555 abierto</span>`; b.onclick=()=>{help.close();connect(ip)}; f.appendChild(b) });
+  }catch(e){ f.innerHTML=`<div class="hint">${e.message}</div>` }
+};
+
+async function refresh(){
+  try{
+    const s = await api('status');
+    state.connected = !!s.connected;
+    $('#dot').classList.toggle('on', state.connected);
+    $('#subtitle').textContent = state.connected ? `${s.model||'Proyector'} · Android ${s.android||'?'}` : (s.serial ? 'Reconectando…' : 'T2 Ultra · sin conectar');
+    if(s.serial && !$('#host').value) $('#host').value = s.serial.replace(':5555','');
+    $('#meta').innerHTML = state.connected ? `<span>IP <b>${s.serial}</b></span><span>Estado <b>${s.awake?'Encendido':'En reposo'}</b></span>${s.foreground?`<span>En pantalla <b>${nameOf(s.foreground)}</b></span>`:''}` : '';
+    if(s.volume){ const v=$('#volume'); v.min=s.volume.min; v.max=s.volume.max; if(!volDragging) v.value=s.volume.value; $('#volN').textContent=s.volume.value }
+    if(state.connected && !state.apps.length) loadApps();
+  }catch(e){ $('#dot').classList.remove('on') }
+}
+setInterval(refresh, 5000); refresh();
+
+/* ---------- teclas ---------- */
+async function key(k, el){
+  if(el){ el.classList.add('hit'); setTimeout(()=>el.classList.remove('hit'),140) }
+  try{ await api('key', {key:k}); if(state.live) setTimeout(grab, 350) } catch(e){ toast(e.message, true) }
+}
+document.querySelectorAll('[data-key]').forEach(b => {
+  let timer, rep;
+  const start = e => { e.preventDefault(); key(b.dataset.key, b);
+    if(['up','down','left','right','vol_up','vol_down'].includes(b.dataset.key))
+      timer=setTimeout(()=>rep=setInterval(()=>key(b.dataset.key,b),140),450) };
+  const stop = () => { clearTimeout(timer); clearInterval(rep) };
+  b.addEventListener('pointerdown', start); ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev, stop));
+});
+const KB = {ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',Enter:'ok',Escape:'back',Backspace:'back',
+  h:'home',H:'home',m:'menu',M:'menu',' ':'play_pause','+':'vol_up','=':'vol_up','-':'vol_down',p:'power',P:'power'};
+document.addEventListener('keydown', e => {
+  if(e.target.tagName==='INPUT' || e.metaKey || e.ctrlKey || e.altKey) return;
+  if(e.key==='t'||e.key==='T'){ e.preventDefault(); return $('#sendInput').focus() }
+  const k = KB[e.key]; if(!k) return; e.preventDefault();
+  const map = {up:'.u',down:'.d',left:'.l',right:'.r',ok:'.ok'}; key(k, map[k] ? $('#dpad '+map[k]) : document.querySelector(`[data-key="${k}"]`));
+});
+
+/* ---------- volumen ---------- */
+let volDragging=false, volT;
+$('#volume').oninput = e => { volDragging=true; $('#volN').textContent=e.target.value; clearTimeout(volT);
+  volT=setTimeout(async()=>{ try{ await api('volume',{value:+e.target.value}) }catch(err){ toast(err.message,true) } volDragging=false },150) };
+
+/* ---------- texto / enlaces ---------- */
+$('#sendForm').onsubmit = async e => {
+  e.preventDefault(); const v=$('#sendInput').value.trim(); if(!v) return;
+  try{
+    if(/^(https?:\/\/|www\.)/i.test(v)){ await api('url',{url: v.startsWith('www.')?'https://'+v:v}); toast('Abriendo enlace en el proyector') }
+    else { await api('text',{text:v}); toast('Texto enviado') }
+    $('#sendInput').value=''; $('#sendInput').blur(); if(state.live) setTimeout(grab,600);
+  }catch(err){ toast(err.message,true) }
+};
+
+/* ---------- pantalla en vivo ---------- */
+let busy=false, liveT;
+async function grab(){
+  if(busy || !state.connected) return; busy=true;
+  try{ const blob=await api('screen'); const img=$('#shot'); const old=img.src; img.src=URL.createObjectURL(blob);
+    img.onload=()=>{ img.classList.add('ready'); $('#empty').style.display='none'; if(old) URL.revokeObjectURL(old) } }
+  catch(e){} finally{ busy=false }
+}
+function setLive(on){ state.live=on; $('#live').classList.toggle('on',on); clearInterval(liveT);
+  if(on){ grab(); liveT=setInterval(grab,1500) } }
+$('#live').parentElement.onclick = () => setLive(!state.live);
+
+const scr=$('#screen'); let down=null;
+function rel(e){ const img=$('#shot'), r=scr.getBoundingClientRect();
+  // ajustar al área real de la imagen (object-fit: contain)
+  const iw=img.naturalWidth||16, ih=img.naturalHeight||9, s=Math.min(r.width/iw, r.height/ih), w=iw*s, h=ih*s;
+  const ox=(r.width-w)/2, oy=(r.height-h)/2;
+  return { x:Math.min(1,Math.max(0,(e.clientX-r.left-ox)/w)), y:Math.min(1,Math.max(0,(e.clientY-r.top-oy)/h)), px:e.clientX-r.left, py:e.clientY-r.top } }
+scr.addEventListener('pointerdown', e => { down=rel(e) });
+scr.addEventListener('pointerup', async e => {
+  if(!down || !state.connected) return; const up=rel(e);
+  const rp=document.createElement('div'); rp.className='ripple'; rp.style.left=up.px+'px'; rp.style.top=up.py+'px'; scr.appendChild(rp); setTimeout(()=>rp.remove(),500);
+  try{
+    if(Math.hypot(up.x-down.x, up.y-down.y) > .03) await api('swipe',{x1:down.x,y1:down.y,x2:up.x,y2:up.y});
+    else await api('tap',{x:up.x,y:up.y});
+    if(state.live) setTimeout(grab,400);
+  }catch(err){ toast(err.message,true) }
+  down=null;
+});
+
+/* ---------- apps ---------- */
+const COLORS=['#ff6b6b','#ffb547','#4ade80','#38bdf8','#a78bfa','#f472b6','#2dd4bf','#fb923c'];
+const BRAND={'netflix':'#e50914','youtube':'#ff0000','prime video':'#00a8e1','disney+':'#113ccf','spotify':'#1db954','max':'#5822b4','plex':'#e5a00d','kodi':'#17b2e7','twitch':'#9146ff'};
+function color(n){ const b=BRAND[n.toLowerCase()]; if(b) return b; let h=0; for(const c of n) h=(h*31+c.charCodeAt(0))|0; return COLORS[Math.abs(h)%COLORS.length] }
+function nameOf(pkg){ const a=state.apps.find(x=>x.package===pkg); return a?a.name:pkg }
+async function loadApps(){
+  try{ state.apps = await api('apps'); renderApps() } catch(e){ toast(e.message,true) }
+}
+function renderApps(){
+  const q=$('#filter').value.toLowerCase(), box=$('#apps'); box.innerHTML='';
+  const list=state.apps.filter(a=>(a.name+a.package).toLowerCase().includes(q))
+    .sort((a,b)=>(state.favs.includes(b.package)-state.favs.includes(a.package)));
+  if(!list.length){ box.innerHTML='<div class="hint" style="text-align:left">Sin apps.</div>'; return }
+  list.forEach(a=>{
+    const b=document.createElement('button'); b.className='app'+(state.favs.includes(a.package)?' fav':''); b.title='Clic: abrir · Clic derecho: favorito';
+    b.innerHTML=`<span class="ic" style="background:${color(a.name)}">${a.name[0]||'?'}</span><span class="nm"></span><span class="pk"></span>`;
+    b.querySelector('.nm').textContent=a.name; b.querySelector('.pk').textContent=a.package;
+    b.onclick=async()=>{ try{ await api('launch',{package:a.package}); toast('Abriendo '+a.name); if(state.live) setTimeout(grab,1200) }catch(e){ toast(e.message,true) } };
+    b.oncontextmenu=e=>{ e.preventDefault(); const i=state.favs.indexOf(a.package); i<0?state.favs.push(a.package):state.favs.splice(i,1); store('favs',state.favs); renderApps() };
+    box.appendChild(b);
+  });
+}
+$('#filter').oninput=renderApps; $('#reloadApps').onclick=loadApps;
+setTimeout(async()=>{ try{ const s=await api('status'); if(!s.serial && !load('host','')) help.showModal() }catch{} }, 400);
+</script>
+</body>
+</html>
