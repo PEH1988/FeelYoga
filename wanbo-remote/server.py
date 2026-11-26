@@ -216,6 +216,139 @@ def pretty_name(pkg):
     return (parts[-1] if parts else pkg).replace("_", " ").title()
 
 
+
+# --- optimización ---------------------------------------------------------------
+# Nunca se desactivan: rompen el sistema, el WiFi, la imagen o la corrección trapezoidal.
+PROTECTED = re.compile(
+    r"^(android|com\.android\.(systemui|settings|phone|shell|server\.telecom|keychain|certinstaller|"
+    r"packageinstaller|permissioncontroller|providers\..*|inputmethod.*|externalstorage|documentsui|"
+    r"networkstack.*|wifi.*|bluetooth|nfc|location.*|webview|ext\.services|ext\.shared|vpndialogs|"
+    r"defcontainer|proxyhandler|se|carrierconfig|captiveportallogin|cts.*|mtp|storagemanager|"
+    r"tv\.settings|tv\.provider|backupconfirm|sharedstoragebackup|keyguard|media.*|soundpicker)|"
+    r"com\.google\.android\.(gms|gsf|webview|tv\.remote\.service|packageinstaller|ext\..*|"
+    r"inputmethod.*|tvlauncher|apps\.tv\.launcherx|tungsten.*|configupdater|katniss|leanbacklauncher)|"
+    r"com\.(droidlogic|amlogic|mediatek|mstar|softwinner|allwinner|rockchip|realtek|hisilicon)\..*|"
+    r"app\.lumo\.launcher)$|keystone|trapez|focus|motor|projector|pq|hdmi|tvinput|ota|update|input")
+
+# Conocidas como prescindibles en un proyector (servicios de móvil, impresión, demos…).
+BLOAT = {
+    "com.android.printspooler": "Cola de impresión", "com.android.bips": "Impresión integrada",
+    "com.android.printservice.recommendation": "Recomendador de impresoras",
+    "com.google.android.feedback": "Envío de comentarios a Google", "com.android.egg": "Easter egg de Android",
+    "com.android.dreams.basic": "Salvapantallas básico", "com.android.dreams.phototable": "Salvapantallas de fotos",
+    "com.android.wallpaper.livepicker": "Fondos animados", "com.android.wallpaperbackup": "Copia de fondos",
+    "com.android.calendar": "Calendario", "com.android.email": "Email", "com.android.gallery3d": "Galería antigua",
+    "com.android.music": "Música antigua", "com.android.quicksearchbox": "Búsqueda rápida",
+    "com.android.traceur": "Trazas de sistema", "com.android.stk": "Herramientas SIM",
+    "com.android.cellbroadcastreceiver": "Alertas de móvil", "com.android.emergency": "Info de emergencia",
+    "com.android.calllogbackup": "Copia de llamadas", "com.android.mms.service": "Servicio MMS",
+    "com.android.smspush": "SMS push", "com.android.bookmarkprovider": "Marcadores",
+    "com.android.htmlviewer": "Visor HTML", "com.android.statementservice": "Verificación de enlaces",
+    "com.android.managedprovisioning": "Configuración empresarial", "com.android.dreams.web": "Salvapantallas web",
+    "com.google.android.partnersetup": "Configuración de socios", "com.google.android.tvrecommendations": "Recomendaciones TV",
+    "com.google.android.leanbacklauncher.recommendations": "Recomendaciones del launcher",
+    "com.google.android.syncadapters.calendar": "Sync calendario", "com.google.android.syncadapters.contacts": "Sync contactos",
+    "com.google.android.backuptransport": "Copia de seguridad Google", "com.google.android.onetimeinitializer": "Inicializador",
+    "com.android.wallpapercropper": "Recorte de fondos", "com.android.providers.partnerbookmarks": "Marcadores de socio",
+    "com.android.companiondevicemanager": "Dispositivos complementarios", "com.android.simappdialog": "Diálogo SIM",
+    "com.android.dialer": "Teléfono", "com.android.contacts": "Contactos", "com.android.messaging": "Mensajes",
+    "com.android.deskclock": "Reloj/alarma", "com.android.calculator2": "Calculadora", "com.android.soundrecorder": "Grabadora",
+    "com.android.camera2": "Cámara", "com.android.gallery": "Galería", "com.android.browser": "Navegador antiguo",
+}
+STOCK_LAUNCHERS = re.compile(r"launcher|home|desktop", re.I)
+
+
+def health(p):
+    out = p.sh(
+        "cat /proc/meminfo | grep -E 'MemTotal|MemAvailable'; echo ===; "
+        "for z in /sys/class/thermal/thermal_zone*; do echo \"$(cat $z/type 2>/dev/null) $(cat $z/temp 2>/dev/null)\"; done; echo ===; "
+        "cat /proc/loadavg; echo ===; "
+        "settings get global window_animation_scale; settings get global transition_animation_scale; "
+        "settings get global animator_duration_scale; echo ===; "
+        "dumpsys meminfo | sed -n '/Total PSS by process/,/^$/p' | head -12; echo ===; "
+        "cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME | tail -1; echo ===; "
+        "cat /sys/class/hwmon/hwmon*/fan*_input /sys/class/thermal/cooling_device*/cur_state 2>/dev/null | head -4",
+        timeout=20)
+    parts = (out.split("===") + [""] * 7)[:7]
+    mem = dict(re.findall(r"(\w+):\s+(\d+)", parts[0]))
+    temps = []
+    for line in parts[1].strip().splitlines():
+        m = re.match(r"(\S+)\s+(-?\d+)$", line.strip())
+        if m:
+            v = int(m.group(2))
+            v = v / 1000 if v > 1000 else v
+            if 0 < v < 150:
+                temps.append({"zone": m.group(1), "c": round(v, 1)})
+    procs = []
+    for line in parts[4].splitlines():
+        m = re.search(r"([\d,]+)K: (\S+)", line)
+        if m:
+            procs.append({"name": m.group(2), "mb": round(int(m.group(1).replace(",", "")) / 1024)})
+    anim = [a.strip() for a in parts[3].strip().splitlines()]
+    return {
+        "mem_total": int(mem.get("MemTotal", 0)) // 1024, "mem_free": int(mem.get("MemAvailable", 0)) // 1024,
+        "temps": temps, "load": (parts[2].split() or ["?"])[0], "animations": anim,
+        "procs": procs[:8], "home": parts[5].strip(),
+    }
+
+
+def packages(p):
+    out = p.sh("echo SYS; pm list packages -s; echo USR; pm list packages -3; echo DIS; pm list packages -d", timeout=20)
+    section, sysp, usr, dis = None, set(), set(), set()
+    for line in out.splitlines():
+        line = line.strip()
+        if line in ("SYS", "USR", "DIS"):
+            section = line
+            continue
+        m = re.match(r"package:(\S+)", line)
+        if m:
+            {"SYS": sysp, "USR": usr, "DIS": dis}[section].add(m.group(1))
+    disabled_by_us = set(load_cfg().get("disabled", []))
+    result = []
+    for pkg in sorted(sysp | usr):
+        if PROTECTED.search(pkg):
+            kind, note = "protected", "Esencial: no se toca"
+        elif pkg in BLOAT:
+            kind, note = "bloat", BLOAT[pkg]
+        elif pkg in usr:
+            kind, note = "user", "App instalada"
+        elif STOCK_LAUNCHERS.search(pkg):
+            kind, note = "launcher", "Launcher original: desactívalo solo cuando Lumo funcione bien"
+        else:
+            kind, note = "unknown", "Del sistema/fabricante: no lo toques si no sabes qué es"
+        result.append({"package": pkg, "kind": kind, "note": note, "disabled": pkg in dis,
+                       "ours": pkg in disabled_by_us, "name": pretty_name(pkg)})
+    return result
+
+
+def set_package(p, pkg, enable):
+    if not enable and PROTECTED.search(pkg):
+        return False, "Paquete protegido"
+    out = p.sh(f"pm {'enable' if enable else 'disable-user --user 0'} {pkg}")
+    ok = "new state" in out
+    if ok:
+        cfg = load_cfg()
+        d = set(cfg.get("disabled", []))
+        (d.discard if enable else d.add)(pkg)
+        cfg["disabled"] = sorted(d)
+        save_cfg(cfg)
+    return ok, out
+
+
+LUMO_APK = HERE.parent / "lumo-launcher" / "lumo.apk"
+
+
+def install_lumo(p):
+    if not LUMO_APK.exists():
+        return False, f"No encuentro {LUMO_APK}"
+    out = p.adb("install", "-r", str(LUMO_APK), timeout=120)
+    if "Success" not in out:
+        return False, out
+    p.sh("cmd package set-home-activity app.lumo.launcher/.Main")
+    p.key("home")
+    return True, "Lumo instalado y fijado como pantalla de inicio. Si aparece un selector, elige Lumo → Siempre."
+
+
 # --- descubrimiento en la red local -----------------------------------------
 def local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -286,6 +419,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send(200, P.status())
             if url.path == "/api/discover":
                 return self.send(200, discover())
+            if url.path == "/api/health":
+                return self.need_device() and self.send(200, health(P))
+            if url.path == "/api/packages":
+                return self.need_device() and self.send(200, packages(P))
             if url.path == "/api/apps":
                 return self.need_device() and self.send(200, P.apps())
             if url.path == "/api/screen":
@@ -326,6 +463,25 @@ class Handler(BaseHTTPRequestHandler):
                 v = int(b.get("value", 0))
                 P.sh(f"cmd media_session volume --set {v} --stream 3 2>/dev/null || media volume --set {v} --stream 3")
                 return self.send(200, {"ok": True, "volume": P.volume()})
+            if url.path == "/api/package":
+                ok, out = set_package(P, b.get("package", ""), bool(b.get("enable")))
+                return self.send(200 if ok else 400, {"ok": ok, "message": out})
+            if url.path == "/api/restore":
+                done = [pkg for pkg in load_cfg().get("disabled", []) if set_package(P, pkg, True)[0]]
+                return self.send(200, {"ok": True, "restored": done})
+            if url.path == "/api/animations":
+                v = str(float(b.get("scale", 0.5)))
+                P.sh(f"settings put global window_animation_scale {v}; settings put global transition_animation_scale {v}; "
+                     f"settings put global animator_duration_scale {v}")
+                return self.send(200, {"ok": True})
+            if url.path == "/api/clean":
+                before = health(P)["mem_free"]
+                P.sh("am kill-all; pm trim-caches 999G", timeout=60)
+                time.sleep(1)
+                return self.send(200, {"ok": True, "freed": max(0, health(P)["mem_free"] - before)})
+            if url.path == "/api/install-lumo":
+                ok, out = install_lumo(P)
+                return self.send(200 if ok else 400, {"ok": ok, "message": out})
             if url.path == "/api/shell":  # avanzado: comando libre
                 return self.send(200, {"output": P.sh(b.get("cmd", ""), timeout=15)})
             self.send(404, {"error": "no encontrado"})

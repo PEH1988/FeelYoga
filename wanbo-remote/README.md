@@ -27,3 +27,11 @@ Después abre http://localhost:8765. También puedes hacer doble clic en `inicia
 La primera vez, acepta **«Permitir depuración USB»** en la pantalla del proyector.
 
 **Para usarlo desde el móvil:** arranca con `HOST=0.0.0.0 python3 server.py` y abre la URL que aparece en la terminal.
+
+## Optimizar (más rápido y silencioso)
+La sección **Optimizar** se conecta al proyector y:
+- Muestra la RAM, la temperatura, la carga de CPU y qué procesos consumen más.
+- **Instala Lumo**, un launcher de 24 KB que reemplaza la pantalla de inicio de fábrica (ver `../lumo-launcher`).
+- **Desactiva componentes prescindibles** (impresión, salvapantallas, recomendaciones, servicios de móvil…). Es reversible: no borra nada y «Restaurar todo» lo devuelve.
+- Pone las **animaciones a 0.5×** y **libera RAM y caché**.
+- Bloquea los paquetes esenciales: sistema, WiFi, imagen, HDMI y corrección trapezoidal.

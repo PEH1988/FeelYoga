@@ -122,6 +122,27 @@ dialog ol b{color:var(--text)}
 .found button{text-align:left;padding:12px 14px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line)}
 .found button:hover{border-color:var(--accent)}
 svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* Optimizar */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:var(--panel-2);border:1px solid var(--line);border-radius:16px;padding:14px}
+.stat .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.stat .v{font-size:26px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.stat .s{font-size:12px;color:var(--muted);margin-top:2px}
+.bar{height:6px;border-radius:9px;background:#262633;margin-top:8px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.hot .v{color:var(--bad)}.warm .v{color:var(--accent)}.cool .v{color:var(--ok)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.actions .pill{padding:11px 16px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tabs button{padding:7px 12px;border-radius:999px;font-size:13px;background:var(--panel-2);color:var(--muted);border:1px solid var(--line)}
+.tabs button.on{color:#1a1205;background:var(--accent);border-color:var(--accent)}
+.pkgs{display:flex;flex-direction:column;gap:6px;max-height:420px;overflow:auto;padding-right:4px}
+.pkg{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line)}
+.pkg .t{flex:1;min-width:0}.pkg .t b{font-weight:500;font-size:14px}.pkg .t div{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{font-size:11px;padding:3px 8px;border-radius:999px;background:#262633;color:var(--muted);white-space:nowrap}
+.tag.bloat{background:rgba(74,222,128,.12);color:var(--ok)}.tag.protected{background:rgba(248,113,113,.12);color:var(--bad)}
+.pkg .switch{flex:none;cursor:pointer}.pkg.locked .switch{opacity:.3;cursor:not-allowed}
+.note{font-size:13px;color:var(--muted);line-height:1.6;background:var(--panel-2);border:1px dashed var(--line);border-radius:14px;padding:12px 14px;margin-top:14px}
 </style>
 </head>
 <body>
@@ -191,6 +212,24 @@ svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-l
       <div class="hint">Teclado: <kbd>←↑→↓</kbd> navegar · <kbd>Enter</kbd> OK · <kbd>Esc</kbd> atrás · <kbd>H</kbd> inicio · <kbd>Espacio</kbd> play · <kbd>+</kbd>/<kbd>−</kbd> volumen · <kbd>T</kbd> escribir</div>
     </aside>
 
+    <section class="card full" id="opt">
+      <h2>Optimizar <span class="sp"></span><button class="pill" id="optRefresh">Analizar</button></h2>
+      <div class="stats" id="stats"><div class="hint" style="text-align:left">Conecta el proyector y pulsa «Analizar».</div></div>
+      <div class="actions">
+        <button class="pill primary" id="lumoBtn">Instalar launcher ligero (Lumo)</button>
+        <button class="pill" id="bloatBtn">Desactivar prescindibles</button>
+        <button class="pill" id="animBtn" data-scale="0.5">Animaciones rápidas</button>
+        <button class="pill" id="cleanBtn">Liberar RAM y caché</button>
+        <button class="pill" id="restoreBtn">Restaurar todo</button>
+      </div>
+      <div class="tabs" id="tabs">
+        <button data-k="bloat" class="on">Prescindibles</button><button data-k="user">Apps instaladas</button>
+        <button data-k="launcher">Launchers</button><button data-k="unknown">Sistema / fabricante</button><button data-k="protected">Protegidos</button>
+      </div>
+      <div class="pkgs" id="pkgs"></div>
+      <div class="note">Desactivar ≠ borrar: las apps quedan instaladas y se reactivan con un toque o con «Restaurar todo». Un restablecimiento de fábrica también las devuelve. Los paquetes esenciales (sistema, WiFi, imagen y corrección trapezoidal) están bloqueados.<br>
+      <b style="color:var(--text)">Sobre el ruido:</b> el ventilador enfría sobre todo la lámpara LED, así que depende más del brillo y la ventilación que del software. Limpia las rejillas, deja unos 20&nbsp;cm libres alrededor y, si tu menú tiene modo eco o brillo bajo, actívalo.</div>
+    </section>
     <section class="card full">
       <h2>Apps <span class="sp"></span><input class="search" id="filter" placeholder="Filtrar…"><button class="pill" id="reloadApps">Actualizar</button></h2>
       <div class="apps" id="apps"><div class="hint" style="text-align:left">Conecta el proyector para ver sus apps.</div></div>
@@ -353,6 +392,63 @@ function renderApps(){
 }
 $('#filter').oninput=renderApps; $('#reloadApps').onclick=loadApps;
 setTimeout(async()=>{ try{ const s=await api('status'); if(!s.serial && !load('host','')) help.showModal() }catch{} }, 400);
+
+/* ---------- optimizar ---------- */
+let pkgs=[], tab='bloat';
+function tempClass(c){ return c>=75?'hot':c>=60?'warm':'cool' }
+async function analyze(){
+  if(!state.connected) return toast('Conecta primero el proyector',true);
+  $('#stats').innerHTML='<div class="hint" style="text-align:left">Analizando…</div>';
+  try{
+    const [h,p]=await Promise.all([api('health'),api('packages')]); pkgs=p;
+    const used=h.mem_total-h.mem_free, pct=h.mem_total?Math.round(used/h.mem_total*100):0;
+    const maxT=h.temps.length?Math.max(...h.temps.map(t=>t.c)):null;
+    const anim=h.animations[0]||'1.0';
+    const off=p.filter(x=>x.disabled).length, bloat=p.filter(x=>x.kind==='bloat'&&!x.disabled).length;
+    $('#stats').innerHTML=`
+      <div class="stat"><div class="l">RAM en uso</div><div class="v">${pct}%</div><div class="s">${h.mem_free} MB libres de ${h.mem_total} MB</div><div class="bar"><i style="width:${pct}%"></i></div></div>
+      <div class="stat ${maxT!=null?tempClass(maxT):''}"><div class="l">Temperatura</div><div class="v">${maxT!=null?maxT+' °C':'—'}</div><div class="s">${h.temps.map(t=>t.zone+' '+t.c+'°').join(' · ')||'sin sensor accesible'}</div></div>
+      <div class="stat"><div class="l">Carga CPU</div><div class="v">${h.load}</div><div class="s">media último minuto</div></div>
+      <div class="stat"><div class="l">Animaciones</div><div class="v">${anim==='null'?'1.0':anim}×</div><div class="s">${anim==='0.5'||anim==='0.0'?'optimizado':'0.5× recomendado'}</div></div>
+      <div class="stat"><div class="l">Prescindibles activos</div><div class="v">${bloat}</div><div class="s">${off} paquetes desactivados en total</div></div>
+      <div class="stat"><div class="l">Pantalla de inicio</div><div class="v" style="font-size:16px;word-break:break-all">${(h.home||'?').split('/')[0]}</div><div class="s">${(h.home||'').includes('lumo')?'Lumo activo ✓':'launcher original'}</div></div>
+      ${h.procs.length?`<div class="stat" style="grid-column:1/-1"><div class="l">Lo que más memoria consume</div><div class="s" style="font-size:13px;line-height:1.8;margin-top:6px">${h.procs.map(x=>`<b style="color:var(--text)">${x.mb} MB</b> ${x.name}`).join(' &nbsp;·&nbsp; ')}</div></div>`:''}`;
+    renderPkgs();
+  }catch(e){ $('#stats').innerHTML=`<div class="hint" style="text-align:left">${e.message}</div>` }
+}
+function renderPkgs(){
+  const box=$('#pkgs'); box.innerHTML='';
+  const list=pkgs.filter(p=>p.kind===tab);
+  if(!list.length){ box.innerHTML='<div class="hint" style="text-align:left">Nada en esta categoría.</div>'; return }
+  list.forEach(p=>{
+    const row=document.createElement('div'); row.className='pkg'+(p.kind==='protected'?' locked':'');
+    row.innerHTML=`<div class="t"><b></b><div></div></div><span class="tag ${p.kind}">${p.disabled?'desactivado':'activo'}</span><span class="switch ${p.disabled?'':'on'}"></span>`;
+    const b=p.kind==='bloat'; row.querySelector('b').textContent=b?p.note:p.name; row.querySelector('.t div').textContent=b?p.package:p.note+' · '+p.package;
+    if(p.kind!=='protected') row.querySelector('.switch').onclick=async()=>{
+      if(!p.disabled && p.kind!=='bloat' && !confirm(`¿Desactivar ${p.package}?\n${p.note}`)) return;
+      try{ await api('package',{package:p.package,enable:p.disabled}); p.disabled=!p.disabled; renderPkgs(); toast((p.disabled?'Desactivado ':'Activado ')+p.name) }
+      catch(e){ toast(e.message,true) }
+    };
+    box.appendChild(row);
+  });
+}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); tab=b.dataset.k; renderPkgs() });
+$('#optRefresh').onclick=analyze;
+async function action(btn, fn){ btn.disabled=true; const t=btn.textContent; btn.textContent='Trabajando…'; try{ await fn() }catch(e){ toast(e.message,true) } btn.textContent=t; btn.disabled=false }
+$('#bloatBtn').onclick=e=>action(e.target, async()=>{
+  if(!pkgs.length) await analyze();
+  const list=pkgs.filter(p=>p.kind==='bloat'&&!p.disabled);
+  if(!list.length) return toast('No queda nada prescindible activo ✓');
+  if(!confirm(`Se desactivarán ${list.length} componentes prescindibles (reversible):\n\n${list.map(p=>'• '+p.note).join('\n')}`)) return;
+  let n=0; for(const p of list){ try{ await api('package',{package:p.package,enable:false}); n++ }catch{} }
+  toast(`${n} componentes desactivados`); analyze();
+});
+$('#animBtn').onclick=e=>action(e.target, async()=>{ await api('animations',{scale:0.5}); toast('Animaciones a 0.5×: los menús responden el doble de rápido'); analyze() });
+$('#cleanBtn').onclick=e=>action(e.target, async()=>{ const r=await api('clean',{}); toast(`Liberados ${r.freed} MB`); analyze() });
+$('#restoreBtn').onclick=e=>action(e.target, async()=>{
+  if(!confirm('¿Reactivar todo lo que se desactivó desde aquí y volver las animaciones a 1×?')) return;
+  const r=await api('restore',{}); await api('animations',{scale:1}); toast(`Restaurados ${r.restored.length} paquetes`); analyze() });
+$('#lumoBtn').onclick=e=>action(e.target, async()=>{ toast('Instalando Lumo…'); const r=await api('install-lumo',{}); toast(r.message); analyze() });
 </script>
 </body>
 </html>
